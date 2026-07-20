@@ -1,0 +1,280 @@
+<words xmlns="urn:words:v1" xmlns:s="urn:words:v1:style" version="1.0.1" mode="lossless">
+  <style unit="in">
+    <s:page size="Letter" mt="1.00" mb="1.00" ml="1.00" mr="1.00" mh="0.50" mf="0.50"/>
+    <s:gap el="h" c="Heading1" before="18.00" after="4.00"/>
+    <s:gap el="h" c="Heading2" before="8.00" after="4.00"/>
+    <s:gap el="h" c="Heading3" before="8.00" after="4.00"/>
+    <s:gap el="h" c="Heading4" before="4.00" after="2.00"/>
+    <s:gap el="h" c="Heading5" before="4.00" after="2.00"/>
+    <s:gap el="h" c="Heading6" before="2.00"/>
+    <s:gap el="h" c="Heading7" before="2.00"/>
+    <s:custom name="Grid Table 2 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 4 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 3 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 3 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 4 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 7 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 7 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Heading 2" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="16" sizeCS="16" color="0f4761" spacingBefore="8.00" spacingAfter="4.00"/>
+    <s:custom name="Table Grid Light" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 3 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 6 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 5 Dark" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Lined - Accent 1" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Lined - Accent 6" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Strong" type="character" basedOn="148" bold="true"/>
+    <s:custom name="List Table 1 Light - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 2 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 3" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="14" sizeCS="14" color="0f4761" spacingBefore="8.00" spacingAfter="4.00"/>
+    <s:custom name="Heading 5 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761"/>
+    <s:custom name="Title" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="28" sizeCS="28" spacingAfter="4.00" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Quote Char" type="character" basedOn="148" color="404040" italic="true"/>
+    <s:custom name="Subtle Emphasis" type="character" basedOn="148" color="404040" italic="true"/>
+    <s:custom name="Subtle Reference" type="character" basedOn="148" color="5a5a5a" smallCaps="true"/>
+    <s:custom name="List Table 2 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 3 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 4 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 7 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Title Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="28" sizeCS="28"/>
+    <s:custom name="Intense Quote Char" type="character" basedOn="148" color="0f4761" italic="true"/>
+    <s:custom name="Header Char" type="character" basedOn="148"/>
+    <s:custom name="Endnote Text Char" type="character" basedOn="148" size="10" sizeCS="10"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 1 Light - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 2 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 4 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Footnote Text Char" type="character" basedOn="148" size="10" sizeCS="10"/>
+    <s:custom name="toc 4" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.46"/>
+    <s:custom name="toc 5" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.61"/>
+    <s:custom name="Grid Table 4 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 5 Dark - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
+    <s:custom name="FollowedHyperlink" type="character" basedOn="148" color="954f72" underline="single"/>
+    <s:custom name="toc 3" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.31"/>
+    <s:custom name="toc 7" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.92"/>
+    <s:custom name="List Table 3 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered &amp; Lined - Accent 1" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 6" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="595959" italic="true" spacingBefore="2.00"/>
+    <s:custom name="table of figures" type="paragraph" basedOn="664"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 2 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 2 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered &amp; Lined - Accent 6" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 8 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
+    <s:custom name="Normal Table" type="table"/>
+    <s:custom name="Plain Table 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 1 Light - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 3 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered &amp; Lined - Accent 2" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="toc 1" type="paragraph" basedOn="664" spacingAfter="5.00"/>
+    <s:custom name="toc 6" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.76"/>
+    <s:custom name="Grid Table 5 Dark- Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Lined - Accent" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 3 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 3 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 5 Dark - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 4 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761" italic="true"/>
+    <s:custom name="List Table 1 Light" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 5 Dark - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 7" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="595959" spacingBefore="2.00"/>
+    <s:custom name="No List" type="numbering"/>
+    <s:custom name="Grid Table 2 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Heading 8" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
+    <s:custom name="Intense Quote" type="paragraph" basedOn="664" color="0f4761" italic="true" alignment="center" spacingBefore="18.00" spacingAfter="18.00" indentLeft="0.60" indentRight="0.60"/>
+    <s:custom name="footnote text" type="paragraph" basedOn="664" size="10" sizeCS="10" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 2 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Lined - Accent 2" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Heading 5" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761" spacingBefore="4.00" spacingAfter="2.00"/>
+    <s:custom name="Heading 6 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="595959" italic="true"/>
+    <s:custom name="Footer Char" type="character" basedOn="148"/>
+    <s:custom name="toc 2" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.15"/>
+    <s:custom name="Plain Table 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Plain Table 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 5 Dark - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered &amp; Lined - Accent 4" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered &amp; Lined - Accent 5" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 9" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
+    <s:custom name="Heading 9 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
+    <s:custom name="Grid Table 4 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 1 Light - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 7 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="595959"/>
+    <s:custom name="Grid Table 5 Dark" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="toc 9" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="1.22"/>
+    <s:custom name="Grid Table 1 Light - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 2 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="16" sizeCS="16" color="0f4761"/>
+    <s:custom name="Heading 3 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="14" sizeCS="14" color="0f4761"/>
+    <s:custom name="Intense Reference" type="character" basedOn="148" color="0f4761" bold="true" smallCaps="true"/>
+    <s:custom name="Grid Table 2 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 4 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 5 Dark - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 1 Light - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 7 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Subtitle" type="paragraph" basedOn="664" size="14" sizeCS="14" color="595959"/>
+    <s:custom name="Placeholder Text" type="character" basedOn="148" color="666666"/>
+    <s:custom name="TOC Heading" type="paragraph"/>
+    <s:custom name="Grid Table 1 Light - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Subtitle Char" type="character" basedOn="148" size="14" sizeCS="14" color="595959"/>
+    <s:custom name="Quote" type="paragraph" basedOn="664" color="404040" italic="true" alignment="center" spacingBefore="8.00"/>
+    <s:custom name="Caption" type="paragraph" basedOn="664" size="9" sizeCS="9" color="0e2841" italic="true" spacingAfter="10.00" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="No Spacing" type="paragraph" basedOn="664" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Plain Table 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 3 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 4 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="endnote text" type="paragraph" basedOn="664" size="10" sizeCS="10" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 1 Light" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 1 Light - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 5 Dark - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Lined - Accent 3" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="footnote reference" type="character" basedOn="148"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 5 Dark - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Lined - Accent 5" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Footer" type="paragraph" basedOn="664" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="toc 8" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="1.07"/>
+    <s:custom name="Grid Table 5 Dark - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 4 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 7 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Bordered &amp; Lined - Accent" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered &amp; Lined - Accent 3" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Book Title" type="character" basedOn="148" bold="true" italic="true"/>
+    <s:custom name="Grid Table 1 Light - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 5 Dark- Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 1 Light - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Emphasis" type="character" basedOn="148" italic="true"/>
+    <s:custom name="endnote reference" type="character" basedOn="148"/>
+    <s:custom name="Grid Table 3 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Bordered - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 2 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 7 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 5 Dark - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 1 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="20" sizeCS="20" color="0f4761"/>
+    <s:custom name="Plain Table 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 2 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 1 Light - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 3 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 2 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 3 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 5 Dark - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Lined - Accent 4" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Bordered - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 4" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761" italic="true" spacingBefore="4.00" spacingAfter="2.00"/>
+    <s:custom name="Table Grid" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 4 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 1" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="20" sizeCS="20" color="0f4761" spacingBefore="18.00" spacingAfter="4.00"/>
+    <s:custom name="Intense Emphasis" type="character" basedOn="148" color="0f4761" italic="true"/>
+    <s:custom name="Header" type="paragraph" basedOn="664" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Hyperlink" type="character" basedOn="148" color="0563c1" underline="single"/>
+    <s:custom name="List Paragraph" type="paragraph" basedOn="664" indentLeft="0.50"/>
+    <s:custom name="Grid Table 1 Light - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 4 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 4 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 7 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 7 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+  </style>
+  <write>
+    <h1><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="24" color="1f1f1f">A Guide to Starting a Digital Business in the Modern Era</span></b></h1>
+    <h2></h2>
+    <h2><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="18" color="1f1f1f">Chapter 1: ntroduction and Background</span></b></h2>
+    <p><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">1.1 Background of the Issue</span></b></p>
+    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">The development of internet technology and the massive penetration of smartphones have fundamentally changed the way people interact, shop, and work. In this modern era, geographical boundaries are no longer a primary obstacle in the world of commerce. Dig</span><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">ital business emerges as a solution to the shift in consumer lifestyles that demand speed, convenience, and efficiency.</span></p>
+    <p><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">1.2 Why Choose Digital Business?</span></b></p>
+    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Unlike conventional brick-and-mortar businesses that require substantial capital for physical space and operations, digital businesses offer a much lower barrier to entry. The flexibility of time and global market reach make it an ideal choice for both beg</span><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">inner entrepreneurs and large corporations looking to expand.</span></p>
+    <p><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">1.3 Purpose of the Guide</span></b></p>
+    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">This guide is created to provide a clear roadmap for anyone looking to pioneer a business in the digital realm. It covers everything from finding an idea and market validation to marketing strategies and scalability.</span></p>
+    <h2><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="18" color="1f1f1f">Chapter 2: Market Analysis and Business Ideation</span></b></h2>
+    <p><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">2.1 Identifying Problems and Solutions</span></b></p>
+    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">A successful business always begins with solving a problem. Before launching a product or service, it is crucial to conduct market research.</span></p>
+    <ul type="bullet">
+      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Observation:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> What are the primary complaints of consumers today?</span>
+      </li>
+      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Solution:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> How can your digital product solve these problems faster, cheaper, or better?</span>
+      </li>
+    </ul>
+    <p><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">2.2 Validating the Business Idea</span></b></p>
+    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Do not fall in love with your own idea before the market validates it. You can do this by:</span></p>
+    <ul type="bullet">
+      <li><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Conducting </span><i><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">online surveys</span></i><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> using tools like Google Forms.</span>
+      </li>
+      <li><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Interviewing your target audience directly.</span>
+      </li>
+      <li><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Creating a </span><i><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Minimum Viable Product</span></i><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> (MVP) or a simple prototype to gauge initial customer response.</span>
+      </li>
+    </ul>
+    <p><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">2.3 Competitor Analysis</span></b></p>
+    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Utilize the SWOT (Strengths, Weaknesses, Opportunities, Threats) analysis framework to map out your position compared to competitors. Look for gaps where your competitors are underperforming, such as in customer service or app interface quality.</span></p>
+    <h2></h2>
+    <h2><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="18" color="1f1f1f">Chapter 3: Building the Digital Ecosystem</span></b></h2>
+    <p><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">3.1 Choosing a Sales Platform</span></b></p>
+    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Determine where your business will operate. Some primary options include:</span></p>
+    <ul type="bullet">
+      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Marketplaces:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> (Amazon, eBay, etc.) Ideal for retail products with ready-made traffic.</span>
+      </li>
+      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Your Own Website:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> (Shopify, WordPress) Provides full control over branding and customer data.</span>
+      </li>
+      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Social Commerce:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> (TikTok Shop, Instagram) Highly effective for visually appealing and trend-based products.</span>
+      </li>
+    </ul>
+    <p><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">3.2 The Importance of UI/UX (User Interface &amp; User Experience)</span></b></p>
+    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">If you are using your own website or app, ensure the design is user-friendly. Confusing navigation or slow page load times (more than 3 seconds) can cause potential customers to abandon your store.</span></p>
+    <p><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">3.3 Legality and Data Security</span></b></p>
+    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Ensure your business is legally registered according to applicable laws. Furthermore, protect your customers' data with SSL certificates on your website and transparent privacy policies, keeping in mind that data breach issues are highly sensitive today.</span></p>
+    <h2></h2>
+    <h2><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="18" color="1f1f1f">Chapter 4: Digital Marketing Strategy</span></b></h2>
+    <p><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">4.1 Content Marketing and SEO</span></b></p>
+    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Create content that is relevant and educational for your target market. By implementing SEO (Search Engine Optimization), your business website can appear on the first page of Google organically without the need for constant paid advertising.</span></p>
+    <p><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">4.2 Social Media Marketing</span></b></p>
+    <ul type="bullet">
+      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Instagram &amp; TikTok:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> Focus on visual content, short-form videos (Reels/TikToks), and influencer marketing.</span>
+      </li>
+      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">LinkedIn:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> Highly suitable if your business model is B2B (Business to Business).</span>
+      </li>
+      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">X (Twitter):</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> Effective for direct engagement, fast customer service, and community building.</span>
+      </li>
+    </ul>
+    <p><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">4.3 Paid Ads</span></b></p>
+    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Use Facebook Ads, Instagram Ads, or Google Ads to target audiences specifically based on age, location, and interests. The key to paid advertising is A/B testing to see which ad creatives yield the highest ROI (Return on Investment).</span></p>
+    <h2><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="18" color="1f1f1f">Chapter 5: Operations, Evaluation Metrics, and Scalability</span></b></h2>
+    <p><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">5.1 Operational Management and Customer Service</span></b></p>
+    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Digital business is not just about selling; it is also about shipping, returns, and customer complaints. Use CRM (Customer Relationship Management) software to track customer interactions and ensure every complaint is handled within a maximum of 24 hours.</span></p>
+    <p><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">5.2 Key Performance Indicators (KPI)</span></b></p>
+    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">To know if your digital business is growing, monitor the following metrics:</span></p>
+    <ul type="bullet">
+      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">CAC (Customer Acquisition Cost):</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> The cost spent to acquire one new customer.</span>
+      </li>
+      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">LTV (Customer Lifetime Value):</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> The total revenue expected from a single customer over the course of their relationship with your business.</span>
+      </li>
+      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Conversion Rate:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> The percentage of website visitors who actually make a purchase.</span>
+      </li>
+    </ul>
+    <p><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">5.3 Scaling Up</span></b></p>
+    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Once your business is proven to be stable and profitable, it is time to scale. This can be done by adding new product lines, targeting international markets, or automating business processes using Artificial Intelligence (AI) to make operations more effici</span><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">ent.</span></p>
+    <p><i><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Note: You can easily expand this comprehensive framework into 5 full pages by adding case studies, real-world examples, and statistical data to each bullet point.</span></i></p>
+    <p></p>
+  </write>
+</words>
