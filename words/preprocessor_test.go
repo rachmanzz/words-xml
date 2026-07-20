@@ -1417,3 +1417,157 @@ func TestBreakTypes(t *testing.T) {
 		}
 	}
 }
+
+const stylesXMLHeader = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">`
+
+func TestCodeBlockDetection(t *testing.T) {
+	tests := []struct {
+		name         string
+		styles       string
+		body         string
+		expected     string
+		notExpected  string
+	}{
+		{
+			name: "known code style exact match",
+			styles: stylesXMLHeader + `<w:style w:type="paragraph" w:styleId="Code">
+				<w:name w:val="Code"/>
+			</w:style></w:styles>`,
+			body:     `<w:p><w:pPr><w:pStyle w:val="Code"/></w:pPr><w:r><w:t>hello</w:t></w:r></w:p>`,
+			expected: "<pre>hello</pre>",
+		},
+		{
+			name: "code with word boundary + monospace = code",
+			styles: stylesXMLHeader + `<w:style w:type="paragraph" w:styleId="MyCodeBlock">
+				<w:name w:val="My Code Block"/>
+			</w:style></w:styles>`,
+			body: `<w:p>
+				<w:pPr><w:pStyle w:val="MyCodeBlock"/></w:pPr>
+				<w:r><w:rPr><w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/></w:rPr><w:t>code here</w:t></w:r>
+			</w:p>`,
+			expected: "<pre>code here</pre>",
+		},
+		{
+			name: "code word without monospace = NOT code",
+			styles: stylesXMLHeader + `<w:style w:type="paragraph" w:styleId="MyCodeBlock">
+				<w:name w:val="My Code Block"/>
+			</w:style></w:styles>`,
+			body:        `<w:p><w:pPr><w:pStyle w:val="MyCodeBlock"/></w:pPr><w:r><w:t>code here</w:t></w:r></w:p>`,
+			notExpected: "<pre>",
+		},
+		{
+			name: "example style is NOT code",
+			styles: stylesXMLHeader + `<w:style w:type="paragraph" w:styleId="ExampleHeading">
+				<w:name w:val="Example Heading"/>
+			</w:style></w:styles>`,
+			body:        `<w:p><w:pPr><w:pStyle w:val="ExampleHeading"/></w:pPr><w:r><w:t>not code</w:t></w:r></w:p>`,
+			notExpected: "<pre>",
+		},
+		{
+			name: "output summary style without monospace is NOT code",
+			styles: stylesXMLHeader + `<w:style w:type="paragraph" w:styleId="OutputSummary">
+				<w:name w:val="Output Summary"/>
+			</w:style></w:styles>`,
+			body:        `<w:p><w:pPr><w:pStyle w:val="OutputSummary"/></w:pPr><w:r><w:t>not code</w:t></w:r></w:p>`,
+			notExpected: "<pre>",
+		},
+		{
+			name:   "heading with monospace font stays heading",
+			styles: ``,
+			body: `<w:p>
+				<w:pPr><w:pStyle w:val="Heading1"/></w:pPr>
+				<w:r><w:rPr><w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr><w:t>title</w:t></w:r>
+			</w:p>`,
+			expected: "<h1",
+		},
+		{
+			name:   "title with monospace font stays title",
+			styles: stylesXMLHeader + `<w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/></w:style></w:styles>`,
+			body: `<w:p>
+				<w:pPr><w:pStyle w:val="Title"/></w:pPr>
+				<w:r><w:rPr><w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/></w:rPr><w:t>title</w:t></w:r>
+			</w:p>`,
+			expected: "<h1",
+		},
+		{
+			name:   "list with monospace font stays list",
+			styles: ``,
+			body: `<w:p>
+				<w:pPr>
+					<w:pStyle w:val="ListParagraph"/>
+					<w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr>
+				</w:pPr>
+				<w:r><w:rPr><w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/></w:rPr><w:t>item</w:t></w:r>
+			</w:p>`,
+			expected: "<li",
+		},
+		{
+			name:   "quote with monospace font stays quote",
+			styles: stylesXMLHeader + `<w:style w:type="paragraph" w:styleId="Quote"><w:name w:val="Quote"/></w:style></w:styles>`,
+			body: `<w:p>
+				<w:pPr><w:pStyle w:val="Quote"/></w:pPr>
+				<w:r><w:rPr><w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr><w:t>quoted</w:t></w:r>
+			</w:p>`,
+			expected: "<blockquote>",
+		},
+		{
+			name:   "monospace font alone on normal paragraph is NOT code",
+			styles: ``,
+			body: `<w:p>
+				<w:r><w:rPr><w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/></w:rPr><w:t>fmt.Println("hello")</w:t></w:r>
+			</w:p>`,
+			notExpected: "<pre>",
+		},
+		{
+			name:   "mixed monospace and non-monospace stays paragraph",
+			styles: ``,
+			body: `<w:p>
+				<w:r><w:rPr><w:rFonts w:ascii="Consolas" w:hAnsi="Consolas"/></w:rPr><w:t>code</w:t></w:r>
+				<w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/></w:rPr><w:t>text</w:t></w:r>
+			</w:p>`,
+			notExpected: "<pre>",
+		},
+	}
+
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			body := xmlHeader + `<w:body>` + tc.body + `</w:body></w:document>`
+			data := makeDocxWithParts(body, tc.styles, "", "")
+			doc, err := ProcessDOCXBytes(data)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if tc.expected != "" && !strings.Contains(doc.WordsXML, tc.expected) {
+				t.Errorf("expected output to contain %q, got:\n%s", tc.expected, doc.WordsXML)
+			}
+			if tc.notExpected != "" && strings.Contains(doc.WordsXML, tc.notExpected) {
+				t.Errorf("expected output to NOT contain %q, got:\n%s", tc.notExpected, doc.WordsXML)
+			}
+		})
+	}
+}
+
+func TestHasWordBoundary(t *testing.T) {
+	tests := []struct {
+		s, word string
+		want    bool
+	}{
+		{"code block", "code", true},
+		{"mycode", "code", false},
+		{"encoding", "code", false},
+		{"source code", "source", true},
+		{"sourcelanguage", "source", false},
+		{"output log", "output", true},
+		{"outputlog", "output", false},
+		{"code-source", "code", true},
+		{"code_source", "code", true},
+	}
+	for _, tc := range tests {
+		got := hasWordBoundary(tc.s, tc.word)
+		if got != tc.want {
+			t.Errorf("hasWordBoundary(%q, %q) = %v, want %v", tc.s, tc.word, got, tc.want)
+		}
+	}
+}

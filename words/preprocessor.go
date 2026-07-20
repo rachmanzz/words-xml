@@ -61,6 +61,21 @@ func isMonospaceFont(f string) bool {
 	return false
 }
 
+func hasWordBoundary(s, word string) bool {
+	idx := strings.Index(s, word)
+	if idx < 0 {
+		return false
+	}
+	if idx > 0 && s[idx-1] != ' ' && s[idx-1] != '-' && s[idx-1] != '_' {
+		return false
+	}
+	end := idx + len(word)
+	if end < len(s) && s[end] != ' ' && s[end] != '-' && s[end] != '_' {
+		return false
+	}
+	return true
+}
+
 func ProcessDOCXFile(filePath string) (*ProcessedDocument, error) {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
@@ -725,52 +740,67 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 	lp.IsQuote = isQuote
 
 	isCode := false
+	knownCodeStyles := map[string]bool{
+		"code": true, "code block": true, "codeblock": true,
+		"plain text": true, "plaintext": true,
+		"source code": true, "sourcecode": true,
+		"preformatted": true, "preformatted text": true,
+		"source": true, "output": true,
+	}
+	knownCodeIDs := map[string]bool{
+		"code": true, "codeblock": true, "codeblock1": true, "codeblock2": true,
+		"plaintext": true, "sourcecode": true, "preformatted": true,
+		"source": true, "output": true,
+	}
+	codeWords := []string{"code", "source", "output"}
+
+	isKnownCode := false
+	if lp.StyleName != "" {
+		if knownCodeStyles[strings.ToLower(lp.StyleName)] {
+			isKnownCode = true
+		}
+	}
+	if !isKnownCode && lp.StyleID != "" {
+		if knownCodeIDs[strings.ToLower(lp.StyleID)] {
+			isKnownCode = true
+		}
+	}
+
+	hasCodeWord := false
 	if lp.StyleName != "" {
 		sn := strings.ToLower(lp.StyleName)
-		codeNames := []string{"code", "html", "xml", "plaintext", "sourcecode", "example", "output", "preformatted"}
-		for _, cn := range codeNames {
-			if strings.Contains(sn, cn) {
-				isCode = true
+		for _, w := range codeWords {
+			if hasWordBoundary(sn, w) {
+				hasCodeWord = true
 				break
 			}
 		}
-		if !isCode {
-			for _, word := range []string{"code", "source", "output"} {
-				if strings.Contains(sn, word) {
-					isCode = true
-					break
-				}
-			}
-		}
 	}
-	if lp.StyleID != "" {
+	if !hasCodeWord && lp.StyleID != "" {
 		sid := strings.ToLower(lp.StyleID)
-		codeIDs := []string{"code", "html", "xml", "plaintext", "sourcecode", "example", "output", "preformatted"}
-		for _, cid := range codeIDs {
-			if strings.Contains(sid, cid) {
-				isCode = true
+		for _, w := range codeWords {
+			if hasWordBoundary(sid, w) {
+				hasCodeWord = true
 				break
 			}
 		}
-		if !isCode {
-			for _, word := range []string{"code", "source", "output"} {
-				if strings.Contains(sid, word) {
-					isCode = true
-					break
-				}
-			}
-		}
 	}
-	if !isCode && len(p.Runs) > 0 {
+
+	allMonospace := len(p.Runs) > 0
+	if allMonospace {
 		for _, r := range p.Runs {
-			if r.RPr != nil && r.RPr.RFonts != nil {
-				if isMonospaceFont(r.RPr.RFonts.Ascii) || isMonospaceFont(r.RPr.RFonts.HAnsi) {
-					isCode = true
-					break
-				}
+			if r.RPr == nil || r.RPr.RFonts == nil {
+				allMonospace = false
+				break
+			}
+			if !isMonospaceFont(r.RPr.RFonts.Ascii) && !isMonospaceFont(r.RPr.RFonts.HAnsi) {
+				allMonospace = false
+				break
 			}
 		}
 	}
+
+	isCode = isKnownCode || (hasCodeWord && allMonospace)
 	lp.IsCode = isCode
 
 	runs, tbItems := extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, isCode)
