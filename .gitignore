@@ -1,1 +1,4 @@
 words-xml
+coverage.out
+coverage*.out
+coverage.html
