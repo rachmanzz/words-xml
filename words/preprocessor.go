@@ -2327,6 +2327,9 @@ func writeParagraphAttrs(b *strings.Builder, p *ParsedParagraph) {
 	if c := customStyleName(p); c != "" {
 		fmt.Fprintf(b, " c=\"%s\"", xmlEscape(c))
 	}
+	if p.Align != "" && p.Align != "left" {
+		fmt.Fprintf(b, " align=\"%s\"", p.Align)
+	}
 	if p.Bidi {
 		b.WriteString(" dir=\"rtl\"")
 	}
