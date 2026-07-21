@@ -8,194 +8,194 @@
     <s:gap el="h" c="Heading5" before="4.00" after="2.00"/>
     <s:gap el="h" c="Heading6" before="2.00"/>
     <s:gap el="h" c="Heading7" before="2.00"/>
+    <s:custom name="toc 7" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.92"/>
+    <s:custom name="Grid Table 3 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 5 Dark - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 3 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 3" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="14" sizeCS="14" color="0f4761" spacingBefore="8.00" spacingAfter="4.00"/>
+    <s:custom name="Footer" type="paragraph" basedOn="664" lineSpacing="1.00" lineRule="auto"/>
     <s:custom name="Hyperlink" type="character" basedOn="148" color="0563c1" underline="single"/>
     <s:custom name="Plain Table 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 3 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 5 Dark - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 1 Light - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 2 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 2 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 5 Dark - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Intense Emphasis" type="character" basedOn="148" color="0f4761" italic="true"/>
-    <s:custom name="Grid Table 5 Dark- Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 6 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="toc 5" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.61"/>
-    <s:custom name="Grid Table 5 Dark- Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 4 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Lined - Accent 4" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Bordered &amp; Lined - Accent" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 8" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
-    <s:custom name="Title Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="28" sizeCS="28"/>
-    <s:custom name="Subtle Emphasis" type="character" basedOn="148" color="404040" italic="true"/>
-    <s:custom name="Grid Table 2 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Heading 7" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="595959" spacingBefore="2.00"/>
-    <s:custom name="endnote reference" type="character" basedOn="148"/>
-    <s:custom name="Grid Table 2 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 3 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 3 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Lined - Accent 2" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Bordered &amp; Lined - Accent 2" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Header Char" type="character" basedOn="148"/>
+    <s:custom name="List Table 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 5" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761" spacingBefore="4.00" spacingAfter="2.00"/>
+    <s:custom name="Intense Quote" type="paragraph" basedOn="664" color="0f4761" italic="true" alignment="center" spacingBefore="18.00" spacingAfter="18.00" indentLeft="0.60" indentRight="0.60"/>
     <s:custom name="No List" type="numbering"/>
-    <s:custom name="List Table 7 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 4 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 4 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 6 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 1 Light - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 3 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 7 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
     <s:custom name="List Table 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 5 Dark - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 9" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
-    <s:custom name="Heading 4 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761" italic="true"/>
-    <s:custom name="Heading 9 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
-    <s:custom name="Grid Table 1 Light - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 1 Light - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 4 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Lined - Accent" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Bordered &amp; Lined - Accent 3" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered &amp; Lined - Accent 5" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Endnote Text Char" type="character" basedOn="148" size="10" sizeCS="10"/>
-    <s:custom name="toc 7" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.92"/>
-    <s:custom name="Grid Table 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 5 Dark - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 8 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
-    <s:custom name="toc 6" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.76"/>
-    <s:custom name="toc 8" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="1.07"/>
-    <s:custom name="Plain Table 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Bordered &amp; Lined - Accent 2" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
     <s:custom name="Bordered - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
     <s:custom name="Heading 1" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="20" sizeCS="20" color="0f4761" spacingBefore="18.00" spacingAfter="4.00"/>
-    <s:custom name="Grid Table 2 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 6 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered &amp; Lined - Accent 1" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Subtitle" type="paragraph" basedOn="664" size="14" sizeCS="14" color="595959"/>
     <s:custom name="Quote Char" type="character" basedOn="148" color="404040" italic="true"/>
-    <s:custom name="Grid Table 1 Light - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered &amp; Lined - Accent 1" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="toc 8" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="1.07"/>
+    <s:custom name="List Paragraph" type="paragraph" basedOn="664" indentLeft="0.50"/>
+    <s:custom name="Grid Table 1 Light" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 6 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 7 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Title Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="28" sizeCS="28"/>
+    <s:custom name="Intense Emphasis" type="character" basedOn="148" color="0f4761" italic="true"/>
+    <s:custom name="toc 6" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.76"/>
+    <s:custom name="List Table 7 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
     <s:custom name="Grid Table 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 5 Dark" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 5 Dark - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 4 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 6 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 2 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Bordered - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 7" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="595959" spacingBefore="2.00"/>
+    <s:custom name="Heading 9" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
+    <s:custom name="List Table 5 Dark - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 1 Light - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 1 Light - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 2 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 6 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
     <s:custom name="Grid Table 7 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 3 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 5 Dark - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 5 Dark- Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 1 Light - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 1 Light - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 7 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Bordered &amp; Lined - Accent 3" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 8" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
+    <s:custom name="Strong" type="character" basedOn="148" bold="true"/>
+    <s:custom name="Lined - Accent 3" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Lined - Accent 4" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 4 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 3 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="14" sizeCS="14" color="0f4761"/>
+    <s:custom name="Grid Table 3 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 3 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 2 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
     <s:custom name="List Table 1 Light" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 7 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Title" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="28" sizeCS="28" spacingAfter="4.00" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Emphasis" type="character" basedOn="148" italic="true"/>
-    <s:custom name="toc 1" type="paragraph" basedOn="664" spacingAfter="5.00"/>
-    <s:custom name="toc 2" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.15"/>
-    <s:custom name="Plain Table 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 3 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 1 Light - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
     <s:custom name="Lined - Accent 1" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="toc 1" type="paragraph" basedOn="664" spacingAfter="5.00"/>
+    <s:custom name="Lined - Accent 2" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 2 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 4 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Intense Reference" type="character" basedOn="148" color="0f4761" bold="true" smallCaps="true"/>
+    <s:custom name="Grid Table 4 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 5 Dark - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 4" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761" italic="true" spacingBefore="4.00" spacingAfter="2.00"/>
+    <s:custom name="Heading 9 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
+    <s:custom name="Subtle Reference" type="character" basedOn="148" color="5a5a5a" smallCaps="true"/>
+    <s:custom name="Header Char" type="character" basedOn="148"/>
+    <s:custom name="toc 4" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.46"/>
+    <s:custom name="TOC Heading" type="paragraph"/>
+    <s:custom name="List Table 6 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 7 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 7 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Heading 1 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="20" sizeCS="20" color="0f4761"/>
+    <s:custom name="Book Title" type="character" basedOn="148" bold="true" italic="true"/>
+    <s:custom name="endnote text" type="paragraph" basedOn="664" size="10" sizeCS="10" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 4 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 7 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Intense Quote Char" type="character" basedOn="148" color="0f4761" italic="true"/>
+    <s:custom name="Footnote Text Char" type="character" basedOn="148" size="10" sizeCS="10"/>
+    <s:custom name="Grid Table 2 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered &amp; Lined - Accent" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 6" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="595959" italic="true" spacingBefore="2.00"/>
+    <s:custom name="Grid Table 1 Light - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 3 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 4 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 1 Light - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 5 Dark - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
+    <s:custom name="toc 5" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.61"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 2 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
     <s:custom name="Bordered - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Intense Quote" type="paragraph" basedOn="664" color="0f4761" italic="true" alignment="center" spacingBefore="18.00" spacingAfter="18.00" indentLeft="0.60" indentRight="0.60"/>
-    <s:custom name="Caption" type="paragraph" basedOn="664" size="9" sizeCS="9" color="0e2841" italic="true" spacingAfter="10.00" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Bordered - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="endnote reference" type="character" basedOn="148"/>
     <s:custom name="FollowedHyperlink" type="character" basedOn="148" color="954f72" underline="single"/>
     <s:custom name="toc 3" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.31"/>
-    <s:custom name="Grid Table 7 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Table Grid Light" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Plain Table 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Bordered &amp; Lined - Accent 4" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 4 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 1 Light - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Bordered &amp; Lined - Accent 6" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Title" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="28" sizeCS="28" spacingAfter="4.00" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Plain Table 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Plain Table 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 1 Light - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 3 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 5 Dark - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 4 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 4 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered &amp; Lined - Accent 5" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Lined - Accent" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Lined - Accent 6" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 1 Light - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 4 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 5 Dark" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 5 Dark - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 2 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 3 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Endnote Text Char" type="character" basedOn="148" size="10" sizeCS="10"/>
+    <s:custom name="toc 2" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.15"/>
+    <s:custom name="Grid Table 4 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 2 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 3 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 5 Dark - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Emphasis" type="character" basedOn="148" italic="true"/>
+    <s:custom name="Caption" type="paragraph" basedOn="664" size="9" sizeCS="9" color="0e2841" italic="true" spacingAfter="10.00" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Lined - Accent 5" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 1 Light - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 2 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 3 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 7 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="595959"/>
+    <s:custom name="Heading 8 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
+    <s:custom name="Table Grid" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Plain Table 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 4 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Subtitle" type="paragraph" basedOn="664" size="14" sizeCS="14" color="595959"/>
+    <s:custom name="Subtitle Char" type="character" basedOn="148" size="14" sizeCS="14" color="595959"/>
+    <s:custom name="footnote text" type="paragraph" basedOn="664" size="10" sizeCS="10" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="toc 9" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="1.22"/>
     <s:custom name="Placeholder Text" type="character" basedOn="148" color="666666"/>
-    <s:custom name="TOC Heading" type="paragraph"/>
+    <s:custom name="Grid Table 3 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Heading 2" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="16" sizeCS="16" color="0f4761" spacingBefore="8.00" spacingAfter="4.00"/>
+    <s:custom name="Quote" type="paragraph" basedOn="664" color="404040" italic="true" alignment="center" spacingBefore="8.00"/>
+    <s:custom name="Subtle Emphasis" type="character" basedOn="148" color="404040" italic="true"/>
+    <s:custom name="Footer Char" type="character" basedOn="148"/>
+    <s:custom name="Normal Table" type="table"/>
+    <s:custom name="Grid Table 2 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 5 Dark- Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 5 Dark - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 7 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Heading 2 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="16" sizeCS="16" color="0f4761"/>
+    <s:custom name="Heading 5 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761"/>
     <s:custom name="No Spacing" type="paragraph" basedOn="664" lineSpacing="1.00" lineRule="auto"/>
     <s:custom name="Grid Table 7 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 7 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 1 Light - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 2 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered &amp; Lined - Accent 4" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered &amp; Lined - Accent 6" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Subtle Reference" type="character" basedOn="148" color="5a5a5a" smallCaps="true"/>
-    <s:custom name="toc 9" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="1.22"/>
-    <s:custom name="Grid Table 6 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 1 Light - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 7 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 1 Light - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 3 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 4 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 4 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 4 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 6 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 7 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Bordered - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 6 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 4 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="footnote reference" type="character" basedOn="148"/>
-    <s:custom name="endnote text" type="paragraph" basedOn="664" size="10" sizeCS="10" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 1 Light - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 4 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 2 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Footnote Text Char" type="character" basedOn="148" size="10" sizeCS="10"/>
-    <s:custom name="Table Grid Light" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 2 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 5 Dark - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 1 Light - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 3 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 5 Dark - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 6 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 1 Light" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 5 Dark - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 6 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 5 Dark - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 6 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 6 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="595959" italic="true"/>
-    <s:custom name="Quote" type="paragraph" basedOn="664" color="404040" italic="true" alignment="center" spacingBefore="8.00"/>
-    <s:custom name="Grid Table 3 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
     <s:custom name="Grid Table 7 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 3 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 4 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Subtitle Char" type="character" basedOn="148" size="14" sizeCS="14" color="595959"/>
-    <s:custom name="Intense Quote Char" type="character" basedOn="148" color="0f4761" italic="true"/>
-    <s:custom name="Book Title" type="character" basedOn="148" bold="true" italic="true"/>
-    <s:custom name="Header" type="paragraph" basedOn="664" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Table Grid" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 2 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 2 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Lined - Accent 5" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Heading 4" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761" italic="true" spacingBefore="4.00" spacingAfter="2.00"/>
-    <s:custom name="Strong" type="character" basedOn="148" bold="true"/>
-    <s:custom name="Footer Char" type="character" basedOn="148"/>
-    <s:custom name="Grid Table 7 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Plain Table 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 3 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 6 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 1 Light - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 7 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Heading 3" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="14" sizeCS="14" color="0f4761" spacingBefore="8.00" spacingAfter="4.00"/>
-    <s:custom name="Heading 2 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="16" sizeCS="16" color="0f4761"/>
-    <s:custom name="Plain Table 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 3 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 6 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 5 Dark" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 7 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Heading 3 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="14" sizeCS="14" color="0f4761"/>
-    <s:custom name="Intense Reference" type="character" basedOn="148" color="0f4761" bold="true" smallCaps="true"/>
-    <s:custom name="footnote text" type="paragraph" basedOn="664" size="10" sizeCS="10" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 2 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 4 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Footer" type="paragraph" basedOn="664" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="toc 4" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.46"/>
+    <s:custom name="List Table 1 Light - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
     <s:custom name="table of figures" type="paragraph" basedOn="664"/>
-    <s:custom name="List Paragraph" type="paragraph" basedOn="664" indentLeft="0.50"/>
-    <s:custom name="Grid Table 6 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 2" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="16" sizeCS="16" color="0f4761" spacingBefore="8.00" spacingAfter="4.00"/>
-    <s:custom name="Heading 7 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="595959"/>
-    <s:custom name="List Table 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 5 Dark - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 6 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Lined - Accent 3" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Normal Table" type="table"/>
-    <s:custom name="List Table 1 Light - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Lined - Accent 6" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Bordered - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 6" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="595959" italic="true" spacingBefore="2.00"/>
-    <s:custom name="List Table 3 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 7 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Heading 5" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761" spacingBefore="4.00" spacingAfter="2.00"/>
-    <s:custom name="Heading 5 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761"/>
+    <s:custom name="Grid Table 2 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 5 Dark - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Header" type="paragraph" basedOn="664" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="footnote reference" type="character" basedOn="148"/>
+    <s:custom name="Grid Table 2 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
     <s:custom name="Grid Table 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 2 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 1 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="20" sizeCS="20" color="0f4761"/>
+    <s:custom name="List Table 3 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 6 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="595959" italic="true"/>
+    <s:custom name="List Table 4 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 5 Dark" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 4 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761" italic="true"/>
   </style>
   <write>
     <h1><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="24" color="1f1f1f">A Comprehensive Guide to Personal Financial Management</span></b></h1>

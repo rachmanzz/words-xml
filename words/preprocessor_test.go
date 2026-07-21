@@ -134,6 +134,25 @@ func TestHeadingMapping(t *testing.T) {
 	}
 }
 
+func TestFalseHeadingSuppression(t *testing.T) {
+	longText := "On this very long day, in the year of our Lord two thousand and twenty-six, the parties gathered"
+	body := xmlHeader + `<w:body>
+  <w:p><w:pPr><w:pStyle w:val="Heading1"/><w:jc w:val="both"/></w:pPr><w:r><w:t>` + longText + `</w:t></w:r></w:p>
+  <w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>This is a short heading</w:t></w:r></w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if strings.Contains(doc.WordsXML, "<h1>"+longText[:20]) {
+		t.Error("long paragraph with jc=both should NOT be h1")
+	}
+	if !strings.Contains(doc.WordsXML, "<h1>This is a short heading") {
+		t.Error("short paragraph should still be h1")
+	}
+}
+
 func TestInlineFormatting(t *testing.T) {
 	body := xmlHeader + `<w:body>
   <w:p>

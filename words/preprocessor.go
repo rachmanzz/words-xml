@@ -805,6 +805,17 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 
 	runs, tbItems := extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, isCode)
 	lp.Runs = runs
+
+	if lp.HeadingLevel > 0 && !isCode {
+		var textLen int
+		for _, r := range runs {
+			textLen += len(r.Text)
+		}
+		if textLen > 60 || lp.Align == "both" {
+			lp.HeadingLevel = 0
+		}
+	}
+
 	return ContentItem{Type: "paragraph", Paragraph: lp}, tbItems
 }
 
