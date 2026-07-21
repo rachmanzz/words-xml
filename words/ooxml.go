@@ -525,5 +525,5 @@ type AClrSchemeEntry struct {
 }
 
 type ASrgbClr struct {
-	Val string `xml:"http://schemas.openxmlformats.org/drawingml/2006/main val,attr"`
+	Val string `xml:"val,attr"`
 }

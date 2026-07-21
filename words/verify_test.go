@@ -1,6 +1,7 @@
 package words
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -354,5 +355,649 @@ func TestVerifyEnRefInvalid(t *testing.T) {
 	}
 	if !hasWarn {
 		t.Error("expected warning for unknown <en-ref> element")
+	}
+}
+
+func TestVerifyTableWidth(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<table id="1" width="abc"><tr><td>x</td></tr></table>` +
+		`</write></words>`
+	r := Verify(input)
+	found := false
+	for _, e := range r.Errors {
+		if strings.Contains(e, "width must be number") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected width error, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyTableCellSpacing(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<table id="1" cellSpacing="abc"><tr><td>x</td></tr></table>` +
+		`</write></words>`
+	r := Verify(input)
+	found := false
+	for _, e := range r.Errors {
+		if strings.Contains(e, "cellSpacing must be number") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected cellSpacing error, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyTableInvalidAlign(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<table id="1" align="invalid"><tr><td>x</td></tr></table>` +
+		`</write></words>`
+	r := Verify(input)
+	found := false
+	for _, e := range r.Errors {
+		if strings.Contains(e, "align must be") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected align error, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyTableColSpec(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<table id="1"><colspec/><tr><td>x</td></tr></table>` +
+		`</write></words>`
+	r := Verify(input)
+	found := false
+	for _, e := range r.Errors {
+		if strings.Contains(e, "colspec") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected colspec error, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyTableUnexpectedChild(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<table id="1"><foo/><tr><td>x</td></tr></table>` +
+		`</write></words>`
+	r := Verify(input)
+	found := false
+	for _, w := range r.Warns {
+		if strings.Contains(w, "unexpected") && strings.Contains(w, "foo") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected warning for unexpected element, got warns: %v", r.Warns)
+	}
+}
+
+func TestVerifyTableRowNoCell(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<table id="1"><tr><p>x</p></tr></table>` +
+		`</write></words>`
+	r := Verify(input)
+	found := false
+	for _, e := range r.Errors {
+		if strings.Contains(e, "must contain at least one") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected error for row without cell, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyTrSpan(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<table id="1"><tr span="abc"><td>x</td></tr></table>` +
+		`</write></words>`
+	r := Verify(input)
+	found := false
+	for _, e := range r.Errors {
+		if strings.Contains(e, "span must be integer") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected span error, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyCellBadColspan(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<table id="1"><tr><td colspan="abc">x</td></tr></table>` +
+		`</write></words>`
+	r := Verify(input)
+	found := false
+	for _, e := range r.Errors {
+		if strings.Contains(e, "colspan must be integer") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected colspan error, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyCellBadValign(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<table id="1"><tr><td valign="bad">x</td></tr></table>` +
+		`</write></words>`
+	r := Verify(input)
+	found := false
+	for _, e := range r.Errors {
+		if strings.Contains(e, "valign must be") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected valign error, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyCellBadNoWrap(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<table id="1"><tr><td noWrap="yes">x</td></tr></table>` +
+		`</write></words>`
+	r := Verify(input)
+	found := false
+	for _, e := range r.Errors {
+		if strings.Contains(e, "noWrap must be") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected noWrap error, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyUnknownInlineElement(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<p><foo>x</foo></p>` +
+		`</write></words>`
+	r := Verify(input)
+	found := false
+	for _, w := range r.Warns {
+		if strings.Contains(w, "unknown inline element") && strings.Contains(w, "foo") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected warning for unknown inline, got warns: %v", r.Warns)
+	}
+}
+
+func TestVerifyMetaUnknownChild(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<meta><foo>bar</foo></meta>` +
+		`<style unit="in"></style><write><p>x</p></write></words>`
+	r := Verify(input)
+	found := false
+	for _, w := range r.Warns {
+		if strings.Contains(w, "unknown") && strings.Contains(w, "<foo>") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected warning for unknown meta child, got warns: %v", r.Warns)
+	}
+}
+
+func TestVerifyStyleBadUnit(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="bad"></style><write><p>x</p></write></words>`
+	r := Verify(input)
+	found := false
+	for _, w := range r.Warns {
+		if strings.Contains(w, "unit must be") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected warning for bad unit, got warns: %v", r.Warns)
+	}
+}
+
+func TestVerifyStyleNoUnit(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style></style><write><p>x</p></write></words>`
+	r := Verify(input)
+	found := false
+	for _, w := range r.Warns {
+		if strings.Contains(w, "missing unit") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected warning for missing unit, got warns: %v", r.Warns)
+	}
+}
+
+func TestVerifyNotesUnknownElement(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>x</p></write>` +
+		`<notes><foo id="1">x</foo></notes></words>`
+	r := Verify(input)
+	found := false
+	for _, w := range r.Warns {
+		if strings.Contains(w, "unknown element") && strings.Contains(w, "foo") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected warning for unknown notes element, got warns: %v", r.Warns)
+	}
+}
+
+func TestVerifyNoteItemMissingID(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>x</p></write>` +
+		`<notes><fn><p>x</p></fn></notes></words>`
+	r := Verify(input)
+	found := false
+	for _, e := range r.Errors {
+		if strings.Contains(e, "missing required id") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected error for missing id, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyHeaderFooterBadID(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>x</p></write>` +
+		`<header id="abc"><p>hdr</p></header></words>`
+	r := Verify(input)
+	found := false
+	for _, e := range r.Errors {
+		if strings.Contains(e, "id must be integer") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected error for bad header id, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyFooterBadID(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>x</p></write>` +
+		`<footer id="abc"><p>ftr</p></footer></words>`
+	r := Verify(input)
+	found := false
+	for _, e := range r.Errors {
+		if strings.Contains(e, "id must be integer") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected error for bad footer id, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyHeadingLevels(t *testing.T) {
+	for level := 4; level <= 9; level++ {
+		tag := fmt.Sprintf("h%d", level)
+		input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+			`<style unit="in"></style><write>` +
+			`<` + tag + `>Title</` + tag + `>` +
+			`</write></words>`
+		r := Verify(input)
+		if !r.Valid {
+			t.Errorf("expected valid for <%s>, got errors: %v", tag, r.Errors)
+		}
+	}
+}
+
+func TestVerifyWriteTable(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<table id="1"><tr><th>x</th></tr><tr><td>y</td></tr></table>` +
+		`</write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyWritePre(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<pre>code block</pre>` +
+		`</write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyWritePreWithElement(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<pre><b>bad</b></pre>` +
+		`</write></words>`
+	r := Verify(input)
+	found := false
+	for _, w := range r.Warns {
+		if strings.Contains(w, "unexpected element") && strings.Contains(w, "b") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected warning for element inside pre, got warns: %v", r.Warns)
+	}
+}
+
+func TestVerifyWriteBlockquote(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<blockquote><p>quoted text</p></blockquote>` +
+		`</write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyLiInvalidType(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<ol><li type="bad">x</li></ol>` +
+		`</write></words>`
+	r := Verify(input)
+	found := false
+	for _, e := range r.Errors {
+		if strings.Contains(e, "type must be") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected li type error, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyComment(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>x</p></write>` +
+		`<notes><comment id="1" author="A" date="2024-01-01"><p>text</p></comment></notes></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyCellBadRowspan(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<table id="1"><tr><td rowspan="abc">x</td></tr></table>` +
+		`</write></words>`
+	r := Verify(input)
+	found := false
+	for _, e := range r.Errors {
+		if strings.Contains(e, "rowspan must be integer") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected rowspan error, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyMissingWriteElement(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style></words>`
+	r := Verify(input)
+	if r.Valid {
+		t.Error("expected invalid for missing write")
+	}
+}
+
+func TestVerifyMissingStyleElement(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<write><p>x</p></write></words>`
+	r := Verify(input)
+	found := false
+	for _, w := range r.Warns {
+		if strings.Contains(w, "missing") && strings.Contains(w, "style") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected warning for missing style, got warns: %v", r.Warns)
+	}
+}
+
+func TestVerifyBlockContentFigure(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<figure><figcaption>Caption</figcaption></figure>` +
+		`</write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyBlockContentHr(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write>` +
+		`<p>x</p><hr/><p>y</p>` +
+		`</write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyBlockContentTableInNotes(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>x</p></write>` +
+		`<notes><fn id="1"><table id="1"><tr><td>a</td></tr></table></fn></notes></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyBlockContentListInNotes(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>x</p></write>` +
+		`<notes><fn id="1"><ul type="bullet"><li>a</li></ul></fn></notes></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyBlockContentPreInNotes(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>x</p></write>` +
+		`<notes><fn id="1"><pre>code</pre></fn></notes></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyBlockContentBlockquoteInNotes(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>x</p></write>` +
+		`<notes><fn id="1"><blockquote><p>q</p></blockquote></fn></notes></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyWriteWithH4(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><h4>Title</h4></write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyParagraphValign(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p valign="center">x</p></write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyParagraphAlign(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p align="both">x</p></write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyChildrenUnknownBlock(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><unknown>x</unknown></write></words>`
+	r := Verify(input)
+	found := false
+	for _, w := range r.Warns {
+		if strings.Contains(w, "unknown element") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected warning for unknown block, got warns: %v", r.Warns)
+	}
+}
+
+func TestVerifyWriteHeading(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><h1>Title</h1><h2>Sub</h2><h3>Sub2</h3></write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyWriteList(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><ul type="bullet"><li>x</li><li>y</li></ul></write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyWriteImg(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><img alt="test"/></write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyWriteFnRef(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>text<fn-ref id="1" type="footnote"/></p></write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyWriteSpan(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p><span font="Arial" size="12">text</span></p></write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyWriteAnchor(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p><a href="https://example.com">link</a></p></write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyWriteTab(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>x<tab/>y</p></write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyWriteSym(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>x<sym char="F0B7"/>y</p></write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyWriteBm(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>x<bm id="b1"/></p></write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyCommentAttrs(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>x</p></write>` +
+		`<notes><comment id="1" author="John" date="2024-01-01T00:00:00Z"><p>comment</p></comment></notes></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyNotesFootnote(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>x</p></write>` +
+		`<notes><fn id="1" type="footnote"><p>fn text</p></fn></notes></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyNotesBookmark(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<style unit="in"></style><write><p>x</p></write>` +
+		`<notes><bm id="b1"/></notes></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
 	}
 }

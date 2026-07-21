@@ -13,6 +13,14 @@ func makeMinimalDocx(bodyXML string) []byte {
 }
 
 func makeDocxWithFootnotes(bodyXML, footnotesXML string) []byte {
+	return makeDocxWithExtras(bodyXML, "", "", "", footnotesXML, "", "")
+}
+
+func makeDocxWithComments(bodyXML, commentsXML string) []byte {
+	return makeDocxWithExtras(bodyXML, "", "", "", "", "", commentsXML)
+}
+
+func makeDocxWithExtras(bodyXML, stylesXML, numberingXML, relsXML, footnotesXML, endnotesXML, commentsXML string) []byte {
 	var buf bytes.Buffer
 	w := zip.NewWriter(&buf)
 
@@ -25,8 +33,23 @@ func makeDocxWithFootnotes(bodyXML, footnotesXML string) []byte {
 	}
 
 	addZipFile("word/document.xml", bodyXML)
+	if stylesXML != "" {
+		addZipFile("word/styles.xml", stylesXML)
+	}
+	if numberingXML != "" {
+		addZipFile("word/numbering.xml", numberingXML)
+	}
+	if relsXML != "" {
+		addZipFile("word/_rels/document.xml.rels", relsXML)
+	}
 	if footnotesXML != "" {
 		addZipFile("word/footnotes.xml", footnotesXML)
+	}
+	if endnotesXML != "" {
+		addZipFile("word/endnotes.xml", endnotesXML)
+	}
+	if commentsXML != "" {
+		addZipFile("word/comments.xml", commentsXML)
 	}
 
 	w.Close()
@@ -1686,5 +1709,1038 @@ func TestHasWordBoundary(t *testing.T) {
 		if got != tc.want {
 			t.Errorf("hasWordBoundary(%q, %q) = %v, want %v", tc.s, tc.word, got, tc.want)
 		}
+	}
+}
+
+func TestBuildStyleMapThemeFonts(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:docDefaults>
+    <w:rPrDefault><w:rPr>
+      <w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi" w:eastAsiaTheme="minorEastAsia" w:cstheme="minorBidi"/>
+      <w:sz w:val="22"/>
+      <w:color w:val="333333"/>
+    </w:rPr></w:rPrDefault>
+  </w:docDefaults>
+  <w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/></w:style>
+</w:styles>`
+	themeMap := map[string]string{"minorHAnsi": "Calibri", "minorEastAsia": "MS Mincho", "minorBidi": "Arial"}
+	m, _, def := buildStyleMap([]byte(styles), themeMap)
+	if def.Family != "Calibri" {
+		t.Errorf("expected default font Calibri from theme, got %q", def.Family)
+	}
+	if def.FontEA != "MS Mincho" {
+		t.Errorf("expected fontEA MS Mincho from theme, got %q", def.FontEA)
+	}
+	if def.FontCS != "Arial" {
+		t.Errorf("expected fontCS Arial from theme, got %q", def.FontCS)
+	}
+	if def.SizePt != 11 {
+		t.Errorf("expected size 11pt, got %v", def.SizePt)
+	}
+	if def.Color != "333333" {
+		t.Errorf("expected color 333333, got %q", def.Color)
+	}
+	if _, ok := m["Normal"]; !ok {
+		t.Error("expected Normal style in map")
+	}
+}
+
+func TestBuildStyleMapHAnsiFallback(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:docDefaults>
+    <w:rPrDefault><w:rPr>
+      <w:rFonts w:hAnsi="Arial"/>
+    </w:rPr></w:rPrDefault>
+  </w:docDefaults>
+  <w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/></w:style>
+</w:styles>`
+	_, _, def := buildStyleMap([]byte(styles), nil)
+	if def.Family != "Arial" {
+		t.Errorf("expected Arial from HAnsi fallback, got %q", def.Family)
+	}
+}
+
+func TestBuildStyleMapStyleFontHAnsi(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Custom">
+    <w:name w:val="Custom"/>
+    <w:rPr><w:rFonts w:hAnsi="Verdana"/></w:rPr>
+  </w:style>
+</w:styles>`
+	m, _, _ := buildStyleMap([]byte(styles), nil)
+	sd := m["Custom"]
+	if sd.Family != "Verdana" {
+		t.Errorf("expected Verdana from HAnsi, got %q", sd.Family)
+	}
+}
+
+func TestBuildStyleMapStyleThemeFonts(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Themed">
+    <w:name w:val="Themed"/>
+    <w:rPr>
+      <w:rFonts w:asciiTheme="majorHAnsi" w:eastAsiaTheme="majorEastAsia" w:cstheme="majorBidi"/>
+      <w:szCs w:val="28"/>
+      <w:u w:val="single"/>
+      <w:strike/>
+      <w:smallCaps/>
+      <w:caps/>
+    </w:rPr>
+  </w:style>
+</w:styles>`
+	themeMap := map[string]string{"majorHAnsi": "Cambria", "majorEastAsia": "SimSun", "majorBidi": "Times New Roman"}
+	m, _, _ := buildStyleMap([]byte(styles), themeMap)
+	sd := m["Themed"]
+	if sd.Family != "Cambria" {
+		t.Errorf("expected Cambria from theme, got %q", sd.Family)
+	}
+	if sd.FontEA != "SimSun" {
+		t.Errorf("expected SimSun from EA theme, got %q", sd.FontEA)
+	}
+	if sd.FontCS != "Times New Roman" {
+		t.Errorf("expected Times New Roman from CS theme, got %q", sd.FontCS)
+	}
+	if sd.SizeCS != 14 {
+		t.Errorf("expected sizeCS 14, got %v", sd.SizeCS)
+	}
+	if !sd.Strikethrough {
+		t.Error("expected strikethrough")
+	}
+	if !sd.SmallCaps {
+		t.Error("expected smallCaps")
+	}
+	if !sd.Uppercase {
+		t.Error("expected uppercase")
+	}
+	if sd.Underline != "single" {
+		t.Errorf("expected underline single, got %q", sd.Underline)
+	}
+}
+
+func TestBuildStyleMapParaProps(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Full">
+    <w:name w:val="Full"/>
+    <w:pPr>
+      <w:outlineLvl w:val="2"/>
+      <w:jc w:val="center"/>
+      <w:spacing w:before="200" w:after="100" w:line="480" w:lineRule="auto"/>
+      <w:ind w:left="720" w:right="360" w:firstLine="480" w:hanging="240"/>
+      <w:tabs>
+        <w:tab w:val="right" w:pos="7200" w:leader="dot"/>
+        <w:tab w:pos="3600"/>
+      </w:tabs>
+    </w:pPr>
+  </w:style>
+</w:styles>`
+	m, _, _ := buildStyleMap([]byte(styles), nil)
+	sd := m["Full"]
+	if sd.HeadingLevel != 3 {
+		t.Errorf("expected HeadingLevel 3 (outlineLvl+1), got %d", sd.HeadingLevel)
+	}
+	if sd.Align != "center" {
+		t.Errorf("expected align center, got %q", sd.Align)
+	}
+	if sd.SpacingBefore != 10 {
+		t.Errorf("expected spacingBefore 10, got %v", sd.SpacingBefore)
+	}
+	if sd.SpacingAfter != 5 {
+		t.Errorf("expected spacingAfter 5, got %v", sd.SpacingAfter)
+	}
+	if sd.LineSpacing != 2 {
+		t.Errorf("expected lineSpacing 2 (480/240), got %v", sd.LineSpacing)
+	}
+	if sd.LineRule != "auto" {
+		t.Errorf("expected lineRule auto, got %q", sd.LineRule)
+	}
+	if sd.IndentLeft != 0.5 {
+		t.Errorf("expected indentLeft 0.5, got %v", sd.IndentLeft)
+	}
+	if sd.IndentRight != 0.25 {
+		t.Errorf("expected indentRight 0.25, got %v", sd.IndentRight)
+	}
+	if len(sd.Tabs) != 2 {
+		t.Fatalf("expected 2 tabs, got %d", len(sd.Tabs))
+	}
+	if sd.Tabs[0].Align != "right" || sd.Tabs[0].Leader != "dot" {
+		t.Errorf("expected tab right+dot, got align=%s leader=%s", sd.Tabs[0].Align, sd.Tabs[0].Leader)
+	}
+	if sd.Tabs[1].Align != "left" || sd.Tabs[1].Leader != "none" {
+		t.Errorf("expected tab left+none default, got align=%s leader=%s", sd.Tabs[1].Align, sd.Tabs[1].Leader)
+	}
+}
+
+func TestBuildStyleMapLineRuleExact(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Exact">
+    <w:name w:val="Exact"/>
+    <w:pPr><w:spacing w:line="360" w:lineRule="exact"/></w:pPr>
+  </w:style>
+</w:styles>`
+	m, _, _ := buildStyleMap([]byte(styles), nil)
+	sd := m["Exact"]
+	if sd.LineRule != "exact" {
+		t.Errorf("expected lineRule exact, got %q", sd.LineRule)
+	}
+	if sd.LineSpacing != 18 {
+		t.Errorf("expected lineSpacing 18 (360/20), got %v", sd.LineSpacing)
+	}
+}
+
+func TestBuildStyleMapTableProps(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="table" w:styleId="TblStyle">
+    <w:name w:val="TblStyle"/>
+    <w:tblPr>
+      <w:tblBorders><w:top w:val="single" w:sz="8" w:space="0" w:color="FF0000"/></w:tblBorders>
+      <w:tblCellSpacing w:w="144"/>
+      <w:tblW w:w="5000" w:type="dxa"/>
+    </w:tblPr>
+  </w:style>
+</w:styles>`
+	m, _, _ := buildStyleMap([]byte(styles), nil)
+	sd := m["TblStyle"]
+	if sd.BorderWidth <= 0 {
+		t.Errorf("expected borderWidth > 0, got %v", sd.BorderWidth)
+	}
+	if sd.BorderColor != "FF0000" {
+		t.Errorf("expected borderColor FF0000, got %q", sd.BorderColor)
+	}
+	if sd.BorderStyle != "single" {
+		t.Errorf("expected borderStyle single, got %q", sd.BorderStyle)
+	}
+	if sd.CellSpacing <= 0 {
+		t.Errorf("expected cellSpacing > 0, got %v", sd.CellSpacing)
+	}
+	if sd.Width <= 0 {
+		t.Errorf("expected width > 0, got %v", sd.Width)
+	}
+}
+
+func TestBuildStyleMapBasedOn(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Parent"><w:name w:val="Parent"/></w:style>
+  <w:style w:type="paragraph" w:styleId="Child">
+    <w:name w:val="Child"/>
+    <w:basedOn w:val="Parent"/>
+  </w:style>
+</w:styles>`
+	m, _, _ := buildStyleMap([]byte(styles), nil)
+	sd := m["Child"]
+	if sd.BasedOn != "Parent" {
+		t.Errorf("expected basedOn Parent, got %q", sd.BasedOn)
+	}
+}
+
+func TestBuildStyleMapInvalidXML(t *testing.T) {
+	_, _, def := buildStyleMap([]byte("not xml at all"), nil)
+	if def.Family != "Times New Roman" {
+		t.Errorf("expected default fallback font, got %q", def.Family)
+	}
+}
+
+func TestBuildStyleMapNoRPr(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:docDefaults>
+    <w:rPrDefault><w:rPr/></w:rPrDefault>
+  </w:docDefaults>
+  <w:style w:type="paragraph" w:styleId="Plain"><w:name w:val="Plain"/></w:style>
+</w:styles>`
+	m, _, def := buildStyleMap([]byte(styles), nil)
+	if def.Family != "Times New Roman" {
+		t.Errorf("expected default font, got %q", def.Family)
+	}
+	sd := m["Plain"]
+	if sd.Name != "Plain" {
+		t.Errorf("expected name Plain, got %q", sd.Name)
+	}
+}
+
+func TestInferHeadingLevel(t *testing.T) {
+	tests := []struct {
+		id    string
+		level int
+	}{
+		{"Heading1", 1}, {"Heading5", 5}, {"Heading9", 9},
+		{"heading3", 3}, {"Title", 1}, {"Normal", 0},
+		{"Heading0", 0}, {"Heading10", 0}, {"Heading", 1},
+	}
+	for _, tc := range tests {
+		got := inferHeadingLevel(tc.id)
+		if got != tc.level {
+			t.Errorf("inferHeadingLevel(%q) = %d, want %d", tc.id, got, tc.level)
+		}
+	}
+}
+
+func TestProcessDOCXFileNonexistent(t *testing.T) {
+	_, err := ProcessDOCXFile("/nonexistent/file.docx")
+	if err == nil {
+		t.Error("expected error for nonexistent file")
+	}
+}
+
+func TestProcessDOCXFileModeNonexistent(t *testing.T) {
+	_, err := ProcessDOCXFileMode("/nonexistent/file.docx", "lossless")
+	if err == nil {
+		t.Error("expected error for nonexistent file")
+	}
+}
+
+func TestExtractThemeValid(t *testing.T) {
+	themeXML := []byte(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Test">
+  <a:themeElements>
+    <a:fontScheme name="Test">
+      <a:majorFont>
+        <a:latin typeface="Cambria"/>
+        <a:ea typeface="SimSun"/>
+        <a:cs typeface="Times New Roman"/>
+      </a:majorFont>
+      <a:minorFont>
+        <a:latin typeface="Calibri"/>
+        <a:ea typeface="MS Mincho"/>
+        <a:cs typeface="Arial"/>
+      </a:minorFont>
+    </a:fontScheme>
+    <a:clrScheme name="Test">
+      <a:dk1><a:srgbClr val="000000"/></a:dk1>
+      <a:lt1><a:srgbClr val="FFFFFF"/></a:lt1>
+      <a:dk2><a:srgbClr val="44546A"/></a:dk2>
+      <a:lt2><a:srgbClr val="E7E6E6"/></a:lt2>
+      <a:accent1><a:srgbClr val="4472C4"/></a:accent1>
+      <a:accent2><a:srgbClr val="ED7D31"/></a:accent2>
+      <a:accent3><a:srgbClr val="A5A5A5"/></a:accent3>
+      <a:accent4><a:srgbClr val="FFC000"/></a:accent4>
+      <a:accent5><a:srgbClr val="5B9BD5"/></a:accent5>
+      <a:accent6><a:srgbClr val="70AD47"/></a:accent6>
+      <a:hlink><a:srgbClr val="0563C1"/></a:hlink>
+      <a:folHlink><a:srgbClr val="954F72"/></a:folHlink>
+    </a:clrScheme>
+  </a:themeElements>
+</a:theme>`)
+	td := extractTheme(themeXML)
+	if td == nil {
+		t.Fatal("expected non-nil theme data")
+	}
+	if td.Font != "Calibri" {
+		t.Errorf("expected Font Calibri, got %q", td.Font)
+	}
+	if td.FontEA != "MS Mincho" {
+		t.Errorf("expected FontEA MS Mincho, got %q", td.FontEA)
+	}
+	if td.FontCS != "Arial" {
+		t.Errorf("expected FontCS Arial, got %q", td.FontCS)
+	}
+	if td.Fg != "000000" {
+		t.Errorf("expected Fg 000000, got %q", td.Fg)
+	}
+	if td.Bg != "FFFFFF" {
+		t.Errorf("expected Bg FFFFFFF, got %q", td.Bg)
+	}
+	if td.FontMap["minorHAnsi"] != "Calibri" {
+		t.Errorf("expected minorHAnsi Calibri, got %q", td.FontMap["minorHAnsi"])
+	}
+	if td.FontMap["minorEastAsia"] != "MS Mincho" {
+		t.Errorf("expected minorEastAsia MS Mincho, got %q", td.FontMap["minorEastAsia"])
+	}
+	if td.FontMap["minorBidi"] != "Arial" {
+		t.Errorf("expected minorBidi Arial, got %q", td.FontMap["minorBidi"])
+	}
+	if td.FontMap["majorHAnsi"] != "Cambria" {
+		t.Errorf("expected majorHAnsi Cambria, got %q", td.FontMap["majorHAnsi"])
+	}
+	if td.FontMap["majorEastAsia"] != "SimSun" {
+		t.Errorf("expected majorEastAsia SimSun, got %q", td.FontMap["majorEastAsia"])
+	}
+	if td.FontMap["majorBidi"] != "Times New Roman" {
+		t.Errorf("expected majorBidi Times New Roman, got %q", td.FontMap["majorBidi"])
+	}
+}
+
+func TestExtractThemeInvalid(t *testing.T) {
+	td := extractTheme([]byte("not xml"))
+	if td != nil {
+		t.Error("expected nil for invalid theme XML")
+	}
+}
+
+func TestExtractThemeEmptyFont(t *testing.T) {
+	themeXML := []byte(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Test">
+  <a:themeElements>
+    <a:fontScheme name="Test">
+      <a:majorFont><a:latin typeface=""/></a:majorFont>
+      <a:minorFont><a:latin typeface=""/></a:minorFont>
+    </a:fontScheme>
+    <a:clrScheme name="Test">
+      <a:dk1><a:srgbClr val="000000"/></a:dk1>
+      <a:lt1><a:srgbClr val="FFFFFF"/></a:lt1>
+      <a:dk2><a:srgbClr val="44546A"/></a:dk2>
+      <a:lt2><a:srgbClr val="E7E6E6"/></a:lt2>
+      <a:accent1><a:srgbClr val="4472C4"/></a:accent1>
+      <a:accent2><a:srgbClr val="ED7D31"/></a:accent2>
+      <a:accent3><a:srgbClr val="A5A5A5"/></a:accent3>
+      <a:accent4><a:srgbClr val="FFC000"/></a:accent4>
+      <a:accent5><a:srgbClr val="5B9BD5"/></a:accent5>
+      <a:accent6><a:srgbClr val="70AD47"/></a:accent6>
+      <a:hlink><a:srgbClr val="0563C1"/></a:hlink>
+      <a:folHlink><a:srgbClr val="954F72"/></a:folHlink>
+    </a:clrScheme>
+  </a:themeElements>
+</a:theme>`)
+	td := extractTheme(themeXML)
+	if td == nil {
+		t.Fatal("expected non-nil theme data from colors")
+	}
+	if td.Fg != "000000" {
+		t.Errorf("expected Fg, got %q", td.Fg)
+	}
+}
+
+func TestExtractHyperlinkURL(t *testing.T) {
+	tests := []struct {
+		input string
+		url   string
+		ok    bool
+	}{
+		{`HYPERLINK "https://example.com"`, "https://example.com", true},
+		{`HYPERLINK https://example.com`, "https://example.com", true},
+		{`HYPERLINK "mailto:test@test.com"`, "mailto:test@test.com", true},
+		{`PAGE`, "", false},
+		{``, "", false},
+	}
+	for _, tc := range tests {
+		url, ok := extractHyperlinkURL(tc.input)
+		if ok != tc.ok || url != tc.url {
+			t.Errorf("extractHyperlinkURL(%q) = (%q, %v), want (%q, %v)", tc.input, url, ok, tc.url, tc.ok)
+		}
+	}
+}
+
+func TestFormatBorderStyle(t *testing.T) {
+	tests := []struct {
+		input string
+		output string
+	}{
+		{"single", "s"}, {"double", "d"}, {"dashed", "ds"}, {"dotted", "dt"}, {"none", "n"},
+		{"thick", "s"}, {"unknown", "s"},
+	}
+	for _, tc := range tests {
+		got := formatBorderStyle(tc.input)
+		if got != tc.output {
+			t.Errorf("formatBorderStyle(%q) = %q, want %q", tc.input, got, tc.output)
+		}
+	}
+}
+
+func TestResolveHeadingLevel(t *testing.T) {
+	sm := map[string]StyleDef{
+		"Normal":   {HeadingLevel: 0},
+		"Heading1": {HeadingLevel: 1},
+		"Quote":    {HeadingLevel: 0},
+	}
+	tests := []struct {
+		styleID string
+		level   int
+	}{
+		{"Heading1", 1},
+		{"Normal", 0},
+		{"Quote", 0},
+		{"UnknownStyle", 0},
+		{"", 0},
+	}
+	for _, tc := range tests {
+		got := resolveHeadingLevel(tc.styleID, tc.styleID, sm)
+		if got != tc.level {
+			t.Errorf("resolveHeadingLevel(%q) = %d, want %d", tc.styleID, got, tc.level)
+		}
+	}
+}
+
+func TestListStartOverride(t *testing.T) {
+	numbering := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:abstractNum w:abstractNumId="0">
+    <w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/></w:lvl>
+  </w:abstractNum>
+  <w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>
+  <w:num w:numId="2">
+    <w:abstractNumId w:val="0"/>
+    <w:lvlOverride w:ilvl="0"><w:startOverride w:val="5"/></w:lvlOverride>
+  </w:num>
+</w:numbering>`
+	body := xmlHeader + `<w:body>
+  <w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="2"/></w:numPr></w:pPr><w:r><w:t>Restart at 5</w:t></w:r></w:p>
+  <w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="2"/></w:numPr></w:pPr><w:r><w:t>Continue</w:t></w:r></w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", numbering, "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `start="5"`) {
+		t.Errorf("expected start=\"5\", got: %s", doc.WordsXML)
+	}
+}
+
+func TestParagraphLineSpacingExact(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Spacing">
+    <w:name w:val="Spacing"/>
+    <w:pPr><w:spacing w:line="360" w:lineRule="exact"/></w:pPr>
+  </w:style>
+</w:styles>`
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:pStyle w:val="Spacing"/></w:pPr>
+    <w:r><w:t>Exact spacing</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, styles, "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, "lineSpacing") {
+		t.Errorf("expected lineSpacing in output, got: %s", x)
+	}
+	if !strings.Contains(x, "lineRule") {
+		t.Errorf("expected lineRule in output, got: %s", x)
+	}
+}
+
+func TestParagraphAlignBoth(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Justified">
+    <w:name w:val="Justified"/>
+    <w:pPr><w:jc w:val="both"/></w:pPr>
+  </w:style>
+</w:styles>`
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:pStyle w:val="Justified"/></w:pPr>
+    <w:r><w:t>Justified</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, styles, "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `alignment="both"`) {
+		t.Errorf("expected alignment=\"both\" in custom style, got: %s", x)
+	}
+}
+
+func TestParagraphIndent(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Indented">
+    <w:name w:val="Indented"/>
+    <w:pPr><w:ind w:left="720" w:right="360" w:firstLine="480" w:hanging="240"/></w:pPr>
+  </w:style>
+</w:styles>`
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:pStyle w:val="Indented"/></w:pPr>
+    <w:r><w:t>Indented</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, styles, "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, "indentLeft") {
+		t.Errorf("expected indentLeft in custom style, got: %s", x)
+	}
+	if !strings.Contains(x, "indentRight") {
+		t.Errorf("expected indentRight in custom style, got: %s", x)
+	}
+}
+
+func TestSuperscriptSubscript(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:r><w:rPr><w:vertAlign w:val="superscript"/></w:rPr><w:t>sup</w:t></w:r>
+    <w:r><w:rPr><w:vertAlign w:val="subscript"/></w:rPr><w:t>sub</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, "<sup>") {
+		t.Errorf("expected <sup>, got: %s", doc.WordsXML)
+	}
+	if !strings.Contains(doc.WordsXML, "<sub>") {
+		t.Errorf("expected <sub>, got: %s", doc.WordsXML)
+	}
+}
+
+func TestParagraphLang(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial"/></w:rPr><w:lang w:val="en-US"/></w:pPr>
+    <w:r><w:t>English</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `lang="en-US"`) {
+		t.Errorf("expected lang attr, got: %s", doc.WordsXML)
+	}
+}
+
+func TestTableWidthAndIndent(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:tbl>
+    <w:tblPr>
+      <w:tblW w:w="5000" w:type="dxa"/>
+      <w:tblInd w:w="360"/>
+      <w:tblCellSpacing w:w="144"/>
+    </w:tblPr>
+    <w:tblGrid><w:gridCol w:w="5000"/></w:tblGrid>
+    <w:tr><w:tc><w:p><w:r><w:t>Data</w:t></w:r></w:p></w:tc></w:tr>
+  </w:tbl>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, "width=") {
+		t.Errorf("expected width attr, got: %s", x)
+	}
+	if !strings.Contains(x, "indent=") {
+		t.Errorf("expected indent attr, got: %s", x)
+	}
+	if !strings.Contains(x, "cellSpacing=") {
+		t.Errorf("expected cellSpacing attr, got: %s", x)
+	}
+}
+
+func TestRTLDir(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:bidi/></w:pPr>
+    <w:r><w:t>RTL text</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `dir="rtl"`) {
+		t.Errorf("expected dir=\"rtl\", got: %s", doc.WordsXML)
+	}
+}
+
+func TestComment(t *testing.T) {
+	comments := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:comments xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:comment w:id="0" w:author="John" w:date="2024-01-01T00:00:00Z">
+    <w:p><w:r><w:t>This is a comment</w:t></w:r></w:p>
+  </w:comment>
+</w:comments>`
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:r><w:t>Text</w:t></w:r>
+    <w:r><w:commentReference w:id="0"/></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithComments(body, comments)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `<comment id="0" author="John"`) {
+		t.Errorf("expected comment in notes, got: %s", doc.WordsXML)
+	}
+}
+
+func TestTrackedChangesSemantic(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:ins w:id="1" w:author="Author" w:date="2024-01-01T00:00:00Z">
+      <w:r><w:t>inserted text</w:t></w:r>
+    </w:ins>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytesMode(data, "semantic")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if strings.Contains(doc.WordsXML, "<ins>") {
+		t.Errorf("expected no <ins> in semantic mode, got: %s", doc.WordsXML)
+	}
+}
+
+func TestTrackedChangesLossless2(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:r><w:t>inserted text</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytesMode(data, "lossless")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, "mode=\"lossless\"") {
+		t.Errorf("expected lossless mode, got: %s", doc.WordsXML)
+	}
+}
+
+func TestImageWidthHeight(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:r>
+      <w:pict>
+        <v:shape type="#_x0000_t75" style="width:100pt;height:50pt">
+          <v:imagedata r:id="rId1"/>
+        </v:shape>
+      </w:pict>
+    </w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, "<img") {
+		t.Errorf("expected <img>, got: %s", doc.WordsXML)
+	}
+}
+
+func TestNestedTableIDs(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:tbl>
+    <w:tblGrid><w:gridCol w:w="5000"/></w:tblGrid>
+    <w:tr><w:tc>
+      <w:tbl>
+        <w:tblGrid><w:gridCol w:w="3000"/></w:tblGrid>
+        <w:tr><w:tc><w:p><w:r><w:t>Nested</w:t></w:r></w:p></w:tc></w:tr>
+      </w:tbl>
+    </w:tc></w:tr>
+  </w:tbl>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `id="1"`) {
+		t.Errorf("expected outer table id=1, got: %s", doc.WordsXML)
+	}
+	if !strings.Contains(doc.WordsXML, `id="2"`) {
+		t.Errorf("expected nested table id=2, got: %s", doc.WordsXML)
+	}
+}
+
+func TestSdtUnwrap(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:sdt>
+    <w:sdtContent>
+      <w:p><w:r><w:t>SDT content</w:t></w:r></w:p>
+    </w:sdtContent>
+  </w:sdt>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, "SDT content") {
+		t.Errorf("expected SDT content, got: %s", doc.WordsXML)
+	}
+	if strings.Contains(doc.WordsXML, "<sdt>") || strings.Contains(doc.WordsXML, "<sdt>") {
+		t.Errorf("expected no <sdt> in output, got: %s", doc.WordsXML)
+	}
+}
+
+func TestEmitStyleBlockNormalIndent(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Normal" w:default="1">
+    <w:name w:val="Normal"/>
+    <w:pPr>
+      <w:ind w:left="720" w:right="360" w:firstLine="480" w:hanging="240"/>
+      <w:jc w:val="both"/>
+      <w:spacing w:before="200" w:after="100" w:line="480" w:lineRule="auto"/>
+    </w:pPr>
+  </w:style>
+</w:styles>`
+	body := xmlHeader + `<w:body><w:p><w:r><w:t>x</w:t></w:r></w:p></w:body></w:document>`
+	data := makeDocxWithParts(body, styles, "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `<s:indent el="p"`) {
+		t.Errorf("expected s:indent, got: %s", x)
+	}
+	if !strings.Contains(x, `<s:align`) || !strings.Contains(x, `value="both"`) {
+		t.Errorf("expected s:align value=both, got: %s", x)
+	}
+	if !strings.Contains(x, `<s:line el="p"`) {
+		t.Errorf("expected s:line, got: %s", x)
+	}
+	if !strings.Contains(x, `<s:gap el="p"`) {
+		t.Errorf("expected s:gap, got: %s", x)
+	}
+}
+
+func TestEmitStyleBlockHeadingIndent(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Heading1">
+    <w:name w:val="heading 1"/>
+    <w:pPr>
+      <w:ind w:left="360"/>
+      <w:jc w:val="center"/>
+      <w:spacing w:before="400" w:after="200" w:line="360" w:lineRule="exact"/>
+      <w:outlineLvl w:val="0"/>
+    </w:pPr>
+  </w:style>
+</w:styles>`
+	body := xmlHeader + `<w:body>
+  <w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>Title</w:t></w:r></w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, styles, "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `<s:indent`) || !strings.Contains(x, `c="Heading1"`) {
+		t.Errorf("expected heading indent, got: %s", x)
+	}
+	if !strings.Contains(x, `<s:align`) || !strings.Contains(x, `c="Heading1"`) {
+		t.Errorf("expected heading align, got: %s", x)
+	}
+	if !strings.Contains(x, `<s:line`) || !strings.Contains(x, `c="Heading1"`) {
+		t.Errorf("expected heading line, got: %s", x)
+	}
+	if !strings.Contains(x, `<s:gap`) || !strings.Contains(x, `c="Heading1"`) {
+		t.Errorf("expected heading gap, got: %s", x)
+	}
+}
+
+func TestRunThemeFonts(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/>
+    <w:rPr><w:rFonts w:asciiTheme="minorHAnsi" w:hAnsiTheme="minorHAnsi"/></w:rPr>
+  </w:style>
+</w:styles>`
+	themeXML := []byte(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="Test">
+  <a:themeElements>
+    <a:fontScheme name="Test">
+      <a:minorFont><a:latin typeface="Calibri"/></a:minorFont>
+      <a:majorFont><a:latin typeface="Cambria"/></a:majorFont>
+    </a:fontScheme>
+    <a:clrScheme name="Test">
+      <a:dk1><a:srgbClr val="000000"/></a:dk1>
+      <a:lt1><a:srgbClr val="FFFFFF"/></a:lt1>
+      <a:dk2><a:srgbClr val="44546A"/></a:dk2>
+      <a:lt2><a:srgbClr val="E7E6E6"/></a:lt2>
+      <a:accent1><a:srgbClr val="4472C4"/></a:accent1>
+      <a:accent2><a:srgbClr val="ED7D31"/></a:accent2>
+      <a:accent3><a:srgbClr val="A5A5A5"/></a:accent3>
+      <a:accent4><a:srgbClr val="FFC000"/></a:accent4>
+      <a:accent5><a:srgbClr val="5B9BD5"/></a:accent5>
+      <a:accent6><a:srgbClr val="70AD47"/></a:accent6>
+      <a:hlink><a:srgbClr val="0563C1"/></a:hlink>
+      <a:folHlink><a:srgbClr val="954F72"/></a:folHlink>
+    </a:clrScheme>
+  </a:themeElements>
+</a:theme>`)
+	body := xmlHeader + `<w:body><w:p><w:r><w:t>Text</w:t></w:r></w:p></w:body></w:document>`
+
+	var buf bytes.Buffer
+	w := zip.NewWriter(&buf)
+	f1, _ := w.Create("word/document.xml")
+	f1.Write([]byte(body))
+	f2, _ := w.Create("word/styles.xml")
+	f2.Write([]byte(styles))
+	f3, _ := w.Create("word/theme/theme1.xml")
+	f3.Write(themeXML)
+	w.Close()
+	data := buf.Bytes()
+
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `<s:theme font="Calibri"`) {
+		t.Errorf("expected theme font, got: %s", doc.WordsXML)
+	}
+}
+
+func TestRunThemeFontOnRun(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Normal"><w:name w:val="Normal"/></w:style>
+</w:styles>`
+	body := xmlHeader + `<w:body><w:p><w:r><w:rPr><w:rFonts w:asciiTheme="majorHAnsi" w:hAnsiTheme="majorHAnsi"/></w:rPr><w:t>Themed</w:t></w:r></w:p></w:body></w:document>`
+
+	var buf bytes.Buffer
+	w := zip.NewWriter(&buf)
+	f1, _ := w.Create("word/document.xml")
+	f1.Write([]byte(body))
+	f2, _ := w.Create("word/styles.xml")
+	f2.Write([]byte(styles))
+	themeXML := []byte(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="T">
+  <a:themeElements>
+    <a:fontScheme name="T">
+      <a:majorFont><a:latin typeface="Cambria"/></a:majorFont>
+      <a:minorFont><a:latin typeface="Calibri"/></a:minorFont>
+    </a:fontScheme>
+    <a:clrScheme name="T">
+      <a:dk1><a:srgbClr val="000000"/></a:dk1><a:lt1><a:srgbClr val="FFFFFF"/></a:lt1>
+      <a:dk2><a:srgbClr val="44546A"/></a:dk2><a:lt2><a:srgbClr val="E7E6E6"/></a:lt2>
+      <a:accent1><a:srgbClr val="4472C4"/></a:accent1><a:accent2><a:srgbClr val="ED7D31"/></a:accent2>
+      <a:accent3><a:srgbClr val="A5A5A5"/></a:accent3><a:accent4><a:srgbClr val="FFC000"/></a:accent4>
+      <a:accent5><a:srgbClr val="5B9BD5"/></a:accent5><a:accent6><a:srgbClr val="70AD47"/></a:accent6>
+      <a:hlink><a:srgbClr val="0563C1"/></a:hlink><a:folHlink><a:srgbClr val="954F72"/></a:folHlink>
+    </a:clrScheme>
+  </a:themeElements>
+</a:theme>`)
+	f3, _ := w.Create("word/theme/theme1.xml")
+	f3.Write(themeXML)
+	w.Close()
+	data := buf.Bytes()
+
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `font="Cambria"`) {
+		t.Errorf("expected Cambria from theme on run, got: %s", doc.WordsXML)
+	}
+}
+
+func TestRunDirectionRTL(t *testing.T) {
+	body := xmlHeader + `<w:body><w:p><w:r><w:rPr><w:rtl/></w:rPr><w:t>RTL</w:t></w:r></w:p></w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `dir="rtl"`) {
+		t.Errorf("expected dir=rtl on run, got: %s", doc.WordsXML)
+	}
+}
+
+func TestHighlightOnRun(t *testing.T) {
+	body := xmlHeader + `<w:body><w:p><w:r><w:rPr><w:highlight w:val="yellow"/></w:rPr><w:t>highlighted</w:t></w:r></w:p></w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `highlight="yellow"`) {
+		t.Errorf("expected highlight, got: %s", doc.WordsXML)
+	}
+}
+
+func TestColorOnRun(t *testing.T) {
+	body := xmlHeader + `<w:body><w:p><w:r><w:rPr><w:color w:val="FF0000"/></w:rPr><w:t>red</w:t></w:r></w:p></w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `color="FF0000"`) {
+		t.Errorf("expected color, got: %s", doc.WordsXML)
+	}
+}
+
+func TestSizeOnRun(t *testing.T) {
+	body := xmlHeader + `<w:body><w:p><w:r><w:rPr><w:sz w:val="24"/><w:szCs w:val="28"/></w:rPr><w:t>sized</w:t></w:r></w:p></w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `size="12"`) {
+		t.Errorf("expected size, got: %s", doc.WordsXML)
+	}
+	if !strings.Contains(doc.WordsXML, `sizeCS="14"`) {
+		t.Errorf("expected sizeCS, got: %s", doc.WordsXML)
+	}
+}
+
+func TestFontOnRun(t *testing.T) {
+	body := xmlHeader + `<w:body><w:p><w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:eastAsia="MS Gothic" w:cs="Arial"/></w:rPr><w:t>fonted</w:t></w:r></w:p></w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `font="Arial"`) {
+		t.Errorf("expected font, got: %s", x)
+	}
+	if !strings.Contains(x, `fontEA="MS Gothic"`) {
+		t.Errorf("expected fontEA, got: %s", x)
+	}
+	if !strings.Contains(x, `fontCS="Arial"`) {
+		t.Errorf("expected fontCS, got: %s", x)
+	}
+}
+
+func TestEmptySortedKeys(t *testing.T) {
+	m := map[string][]ContentItem{}
+	keys := sortedKeys(m)
+	if len(keys) != 0 {
+		t.Errorf("expected empty keys, got %d", len(keys))
+	}
+}
+
+func TestSortedKeysMultiple(t *testing.T) {
+	m := map[string][]ContentItem{"c": nil, "a": nil, "b": nil}
+	keys := sortedKeys(m)
+	if len(keys) != 3 || keys[0] != "a" || keys[1] != "b" || keys[2] != "c" {
+		t.Errorf("expected [a b c], got %v", keys)
+	}
+}
+
+func TestParseParagraphTextAlign(t *testing.T) {
+	body := xmlHeader + `<w:body><w:p><w:pPr><w:textAlignment w:val="center"/></w:pPr><w:r><w:t>x</w:t></w:r></w:p></w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `valign="center"`) {
+		t.Errorf("expected valign, got: %s", doc.WordsXML)
 	}
 }
