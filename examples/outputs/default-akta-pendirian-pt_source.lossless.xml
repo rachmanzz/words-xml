@@ -17,13 +17,13 @@
     <s:tab el="p" pos="0.69" align="left" leader="none"/>
     <s:tab el="p" pos="0.20" align="left" leader="none"/>
     <s:tab el="p" pos="0.30" align="left" leader="none"/>
-    <s:custom name="Normal Table" type="table"/>
-    <s:custom name="No List" type="numbering"/>
     <s:custom name="Body Text" type="paragraph" basedOn="Normal" font="Courier New" alignment="both" lineSpacing="24.00" lineRule="exact"/>
+    <s:custom name="Body Text Indent" type="paragraph" basedOn="Normal" font="Courier New" alignment="both" lineSpacing="24.00" lineRule="exact" indentLeft="0.32" indentHanging="0.32"/>
     <s:custom name="Body Text Indent 2" type="paragraph" basedOn="Normal" font="Courier New" alignment="both" lineSpacing="24.00" lineRule="exact" indentLeft="0.32"/>
     <s:custom name="Body Text Indent 3" type="paragraph" basedOn="Normal" font="Courier New" alignment="both" lineSpacing="24.00" lineRule="exact" indentLeft="0.63" indentHanging="0.63"/>
     <s:custom name="Heading 1 Char" type="character" font="Courier New" size="12" sizeCS="12"/>
-    <s:custom name="Body Text Indent" type="paragraph" basedOn="Normal" font="Courier New" alignment="both" lineSpacing="24.00" lineRule="exact" indentLeft="0.32" indentHanging="0.32"/>
+    <s:custom name="No List" type="numbering"/>
+    <s:custom name="Normal Table" type="table"/>
     <s:theme font="Aptos"/>
   </style>
   <write>

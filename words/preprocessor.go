@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -1531,7 +1532,7 @@ func formatForLLM(doc *ParsedDocument) string {
 	}
 	b.WriteString(fmt.Sprintf("<words xmlns=\"urn:words:v1\" xmlns:s=\"urn:words:v1:style\" version=\"1.0.1\" mode=\"%s\">\n", mode))
 
-	if doc.Meta.Title != "" || doc.Meta.Author != "" || doc.Meta.Created != "" || doc.Meta.Keywords != "" {
+	if doc.Meta.Title != "" || doc.Meta.Author != "" || doc.Meta.Created != "" || doc.Meta.Modified != "" || doc.Meta.Keywords != "" {
 		b.WriteString("  <meta>\n")
 		if doc.Meta.Title != "" {
 			b.WriteString(fmt.Sprintf("    <title>%s</title>\n", xmlEscape(doc.Meta.Title)))
@@ -1649,18 +1650,16 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 	}
 
 	for level := 1; level <= 9; level++ {
-		for _, sd := range doc.StyleMap {
-			if sd.HeadingLevel == level && (sd.SpacingBefore > 0 || sd.SpacingAfter > 0) {
-				fmt.Fprintf(b, "    <s:gap el=\"h\" c=\"Heading%d\"", level)
-				if sd.SpacingBefore > 0 {
-					fmt.Fprintf(b, " before=\"%.2f\"", sd.SpacingBefore)
-				}
-				if sd.SpacingAfter > 0 {
-					fmt.Fprintf(b, " after=\"%.2f\"", sd.SpacingAfter)
-				}
-				b.WriteString("/>\n")
-				break
+		headingName := fmt.Sprintf("Heading%d", level)
+		if sd, ok := doc.StyleMap[headingName]; ok && (sd.SpacingBefore > 0 || sd.SpacingAfter > 0) {
+			fmt.Fprintf(b, "    <s:gap el=\"h\" c=\"%s\"", headingName)
+			if sd.SpacingBefore > 0 {
+				fmt.Fprintf(b, " before=\"%.2f\"", sd.SpacingBefore)
 			}
+			if sd.SpacingAfter > 0 {
+				fmt.Fprintf(b, " after=\"%.2f\"", sd.SpacingAfter)
+			}
+			b.WriteString("/>\n")
 		}
 	}
 
@@ -1748,7 +1747,13 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 		"Hyperlink": true, "FootnoteText": true, "EndnoteText": true, "FootnoteReference": true,
 		"EndnoteReference": true, "CommentText": true, "Header": true, "Footer": true,
 	}
-	for id, sd := range doc.StyleMap {
+	ids := make([]string, 0, len(doc.StyleMap))
+	for id := range doc.StyleMap {
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	for _, id := range ids {
+		sd := doc.StyleMap[id]
 		if builtinIDs[id] {
 			continue
 		}
