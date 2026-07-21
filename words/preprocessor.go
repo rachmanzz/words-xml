@@ -2159,7 +2159,11 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 	for idx < len(doc.Content) {
 		item := doc.Content[idx]
 		if item.Type != "list" || item.Paragraph.NumID != numID {
-			break
+			if !hasSameNumIDAhead(doc.Content, idx, numID, startAbstractID) {
+				break
+			}
+			idx++
+			continue
 		}
 		if doc.NumToAbstract != nil && startAbstractID >= 0 {
 			itemAbstractID := doc.NumToAbstract[item.Paragraph.NumID]
@@ -2216,6 +2220,22 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 		break
 	}
 	return idx
+}
+
+func hasSameNumIDAhead(items []ContentItem, from int, numID int, abstractID int) bool {
+	for i := from; i < len(items); i++ {
+		item := items[i]
+		if item.Type == "list" && item.Paragraph.NumID == numID {
+			return true
+		}
+		if item.Type == "list" && item.Paragraph.NumID != numID {
+			return false
+		}
+		if i-from > 20 {
+			return false
+		}
+	}
+	return false
 }
 
 func listTagAndType(p *ParsedParagraph, doc *ParsedDocument) (string, string) {
