@@ -320,3 +320,39 @@ func TestVerifyWarnings(t *testing.T) {
 		t.Error("expected warnings for unknown elements")
 	}
 }
+
+func TestVerifyBreakClearValid(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<write><p><br type="clear"/></p></write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifyEnInvalid(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<notes><en id="1"><p>x</p></en></notes></words>`
+	r := Verify(input)
+	if r.Valid {
+		t.Error("expected invalid for <en> in notes")
+	}
+}
+
+func TestVerifyEnRefInvalid(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
+		`<write><p><en-ref id="1"/></p></write></words>`
+	r := Verify(input)
+	if !r.Valid {
+		t.Errorf("expected valid with warning, got errors: %v", r.Errors)
+	}
+	hasWarn := false
+	for _, w := range r.Warns {
+		if strings.Contains(w, "en-ref") {
+			hasWarn = true
+		}
+	}
+	if !hasWarn {
+		t.Error("expected warning for unknown <en-ref> element")
+	}
+}

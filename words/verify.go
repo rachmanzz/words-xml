@@ -280,7 +280,7 @@ func verifyBlockContent(tokens []xml.Token, r *VerifyResult, context string) {
 			verifyInlineAttrs(start, local, r)
 		case "a":
 			verifyAnchor(start, r)
-		case "fn-ref", "en-ref", "bm":
+		case "fn-ref", "bm":
 			// ok
 		case "span":
 			verifySpan(start, r)
@@ -354,31 +354,6 @@ func verifyTableAttrs(start xml.StartElement, r *VerifyResult) {
 				r.addError("<table> cellSpacing must be number, got %q", a.Value)
 			}
 		}
-	}
-}
-
-func verifyColSpec(start xml.StartElement, r *VerifyResult) {
-	hasRef := false
-	hasW := false
-	for _, a := range start.Attr {
-		if a.Name.Local == "ref" {
-			if _, err := strconv.Atoi(a.Value); err != nil {
-				r.addError("<colspec> ref must be integer, got %q", a.Value)
-			}
-			hasRef = true
-		}
-		if a.Name.Local == "w" {
-			if _, err := strconv.ParseFloat(a.Value, 64); err != nil {
-				r.addError("<colspec> w must be number, got %q", a.Value)
-			}
-			hasW = true
-		}
-	}
-	if !hasRef {
-		r.addError("<colspec> missing required ref attribute")
-	}
-	if !hasW {
-		r.addError("<colspec> missing required w attribute")
 	}
 }
 
@@ -555,7 +530,7 @@ func verifyBreak(start xml.StartElement, r *VerifyResult) {
 	for _, a := range start.Attr {
 		if a.Name.Local == "type" {
 			hasType = true
-			valid := map[string]bool{"page": true, "textWrapping": true, "column": true}
+			valid := map[string]bool{"page": true, "textWrapping": true, "column": true, "clear": true}
 			if !valid[a.Value] {
 				r.addError("<br> type must be page|textWrapping|column, got %q", a.Value)
 			}
@@ -595,7 +570,7 @@ func verifyInlineContent(tokens []xml.Token, r *VerifyResult, context string) {
 			verifyInlineElement(tokens, &start, r)
 		case "a":
 			verifyAnchor(start, r)
-		case "fn-ref", "en-ref", "bm":
+		case "fn-ref", "bm":
 			// ok
 		case "img":
 			verifyImg(start, r)
@@ -675,7 +650,7 @@ func verifyNotes(tokens []xml.Token, idx *int, r *VerifyResult) {
 		}
 		local := start.Name.Local
 		switch local {
-		case "fn", "en", "bm", "comment":
+		case "fn", "bm", "comment":
 			verifyNoteItem(start, section, &i, r)
 		default:
 			r.addWarn("unknown element <%s> inside <notes>", local)

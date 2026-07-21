@@ -23,6 +23,8 @@ type PageLayout struct {
 	MarginLeft   float64
 	HeaderMargin float64
 	FooterMargin float64
+	Cols         int
+	ColsSpace    float64
 }
 
 type ParsedDocument struct {
@@ -98,6 +100,7 @@ type StyleDef struct {
 	BorderStyle    string
 	CellSpacing    float64
 	Width          float64
+	Tabs           []ParsedTab
 }
 
 type ThemeData struct {
@@ -125,6 +128,8 @@ type ParsedParagraph struct {
 	Align        string
 	SpacingBefore float64
 	SpacingAfter  float64
+	LineSpacing   float64
+	LineRule      string
 	IndentLeft    float64
 	IndentRight   float64
 	IndentFirst   float64
@@ -221,6 +226,7 @@ type ParsedTableCell struct {
 	VAlign     string
 	TextDir    string
 	NoWrap     bool
+	Lang       string
 	Content    []ContentItem
 	BorderTop    *BorderInfo
 	BorderBottom *BorderInfo

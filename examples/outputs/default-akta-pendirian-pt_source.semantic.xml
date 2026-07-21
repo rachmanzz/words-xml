@@ -7,6 +7,7 @@
   </meta>
   <style unit="in">
     <s:page w="8.27" h="11.69" mt="0.71" mb="0.87" ml="2.44" mr="0.24" mh="0.50" mf="0.50"/>
+    <s:line el="p" c="Heading1" value="24.00" rule="exact"/>
     <s:tab el="p" pos="0.32" align="left" leader="none"/>
     <s:tab el="p" pos="0.63" align="left" leader="none"/>
     <s:tab el="p" pos="0.95" align="left" leader="none"/>
@@ -17,6 +18,8 @@
     <s:tab el="p" pos="0.69" align="left" leader="none"/>
     <s:tab el="p" pos="0.20" align="left" leader="none"/>
     <s:tab el="p" pos="0.30" align="left" leader="none"/>
+    <s:tab el="p" pos="5.51" align="right" leader="dot"/>
+    <s:tab el="h1" pos="5.51" align="left" leader="dot"/>
     <s:custom name="Body Text" type="paragraph" basedOn="Normal" font="Courier New" alignment="both" lineSpacing="24.00" lineRule="exact"/>
     <s:custom name="Body Text Indent" type="paragraph" basedOn="Normal" font="Courier New" alignment="both" lineSpacing="24.00" lineRule="exact" indentLeft="0.32" indentHanging="0.32"/>
     <s:custom name="Body Text Indent 2" type="paragraph" basedOn="Normal" font="Courier New" alignment="both" lineSpacing="24.00" lineRule="exact" indentLeft="0.32"/>

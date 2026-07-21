@@ -226,6 +226,10 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 				pl.HeaderMargin = float64(sec.PageMar.Header) / twipsPerInch
 				pl.FooterMargin = float64(sec.PageMar.Footer) / twipsPerInch
 			}
+			if sec.Cols != nil && sec.Cols.Num > 1 {
+				pl.Cols = sec.Cols.Num
+				pl.ColsSpace = float64(sec.Cols.Space) / twipsPerInch
+			}
 			doc.PageSections = append(doc.PageSections, pl)
 		}
 		last := body.Sections[len(body.Sections)-1]
@@ -544,6 +548,21 @@ func buildStyleMap(stylesXML []byte, themeFontMap map[string]string) (map[string
 				sd.IndentFirst = float64(s.ParaProps.Ind.FirstLine) / twipsPerInch
 				sd.IndentHanging = float64(s.ParaProps.Ind.Hanging) / twipsPerInch
 			}
+			if s.ParaProps.Tabs != nil {
+				for _, t := range s.ParaProps.Tabs.Tabs {
+					pt := ParsedTab{Pos: float64(t.Pos) / twipsPerInch}
+					if t.Val != "" {
+						pt.Align = t.Val
+					} else {
+						pt.Align = "left"
+					}
+					pt.Leader = t.Leader
+					if pt.Leader == "" {
+						pt.Leader = "none"
+					}
+					sd.Tabs = append(sd.Tabs, pt)
+				}
+			}
 		}
 		if s.TblPr != nil {
 			if s.TblPr.Borders != nil {
@@ -744,6 +763,15 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 		if p.PPr.Spacing != nil {
 			lp.SpacingBefore = float64(p.PPr.Spacing.Before) / 20.0
 			lp.SpacingAfter = float64(p.PPr.Spacing.After) / 20.0
+			if p.PPr.Spacing.Line > 0 {
+				switch p.PPr.Spacing.LineRule {
+				case "auto":
+					lp.LineSpacing = float64(p.PPr.Spacing.Line) / 240.0
+				default:
+					lp.LineSpacing = float64(p.PPr.Spacing.Line) / 20.0
+				}
+				lp.LineRule = p.PPr.Spacing.LineRule
+			}
 		}
 		if p.PPr.Ind != nil {
 			lp.IndentLeft = float64(p.PPr.Ind.Left) / twipsPerInch
@@ -1169,6 +1197,19 @@ func parseTable(tbl DocTbl, relMap map[string]string, styleMap map[string]StyleD
 				}
 			}
 			pc.Content = parseContentItems(cell.Paras, cell.Tables, cell.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
+			for _, ci := range pc.Content {
+				if ci.Type == "paragraph" && ci.Paragraph != nil {
+					for _, r := range ci.Paragraph.Runs {
+						if r.Lang != "" {
+							pc.Lang = r.Lang
+							break
+						}
+					}
+					if pc.Lang != "" {
+						break
+					}
+				}
+			}
 			pr.Cells = append(pr.Cells, pc)
 		}
 		t.Rows = append(t.Rows, pr)
@@ -1647,6 +1688,13 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 				sec.MarginTop, sec.MarginBottom, sec.MarginLeft, sec.MarginRight,
 				sec.HeaderMargin, sec.FooterMargin)
 		}
+		if sec.Cols > 1 {
+			fmt.Fprintf(b, "    <s:cols n=\"%d\"", sec.Cols)
+			if sec.ColsSpace > 0 {
+				fmt.Fprintf(b, " space=\"%.2f\"", sec.ColsSpace)
+			}
+			b.WriteString("/>\n")
+		}
 	}
 
 	for level := 1; level <= 9; level++ {
@@ -1703,12 +1751,37 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 		}
 	}
 
-	if doc.Cols > 1 {
-		fmt.Fprintf(b, "    <s:cols n=\"%d\"", doc.Cols)
-		if doc.ColsSpace > 0 {
-			fmt.Fprintf(b, " space=\"%.2f\"", doc.ColsSpace)
+	for level := 1; level <= 9; level++ {
+		headingName := fmt.Sprintf("Heading%d", level)
+		if sd, ok := doc.StyleMap[headingName]; ok {
+			if sd.IndentLeft > 0 || sd.IndentRight > 0 || sd.IndentFirst > 0 || sd.IndentHanging > 0 {
+				b.WriteString("    <s:indent el=\"p\"")
+				fmt.Fprintf(b, " c=\"%s\"", headingName)
+				if sd.IndentLeft > 0 {
+					fmt.Fprintf(b, " left=\"%.2f\"", sd.IndentLeft)
+				}
+				if sd.IndentRight > 0 {
+					fmt.Fprintf(b, " right=\"%.2f\"", sd.IndentRight)
+				}
+				if sd.IndentFirst > 0 {
+					fmt.Fprintf(b, " firstLine=\"%.2f\"", sd.IndentFirst)
+				}
+				if sd.IndentHanging > 0 {
+					fmt.Fprintf(b, " hanging=\"%.2f\"", sd.IndentHanging)
+				}
+				b.WriteString("/>\n")
+			}
+			if sd.Align != "" {
+				fmt.Fprintf(b, "    <s:align el=\"p\" c=\"%s\" value=\"%s\"/>\n", headingName, sd.Align)
+			}
+			if sd.LineSpacing > 0 {
+				fmt.Fprintf(b, "    <s:line el=\"p\" c=\"%s\" value=\"%.2f\"", headingName, sd.LineSpacing)
+				if sd.LineRule != "" {
+					fmt.Fprintf(b, " rule=\"%s\"", sd.LineRule)
+				}
+				b.WriteString("/>\n")
+			}
 		}
-		b.WriteString("/>\n")
 	}
 
 	for _, tbl := range doc.AllTables {
@@ -1718,24 +1791,33 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 	}
 
 	tabSeen := make(map[string]bool)
-	for _, item := range doc.Content {
-		if item.Type == "paragraph" && item.Paragraph != nil && len(item.Paragraph.Tabs) > 0 {
-			var el string
-			if item.Paragraph.HeadingLevel > 0 {
-				el = fmt.Sprintf("h%d", item.Paragraph.HeadingLevel)
-			} else {
-				el = "p"
-			}
-			for _, t := range item.Paragraph.Tabs {
-				key := fmt.Sprintf("%s_%.2f_%s_%s", el, t.Pos, t.Align, t.Leader)
-				if tabSeen[key] {
-					continue
+	emitTabs := func(items []ContentItem) {
+		for _, item := range items {
+			if item.Type == "paragraph" && item.Paragraph != nil && len(item.Paragraph.Tabs) > 0 {
+				var el string
+				if item.Paragraph.HeadingLevel > 0 {
+					el = fmt.Sprintf("h%d", item.Paragraph.HeadingLevel)
+				} else {
+					el = "p"
 				}
-				tabSeen[key] = true
-				fmt.Fprintf(b, "    <s:tab el=\"%s\" pos=\"%.2f\" align=\"%s\" leader=\"%s\"/>\n",
-					el, t.Pos, t.Align, t.Leader)
+				for _, t := range item.Paragraph.Tabs {
+					key := fmt.Sprintf("%s_%.2f_%s_%s", el, t.Pos, t.Align, t.Leader)
+					if tabSeen[key] {
+						continue
+					}
+					tabSeen[key] = true
+					fmt.Fprintf(b, "    <s:tab el=\"%s\" pos=\"%.2f\" align=\"%s\" leader=\"%s\"/>\n",
+						el, t.Pos, t.Align, t.Leader)
+				}
 			}
 		}
+	}
+	emitTabs(doc.Content)
+	for _, hdr := range doc.Headers {
+		emitTabs(hdr.Content)
+	}
+	for _, ftr := range doc.Footers {
+		emitTabs(ftr.Content)
 	}
 
 	builtinIDs := map[string]bool{
@@ -1752,6 +1834,24 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 		ids = append(ids, id)
 	}
 	sort.Strings(ids)
+	for _, id := range ids {
+		sd := doc.StyleMap[id]
+		for _, t := range sd.Tabs {
+			var el string
+			if sd.HeadingLevel > 0 {
+				el = fmt.Sprintf("h%d", sd.HeadingLevel)
+			} else {
+				el = "p"
+			}
+			key := fmt.Sprintf("%s_%.2f_%s_%s", el, t.Pos, t.Align, t.Leader)
+			if tabSeen[key] {
+				continue
+			}
+			tabSeen[key] = true
+			fmt.Fprintf(b, "    <s:tab el=\"%s\" pos=\"%.2f\" align=\"%s\" leader=\"%s\"/>\n",
+				el, t.Pos, t.Align, t.Leader)
+		}
+	}
 	for _, id := range ids {
 		sd := doc.StyleMap[id]
 		if builtinIDs[id] {
@@ -1906,6 +2006,7 @@ func emitListGroup(b *strings.Builder, start int, doc *ParsedDocument) int {
 }
 
 func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc *ParsedDocument) int {
+	startIdx := idx
 	startAbstractID := -1
 	if doc.NumToAbstract != nil {
 		startAbstractID = doc.NumToAbstract[numID]
@@ -1926,6 +2027,13 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 			break
 		}
 		if ilvl == level {
+			if doc.NumStartMap != nil {
+				if levels, ok := doc.NumStartMap[numID]; ok {
+					if _, hasOverride := levels[ilvl]; hasOverride && idx != startIdx {
+						break
+					}
+				}
+			}
 			content := buildInlineText(item.Paragraph.Runs, doc.DefaultFont, doc.Mode)
 			fmt.Fprintf(b, "%s<li>%s\n", indent, content)
 			idx++
@@ -2274,6 +2382,9 @@ func writeTableIndent(b *strings.Builder, t *ParsedTable, doc *ParsedDocument, i
 			}
 			if cell.TextDir != "" {
 				fmt.Fprintf(b, " textDir=\"%s\"", cell.TextDir)
+			}
+			if cell.Lang != "" {
+				fmt.Fprintf(b, " lang=\"%s\"", cell.Lang)
 			}
 			if cell.NoWrap {
 				b.WriteString(" noWrap=\"true\"")
