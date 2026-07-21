@@ -1585,9 +1585,14 @@ func formatForLLM(doc *ParsedDocument) string {
 				} else {
 					b.WriteString(">\n")
 					for _, ci := range n.Body {
-						if ci.Type == "paragraph" {
+						switch ci.Type {
+						case "paragraph":
 							formatParagraph(&b, ci.Paragraph, doc)
 							b.WriteString("\n")
+						case "list":
+							emitContentItem(&b, ci, doc, "    ")
+						case "table":
+							writeTableIndent(&b, ci.Table, doc, "    ")
 						}
 					}
 					b.WriteString("    </fn>\n")
@@ -1602,8 +1607,13 @@ func formatForLLM(doc *ParsedDocument) string {
 				}
 				b.WriteString(">")
 				for _, ci := range n.Body {
-					if ci.Type == "paragraph" {
+					switch ci.Type {
+					case "paragraph":
 						formatParagraph(&b, ci.Paragraph, doc)
+					case "list":
+						emitContentItem(&b, ci, doc, "    ")
+					case "table":
+						writeTableIndent(&b, ci.Table, doc, "    ")
 					}
 				}
 				b.WriteString("</comment>\n")
@@ -2269,9 +2279,14 @@ func writeTableIndent(b *strings.Builder, t *ParsedTable, doc *ParsedDocument, i
 			}
 			b.WriteString(">")
 			for _, ci := range cell.Content {
-				if ci.Type == "paragraph" {
+				switch ci.Type {
+				case "paragraph":
 					b.WriteString(buildInlineText(ci.Paragraph.Runs, doc.DefaultFont, doc.Mode))
-				} else if ci.Type == "table" && ci.Table != nil {
+				case "list":
+					tag, typeAttr := listTagAndType(ci.Paragraph, doc)
+					content := buildInlineText(ci.Paragraph.Runs, doc.DefaultFont, doc.Mode)
+					fmt.Fprintf(b, "<%s type=\"%s\"><li>%s</li></%s>", tag, typeAttr, content, tag)
+				case "table":
 					writeTableIndent(b, ci.Table, doc, indent+"    ")
 				}
 			}
