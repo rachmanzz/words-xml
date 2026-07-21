@@ -10,315 +10,314 @@
     <s:gap el="h" c="Heading7" before="2.00"/>
     <s:col ref="1" w="1.27"/>
     <s:col ref="1" w="5.23"/>
-    <s:custom name="Grid Table 7 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 5 Dark - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 7 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Heading 6" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="595959" italic="true" spacingBefore="2.00"/>
-    <s:custom name="Heading 3 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="14" sizeCS="14" color="0f4761"/>
-    <s:custom name="Title" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="28" sizeCS="28" spacingAfter="4.00" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="FollowedHyperlink" type="character" basedOn="148" color="954f72" underline="single"/>
-    <s:custom name="Grid Table 5 Dark- Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 4 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 1 Light - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 2 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 4 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761" italic="true"/>
-    <s:custom name="Heading 7 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="595959"/>
-    <s:custom name="toc 4" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.46"/>
-    <s:custom name="Table Grid Light" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 4 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 6 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 4 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 7 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Heading 7" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="595959" spacingBefore="2.00"/>
-    <s:custom name="Intense Reference" type="character" basedOn="148" color="0f4761" bold="true" smallCaps="true"/>
-    <s:custom name="Grid Table 4 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 6 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 7 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 3 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 5 Dark - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 6 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="595959" italic="true"/>
-    <s:custom name="Grid Table 2 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 3 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 1 Light - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Bordered &amp; Lined - Accent" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered &amp; Lined - Accent 1" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered &amp; Lined - Accent 4" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Caption" type="paragraph" basedOn="664" size="9" sizeCS="9" color="0e2841" italic="true" spacingAfter="10.00" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Plain Table 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 6 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Quote" type="paragraph" basedOn="664" color="404040" italic="true" alignment="center" spacingBefore="8.00"/>
-    <s:custom name="Quote Char" type="character" basedOn="148" color="404040" italic="true"/>
-    <s:custom name="Header" type="paragraph" basedOn="664" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Placeholder Text" type="character" basedOn="148" color="666666"/>
-    <s:custom name="Plain Table 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 7 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Lined - Accent 2" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Subtle Emphasis" type="character" basedOn="148" color="404040" italic="true"/>
-    <s:custom name="Subtle Reference" type="character" basedOn="148" color="5a5a5a" smallCaps="true"/>
-    <s:custom name="Plain Table 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 5 Dark" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered &amp; Lined - Accent 6" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="footnote text" type="paragraph" basedOn="664" size="10" sizeCS="10" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="No Spacing" type="paragraph" basedOn="664" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 2 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 9 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
-    <s:custom name="Grid Table 7 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 3 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 6 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 2 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="16" sizeCS="16" color="0f4761"/>
-    <s:custom name="Intense Emphasis" type="character" basedOn="148" color="0f4761" italic="true"/>
-    <s:custom name="Footer" type="paragraph" basedOn="664" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 1 Light - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 1 Light - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 2 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 2 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 6 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Lined - Accent 1" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Hyperlink" type="character" basedOn="148" color="0563c1" underline="single"/>
-    <s:custom name="toc 2" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.15"/>
-    <s:custom name="Grid Table 3 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Lined - Accent 6" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Bordered &amp; Lined - Accent 5" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 3 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 4 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Footer Char" type="character" basedOn="148"/>
-    <s:custom name="table of figures" type="paragraph" basedOn="664"/>
-    <s:custom name="List Table 7 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="endnote reference" type="character" basedOn="148"/>
-    <s:custom name="toc 8" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="1.07"/>
     <s:custom name="Plain Table 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 2 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 5 Dark - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 3 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 5" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761" spacingBefore="4.00" spacingAfter="2.00"/>
-    <s:custom name="Strong" type="character" basedOn="148" bold="true"/>
-    <s:custom name="Header Char" type="character" basedOn="148"/>
-    <s:custom name="Grid Table 7 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 1 Light - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 5 Dark - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 6 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Lined - Accent 3" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Bordered - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Intense Quote" type="paragraph" basedOn="664" color="0f4761" italic="true" alignment="center" spacingBefore="18.00" spacingAfter="18.00" indentLeft="0.60" indentRight="0.60"/>
-    <s:custom name="Grid Table 1 Light - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 4 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered &amp; Lined - Accent 3" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 1" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="20" sizeCS="20" color="0f4761" spacingBefore="18.00" spacingAfter="4.00"/>
-    <s:custom name="toc 5" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.61"/>
-    <s:custom name="toc 7" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.92"/>
-    <s:custom name="Plain Table 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 1 Light" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 6 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 3" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="14" sizeCS="14" color="0f4761" spacingBefore="8.00" spacingAfter="4.00"/>
-    <s:custom name="Heading 4" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761" italic="true" spacingBefore="4.00" spacingAfter="2.00"/>
-    <s:custom name="Heading 1 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="20" sizeCS="20" color="0f4761"/>
-    <s:custom name="List Table 5 Dark - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 6 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 6 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Footnote Text Char" type="character" basedOn="148" size="10" sizeCS="10"/>
-    <s:custom name="Endnote Text Char" type="character" basedOn="148" size="10" sizeCS="10"/>
-    <s:custom name="toc 6" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.76"/>
-    <s:custom name="Table Grid" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 2 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 5 Dark - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 6 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 7 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 3 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 3 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 4 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 6 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 1 Light" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 2 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 2 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 8 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
-    <s:custom name="Grid Table 7 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 2 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 4 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 8" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
-    <s:custom name="Intense Quote Char" type="character" basedOn="148" color="0f4761" italic="true"/>
-    <s:custom name="Emphasis" type="character" basedOn="148" italic="true"/>
-    <s:custom name="Book Title" type="character" basedOn="148" bold="true" italic="true"/>
-    <s:custom name="Grid Table 5 Dark- Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Heading 5 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761"/>
-    <s:custom name="Title Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="28" sizeCS="28"/>
-    <s:custom name="List Table 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 5 Dark" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 5 Dark - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 7 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Normal Table" type="table"/>
-    <s:custom name="Grid Table 3 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 4 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Lined - Accent" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Subtitle" type="paragraph" basedOn="664" size="14" sizeCS="14" color="595959"/>
-    <s:custom name="List Table 7 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Grid Table 4 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 5 Dark - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 1 Light - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 2 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 1 Light - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Bordered - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="TOC Heading" type="paragraph"/>
-    <s:custom name="List Table 6 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Bordered &amp; Lined - Accent 2" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="footnote reference" type="character" basedOn="148"/>
-    <s:custom name="toc 3" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.31"/>
-    <s:custom name="toc 9" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="1.22"/>
-    <s:custom name="Grid Table 1 Light - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 1 Light - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 1 Light - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 3 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 4 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 4 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Lined - Accent 5" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Heading 2" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="16" sizeCS="16" color="0f4761" spacingBefore="8.00" spacingAfter="4.00"/>
-    <s:custom name="Heading 9" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
-    <s:custom name="List Paragraph" type="paragraph" basedOn="664" indentLeft="0.50"/>
-    <s:custom name="Grid Table 2 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="Lined - Accent 4" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="No List" type="numbering"/>
-    <s:custom name="Grid Table 5 Dark - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 6 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 3 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="List Table 5 Dark - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="4.00" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Subtitle Char" type="character" basedOn="148" size="14" sizeCS="14" color="595959"/>
-    <s:custom name="toc 1" type="paragraph" basedOn="664" spacingAfter="5.00"/>
-    <s:custom name="Grid Table 1 Light - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 6 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.50" borderColor="000000" borderStyle="single"/>
-    <s:custom name="Grid Table 7 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
-    <s:custom name="List Table 7 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 3 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 2 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 3 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 5 Dark" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.06" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 5 Dark - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.06" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered &amp; Lined - Accent 2" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
     <s:custom name="endnote text" type="paragraph" basedOn="664" size="10" sizeCS="10" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 2 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 2 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 3 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 1 Light - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 2 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 3 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 3 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="14" sizeCS="14" color="0f4761"/>
+    <s:custom name="Header" type="paragraph" basedOn="664" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 4 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 2 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 3" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="14" sizeCS="14" color="0f4761" spacingBefore="8.00" spacingAfter="4.00"/>
+    <s:custom name="Subtle Reference" type="character" basedOn="148" color="5a5a5a" smallCaps="true"/>
+    <s:custom name="Footer" type="paragraph" basedOn="664" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Table Grid" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 4 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 3 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 4 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 1 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="20" sizeCS="20" color="0f4761"/>
+    <s:custom name="Book Title" type="character" basedOn="148" bold="true" italic="true"/>
+    <s:custom name="Plain Table 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 5 Dark - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.06" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Lined - Accent 6" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Title" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="28" sizeCS="28" spacingAfter="4.00" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 3 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 4" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761" italic="true" spacingBefore="4.00" spacingAfter="2.00"/>
+    <s:custom name="Heading 6 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="595959" italic="true"/>
+    <s:custom name="Grid Table 4 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 1 Light - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 5 Dark - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.06" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered &amp; Lined - Accent 1" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered &amp; Lined - Accent 6" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 1" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="20" sizeCS="20" color="0f4761" spacingBefore="18.00" spacingAfter="4.00"/>
+    <s:custom name="Heading 7" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="595959" spacingBefore="2.00"/>
+    <s:custom name="Heading 8 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
+    <s:custom name="Grid Table 1 Light - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 2 - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 6 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 4 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Quote Char" type="character" basedOn="148" color="404040" italic="true"/>
+    <s:custom name="Subtle Emphasis" type="character" basedOn="148" color="404040" italic="true"/>
+    <s:custom name="toc 7" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.92"/>
+    <s:custom name="Grid Table 4 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 4 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 6" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="595959" italic="true" spacingBefore="2.00"/>
+    <s:custom name="Heading 4 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761" italic="true"/>
+    <s:custom name="Hyperlink" type="character" basedOn="148" color="0563c1" underline="single"/>
+    <s:custom name="TOC Heading" type="paragraph"/>
+    <s:custom name="No Spacing" type="paragraph" basedOn="664" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 2 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 3 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 7 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Placeholder Text" type="character" basedOn="148" color="666666"/>
+    <s:custom name="Grid Table 5 Dark - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Subtitle Char" type="character" basedOn="148" size="14" sizeCS="14" color="595959"/>
+    <s:custom name="Quote" type="paragraph" basedOn="664" color="404040" italic="true" alignment="center" spacingBefore="8.00"/>
+    <s:custom name="Caption" type="paragraph" basedOn="664" size="9" sizeCS="9" color="0e2841" italic="true" spacingAfter="10.00" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Normal Table" type="table"/>
+    <s:custom name="Grid Table 3 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Subtitle" type="paragraph" basedOn="664" size="14" sizeCS="14" color="595959"/>
+    <s:custom name="Intense Quote" type="paragraph" basedOn="664" color="0f4761" italic="true" alignment="center" spacingBefore="18.00" spacingAfter="18.00" indentLeft="0.60" indentRight="0.60"/>
+    <s:custom name="Footer Char" type="character" basedOn="148"/>
+    <s:custom name="footnote reference" type="character" basedOn="148"/>
+    <s:custom name="toc 4" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.46"/>
+    <s:custom name="Grid Table 1 Light - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 9" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
+    <s:custom name="Intense Emphasis" type="character" basedOn="148" color="0f4761" italic="true"/>
+    <s:custom name="Grid Table 1 Light - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 2 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 1 Light - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 2 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 8" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
+    <s:custom name="toc 5" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.61"/>
+    <s:custom name="Grid Table 1 Light - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 4 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Lined - Accent 5" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Bordered - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 5 Dark - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 7 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 6 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 7 Colorful" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Lined - Accent 3" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Heading 2" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" size="16" sizeCS="16" color="0f4761" spacingBefore="8.00" spacingAfter="4.00"/>
+    <s:custom name="Heading 5" type="paragraph" basedOn="664" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761" spacingBefore="4.00" spacingAfter="2.00"/>
+    <s:custom name="Grid Table 4 - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 7 Colorful - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Lined - Accent 1" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Strong" type="character" basedOn="148" bold="true"/>
+    <s:custom name="Endnote Text Char" type="character" basedOn="148" size="10" sizeCS="10"/>
+    <s:custom name="Plain Table 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 5 Dark- Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 3 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 5 Dark - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.06" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered &amp; Lined - Accent 3" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered &amp; Lined - Accent 5" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Emphasis" type="character" basedOn="148" italic="true"/>
+    <s:custom name="Grid Table 2 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 1 Light - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 2 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Lined - Accent 4" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="toc 2" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.15"/>
+    <s:custom name="toc 6" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.76"/>
+    <s:custom name="toc 9" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="1.22"/>
+    <s:custom name="Table Grid Light" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 5 Dark" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 5 Dark - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 2 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="16" sizeCS="16" color="0f4761"/>
+    <s:custom name="Heading 5 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="0f4761"/>
+    <s:custom name="Intense Reference" type="character" basedOn="148" color="0f4761" bold="true" smallCaps="true"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 1 Light - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Lined - Accent" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Bordered &amp; Lined - Accent" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="toc 1" type="paragraph" basedOn="664" spacingAfter="5.00"/>
+    <s:custom name="List Table 7 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Bordered" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Intense Quote Char" type="character" basedOn="148" color="0f4761" italic="true"/>
+    <s:custom name="Grid Table 3 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 4 - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 5 Dark - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.06" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 7 Colorful - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Lined - Accent 2" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="endnote reference" type="character" basedOn="148"/>
+    <s:custom name="Grid Table 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 6 Colorful - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 1 Light - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="No List" type="numbering"/>
+    <s:custom name="Grid Table 1 Light - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Title Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" size="28" sizeCS="28"/>
+    <s:custom name="toc 3" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="0.31"/>
+    <s:custom name="table of figures" type="paragraph" basedOn="664"/>
+    <s:custom name="List Paragraph" type="paragraph" basedOn="664" indentLeft="0.50"/>
+    <s:custom name="Grid Table 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 2 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 3 - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Bordered &amp; Lined - Accent 4" type="table" basedOn="665" color="404040" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Heading 7 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="595959"/>
+    <s:custom name="Heading 9 Char" type="character" basedOn="148" font="Arial" fontEA="Arial" fontCS="Arial" color="272727" italic="true"/>
+    <s:custom name="Header Char" type="character" basedOn="148"/>
+    <s:custom name="Grid Table 1 Light - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
     <s:custom name="Grid Table 3 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 4 - Accent 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 5 Dark- Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 4 - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Bordered - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="FollowedHyperlink" type="character" basedOn="148" color="954f72" underline="single"/>
+    <s:custom name="toc 8" type="paragraph" basedOn="664" spacingAfter="5.00" indentLeft="1.07"/>
+    <s:custom name="Grid Table 1 Light" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 1 Light" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 5 Dark - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.06" borderColor="000000" borderStyle="single"/>
+    <s:custom name="List Table 7 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="List Table 7 Colorful - Accent 2" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Bordered - Accent 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="footnote text" type="paragraph" basedOn="664" size="10" sizeCS="10" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 5 Dark - Accent 3" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Grid Table 7 Colorful - Accent 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Bordered - Accent 6" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Footnote Text Char" type="character" basedOn="148" size="10" sizeCS="10"/>
+    <s:custom name="Plain Table 1" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:custom name="Plain Table 5" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto"/>
+    <s:custom name="Grid Table 4" type="table" basedOn="665" lineSpacing="1.00" lineRule="auto" borderWidth="0.01" borderColor="000000" borderStyle="single"/>
+    <s:theme font="Arial" fontEA="Arial" fontCS="Arial"/>
   </style>
   <write>
-    <h1><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="24" color="1f1f1f">The Ultimate 5-Step Blueprint to Master Public Speaking</span></b></h1>
-    <h2><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="18" color="1f1f1f">Page 1: Overcoming Glossophobia and Setting the Foundation</span></b></h2>
-    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Public speaking is consistently ranked as one of the most common phobias globally, often referred to as glossophobia. However, mastering this skill is one of the highest-leverage investments you can make for your career and personal growth.</span></p>
-    <h3><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="14" color="1f1f1f">Understanding the Fear</span></b></h3>
+    <h1><b><span size="24" color="1f1f1f">The Ultimate 5-Step Blueprint to Master Public Speaking</span></b></h1>
+    <h2><b><span size="18" color="1f1f1f">Page 1: Overcoming Glossophobia and Setting the Foundation</span></b></h2>
+    <p><span size="12" color="1f1f1f">Public speaking is consistently ranked as one of the most common phobias globally, often referred to as glossophobia. However, mastering this skill is one of the highest-leverage investments you can make for your career and personal growth.</span></p>
+    <h3><b><span size="14" color="1f1f1f">Understanding the Fear</span></b></h3>
     <ul type="bullet">
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">The Biological Response:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> Your body treats a stage the same way it treats a physical threat—initiating a fight-or-flight response (adrenaline, elevated heart rate, shaky hands).</span>
+      <li><b><span size="12" color="1f1f1f">The Biological Response:</span></b><span size="12" color="1f1f1f"> Your body treats a stage the same way it treats a physical threat—initiating a fight-or-flight response (adrenaline, elevated heart rate, shaky hands).</span>
       </li>
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Reframing Nervousness:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> Instead of trying to &quot;calm down,&quot; elite speakers reframe anxiety as excitement. Both create the same physical symptoms, but your brain responds better to &quot;I am excited&quot; than &quot;I must calm down.&quot;</span>
+      <li><b><span size="12" color="1f1f1f">Reframing Nervousness:</span></b><span size="12" color="1f1f1f"> Instead of trying to &quot;calm down,&quot; elite speakers reframe anxiety as excitement. Both create the same physical symptoms, but your brain responds better to &quot;I am excited&quot; than &quot;I must calm down.&quot;</span>
       </li>
     </ul>
-    <h3><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="14" color="1f1f1f">Shifting the Mindset</span></b></h3>
-    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">The primary shift you must make is moving your focus </span><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">from yourself to your audience</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">.</span></p>
+    <h3><b><span size="14" color="1f1f1f">Shifting the Mindset</span></b></h3>
+    <p><span size="12" color="1f1f1f">The primary shift you must make is moving your focus </span><b><span size="12" color="1f1f1f">from yourself to your audience</span></b><span size="12" color="1f1f1f">.</span></p>
     <ul type="bullet">
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Self-focused thoughts:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> </span><i><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">&quot;What will they think of me? Did I mess up my hair? Do I sound smart?&quot;</span></i>
+      <li><b><span size="12" color="1f1f1f">Self-focused thoughts:</span></b><span size="12" color="1f1f1f"> </span><i><span size="12" color="1f1f1f">&quot;What will they think of me? Did I mess up my hair? Do I sound smart?&quot;</span></i>
       </li>
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Audience-focused thoughts:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> </span><i><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">&quot;How can I help them solve this problem? What value am I delivering to their day?&quot;</span></i>
+      <li><b><span size="12" color="1f1f1f">Audience-focused thoughts:</span></b><span size="12" color="1f1f1f"> </span><i><span size="12" color="1f1f1f">&quot;How can I help them solve this problem? What value am I delivering to their day?&quot;</span></i>
       </li>
     </ul>
-    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">When you view your presentation as a </span><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">gift</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> you are giving the audience rather than an examination you are taking, the performance anxiety naturally begins to dissolve.</span></p>
-    <h2><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="18" color="1f1f1f">Page 2: Structuring Your Speech for Maximum Impact</span></b></h2>
-    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">A brilliant message delivered haphazardly will fail to persuade. Structure is the invisible skeleton that keeps your audience engaged from start to finish.</span></p>
-    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="10" color="ffffff">[The Hook] ➔ [The Problem] ➔ [The Solution] ➔ [The Evidence] ➔ [The Call to Action]</span></p>
+    <p><span size="12" color="1f1f1f">When you view your presentation as a </span><b><span size="12" color="1f1f1f">gift</span></b><span size="12" color="1f1f1f"> you are giving the audience rather than an examination you are taking, the performance anxiety naturally begins to dissolve.</span></p>
+    <h2><b><span size="18" color="1f1f1f">Page 2: Structuring Your Speech for Maximum Impact</span></b></h2>
+    <p><span size="12" color="1f1f1f">A brilliant message delivered haphazardly will fail to persuade. Structure is the invisible skeleton that keeps your audience engaged from start to finish.</span></p>
+    <p><span size="10" color="ffffff">[The Hook] ➔ [The Problem] ➔ [The Solution] ➔ [The Evidence] ➔ [The Call to Action]</span></p>
     <p></p>
-    <h3><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="14" color="1f1f1f">1. The Hook (First 30 Seconds)</span></b></h3>
-    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Never start with, </span><i><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">&quot;Hi, my name is John, and today I'm going to talk about...&quot;</span></i><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> It instantly kills momentum. Instead, use:</span></p>
+    <h3><b><span size="14" color="1f1f1f">1. The Hook (First 30 Seconds)</span></b></h3>
+    <p><span size="12" color="1f1f1f">Never start with, </span><i><span size="12" color="1f1f1f">&quot;Hi, my name is John, and today I'm going to talk about...&quot;</span></i><span size="12" color="1f1f1f"> It instantly kills momentum. Instead, use:</span></p>
     <ul type="bullet">
-      <li><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">A startling statistic.</span>
+      <li><span size="12" color="1f1f1f">A startling statistic.</span>
       </li>
-      <li><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">A provocative, thought-provoking question.</span>
+      <li><span size="12" color="1f1f1f">A provocative, thought-provoking question.</span>
       </li>
-      <li><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">A brief, emotionally gripping story.</span>
+      <li><span size="12" color="1f1f1f">A brief, emotionally gripping story.</span>
       </li>
     </ul>
-    <h3><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="14" color="1f1f1f">2. The Body (The Rule of Three)</span></b></h3>
-    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">The human brain loves patterns and struggles to remember long lists. Organize your core arguments into </span><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">three main points</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">.</span></p>
+    <h3><b><span size="14" color="1f1f1f">2. The Body (The Rule of Three)</span></b></h3>
+    <p><span size="12" color="1f1f1f">The human brain loves patterns and struggles to remember long lists. Organize your core arguments into </span><b><span size="12" color="1f1f1f">three main points</span></b><span size="12" color="1f1f1f">.</span></p>
     <ul type="bullet">
-      <li><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Point 1: The overarching issue.</span>
+      <li><span size="12" color="1f1f1f">Point 1: The overarching issue.</span>
       </li>
-      <li><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Point 2: The mechanism or deep dive.</span>
+      <li><span size="12" color="1f1f1f">Point 2: The mechanism or deep dive.</span>
       </li>
-      <li><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Point 3: The practical outcome.</span>
+      <li><span size="12" color="1f1f1f">Point 3: The practical outcome.</span>
       </li>
     </ul>
-    <h3><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="14" color="1f1f1f">3. The Climax &amp; Call to Action (CTA)</span></b></h3>
-    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">End with absolute clarity. What is the single thing you want the audience to </span><i><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">do, think, or feel</span></i><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> the moment you step off the stage? Make that your final sentence.</span></p>
-    <p c="Heading 2"><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="18" color="1f1f1f">Page 3: Harnessing Non-Verbal Communication (Body Language &amp; Voice)</span></b></p>
-    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Studies suggest that a massive portion of human communication is non-verbal. Words matter, but </span><i><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">how</span></i><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> you deliver them dictates how they are received.</span></p>
-    <h3><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="14" color="1f1f1f">Posture and Stage Presence</span></b></h3>
+    <h3><b><span size="14" color="1f1f1f">3. The Climax &amp; Call to Action (CTA)</span></b></h3>
+    <p><span size="12" color="1f1f1f">End with absolute clarity. What is the single thing you want the audience to </span><i><span size="12" color="1f1f1f">do, think, or feel</span></i><span size="12" color="1f1f1f"> the moment you step off the stage? Make that your final sentence.</span></p>
+    <p c="Heading 2"><b><span size="18" color="1f1f1f">Page 3: Harnessing Non-Verbal Communication (Body Language &amp; Voice)</span></b></p>
+    <p><span size="12" color="1f1f1f">Studies suggest that a massive portion of human communication is non-verbal. Words matter, but </span><i><span size="12" color="1f1f1f">how</span></i><span size="12" color="1f1f1f"> you deliver them dictates how they are received.</span></p>
+    <h3><b><span size="14" color="1f1f1f">Posture and Stage Presence</span></b></h3>
     <ul type="bullet">
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">The Power Stance:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> Stand with your feet shoulder-width apart. Avoid locking your knees.</span>
+      <li><b><span size="12" color="1f1f1f">The Power Stance:</span></b><span size="12" color="1f1f1f"> Stand with your feet shoulder-width apart. Avoid locking your knees.</span>
       </li>
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Purposeful Movement:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> Don't pace nervously back and forth. Walk intentionally to a new spot on stage when transitioning to a new point.</span>
+      <li><b><span size="12" color="1f1f1f">Purposeful Movement:</span></b><span size="12" color="1f1f1f"> Don't pace nervously back and forth. Walk intentionally to a new spot on stage when transitioning to a new point.</span>
       </li>
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Open Gestures:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> Keep your hands visible and use natural hand gestures above your waist. Avoid crossing your arms, which builds an invisible psychological wall.</span>
+      <li><b><span size="12" color="1f1f1f">Open Gestures:</span></b><span size="12" color="1f1f1f"> Keep your hands visible and use natural hand gestures above your waist. Avoid crossing your arms, which builds an invisible psychological wall.</span>
       </li>
     </ul>
-    <h3><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="14" color="1f1f1f">Vocal Mastery</span></b></h3>
+    <h3><b><span size="14" color="1f1f1f">Vocal Mastery</span></b></h3>
     <ul type="bullet">
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Pace:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> When people get nervous, they speak faster. Consciously slow down. Deliberate pauses are your best friend; they give the audience time to digest heavy information.</span>
+      <li><b><span size="12" color="1f1f1f">Pace:</span></b><span size="12" color="1f1f1f"> When people get nervous, they speak faster. Consciously slow down. Deliberate pauses are your best friend; they give the audience time to digest heavy information.</span>
       </li>
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Tone and Pitch:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> Vary your vocal inflection. A monotone voice induces sleep, while dynamic pitch shifts maintain alertness.</span>
+      <li><b><span size="12" color="1f1f1f">Tone and Pitch:</span></b><span size="12" color="1f1f1f"> Vary your vocal inflection. A monotone voice induces sleep, while dynamic pitch shifts maintain alertness.</span>
       </li>
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Volume:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> Project from your diaphragm, not your throat. A well-placed drop in volume (whispering or speaking softly) can instantly command a room's undivided attention.</span>
+      <li><b><span size="12" color="1f1f1f">Volume:</span></b><span size="12" color="1f1f1f"> Project from your diaphragm, not your throat. A well-placed drop in volume (whispering or speaking softly) can instantly command a room's undivided attention.</span>
       </li>
     </ul>
-    <h2><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="18" color="1f1f1f">Page 4: Designing Visual Aids and Managing Q&amp;A Sessions</span></b></h2>
-    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Visuals should amplify your speech, not serve as a teleprompter or a wall of text that the audience reads ahead of you.</span></p>
-    <h3><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="14" color="1f1f1f">Creating High-Impact Slides (The &quot;Less is More&quot; Rule)</span></b></h3>
+    <h2><b><span size="18" color="1f1f1f">Page 4: Designing Visual Aids and Managing Q&amp;A Sessions</span></b></h2>
+    <p><span size="12" color="1f1f1f">Visuals should amplify your speech, not serve as a teleprompter or a wall of text that the audience reads ahead of you.</span></p>
+    <h3><b><span size="14" color="1f1f1f">Creating High-Impact Slides (The &quot;Less is More&quot; Rule)</span></b></h3>
     <ul type="bullet">
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">One Idea Per Slide:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> Avoid putting bullet points containing full paragraphs.</span>
+      <li><b><span size="12" color="1f1f1f">One Idea Per Slide:</span></b><span size="12" color="1f1f1f"> Avoid putting bullet points containing full paragraphs.</span>
       </li>
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Visual-First:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> Use striking, high-resolution imagery, minimalist graphs, or single powerful keywords rather than cluttered text.</span>
+      <li><b><span size="12" color="1f1f1f">Visual-First:</span></b><span size="12" color="1f1f1f"> Use striking, high-resolution imagery, minimalist graphs, or single powerful keywords rather than cluttered text.</span>
       </li>
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">The 6x6 Rule (If using text):</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> No more than 6 bullet points per slide, and no more than 6 words per bullet point.</span>
+      <li><b><span size="12" color="1f1f1f">The 6x6 Rule (If using text):</span></b><span size="12" color="1f1f1f"> No more than 6 bullet points per slide, and no more than 6 words per bullet point.</span>
       </li>
     </ul>
-    <h3><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="14" color="1f1f1f">Navigating the Q&amp;A Session</span></b></h3>
-    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">The Q&amp;A is often where speakers stumble because they lose control of the narrative. Master it with these techniques:</span></p>
+    <h3><b><span size="14" color="1f1f1f">Navigating the Q&amp;A Session</span></b></h3>
+    <p><span size="12" color="1f1f1f">The Q&amp;A is often where speakers stumble because they lose control of the narrative. Master it with these techniques:</span></p>
     <ol type="decimal">
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Repeat the Question:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> Always repeat or rephrase the question into the microphone so the entire room hears it clearly.</span>
+      <li><b><span size="12" color="1f1f1f">Repeat the Question:</span></b><span size="12" color="1f1f1f"> Always repeat or rephrase the question into the microphone so the entire room hears it clearly.</span>
       </li>
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Bridge to Your Message:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> If someone asks a loaded or off-topic question, acknowledge it briefly and bridge it back to your core presentation themes: </span><i><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">&quot;That touches on an interesting point, and what it really ties back to is...&quot;</span></i>
+      <li><b><span size="12" color="1f1f1f">Bridge to Your Message:</span></b><span size="12" color="1f1f1f"> If someone asks a loaded or off-topic question, acknowledge it briefly and bridge it back to your core presentation themes: </span><i><span size="12" color="1f1f1f">&quot;That touches on an interesting point, and what it really ties back to is...&quot;</span></i>
       </li>
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Admit Ignorance Gracefully:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> If you don't know the answer, never bluff. Say: </span><i><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">&quot;I don't have that specific data point on hand, but let me look into it and get back to you after the event.&quot;</span></i>
+      <li><b><span size="12" color="1f1f1f">Admit Ignorance Gracefully:</span></b><span size="12" color="1f1f1f"> If you don't know the answer, never bluff. Say: </span><i><span size="12" color="1f1f1f">&quot;I don't have that specific data point on hand, but let me look into it and get back to you after the event.&quot;</span></i>
       </li>
     </ol>
-    <h2><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="18" color="1f1f1f">Page 5: Deliberate Practice and Continuous Improvement</span></b></h2>
-    <p><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Public speaking is a mechanical skill, much like playing the piano or driving a car. You cannot learn it purely by reading about it; it requires structured repetition.</span></p>
-    <h3><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="14" color="1f1f1f">The Practice Protocol</span></b></h3>
+    <h2><b><span size="18" color="1f1f1f">Page 5: Deliberate Practice and Continuous Improvement</span></b></h2>
+    <p><span size="12" color="1f1f1f">Public speaking is a mechanical skill, much like playing the piano or driving a car. You cannot learn it purely by reading about it; it requires structured repetition.</span></p>
+    <h3><b><span size="14" color="1f1f1f">The Practice Protocol</span></b></h3>
     <ul type="bullet">
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Record Yourself:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> Set up a camera and record your entire rehearsal. Watch it once with the sound off (to check body language) and once with the screen turned face down (to evaluate vocal cadence and filler words like &quot;um&quot; and &quot;uh&quot;).</span>
+      <li><b><span size="12" color="1f1f1f">Record Yourself:</span></b><span size="12" color="1f1f1f"> Set up a camera and record your entire rehearsal. Watch it once with the sound off (to check body language) and once with the screen turned face down (to evaluate vocal cadence and filler words like &quot;um&quot; and &quot;uh&quot;).</span>
       </li>
-      <li><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Immersive Rehearsal:</span></b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f"> Practice standing up, using your visual aids, and moving around the exact room or size of space you will be presenting in.</span>
+      <li><b><span size="12" color="1f1f1f">Immersive Rehearsal:</span></b><span size="12" color="1f1f1f"> Practice standing up, using your visual aids, and moving around the exact room or size of space you will be presenting in.</span>
       </li>
     </ul>
-    <h3><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="14" color="1f1f1f">Quick Checklist for the Day of the Event</span></b></h3>
+    <h3><b><span size="14" color="1f1f1f">Quick Checklist for the Day of the Event</span></b></h3>
     <p></p>
     <table id="1" c="Table Grid">
-      <colspec ref="1" w="1.27"/>
-      <colspec ref="2" w="5.23"/>
       <tr>
-        <td valign="center" at="bt 6 s0 #c4c7c5; bb 6 s0 #c4c7c5; bl 6 s0 #c4c7c5; br 6 s0 #c4c7c5"><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Phase</span></b></td>
-        <td valign="center" at="bt 6 s0 #c4c7c5; bb 6 s0 #c4c7c5; bl 6 s0 #c4c7c5; br 6 s0 #c4c7c5"><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Action Item</span></b></td>
+        <td valign="center" at="bt 0.010 s0 #c4c7c5; bb 0.010 s0 #c4c7c5; bl 0.010 s0 #c4c7c5; br 0.010 s0 #c4c7c5"><b><span size="12" color="1f1f1f">Phase</span></b></td>
+        <td valign="center" at="bt 0.010 s0 #c4c7c5; bb 0.010 s0 #c4c7c5; bl 0.010 s0 #c4c7c5; br 0.010 s0 #c4c7c5"><b><span size="12" color="1f1f1f">Action Item</span></b></td>
       </tr>
       <tr>
-        <td valign="center" at="bt 6 s0 #c4c7c5; bb 6 s0 #c4c7c5; bl 6 s0 #c4c7c5; br 6 s0 #c4c7c5"><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">2 Hours Before</span></b></td>
-        <td valign="center" at="bt 6 s0 #c4c7c5; bb 6 s0 #c4c7c5; bl 6 s0 #c4c7c5; br 6 s0 #c4c7c5"><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Review opening and closing lines only; do not try to memorize word-for-word.</span></td>
+        <td valign="center" at="bt 0.010 s0 #c4c7c5; bb 0.010 s0 #c4c7c5; bl 0.010 s0 #c4c7c5; br 0.010 s0 #c4c7c5"><b><span size="12" color="1f1f1f">2 Hours Before</span></b></td>
+        <td valign="center" at="bt 0.010 s0 #c4c7c5; bb 0.010 s0 #c4c7c5; bl 0.010 s0 #c4c7c5; br 0.010 s0 #c4c7c5"><span size="12" color="1f1f1f">Review opening and closing lines only; do not try to memorize word-for-word.</span></td>
       </tr>
       <tr>
-        <td valign="center" at="bt 6 s0 #c4c7c5; bb 6 s0 #c4c7c5; bl 6 s0 #c4c7c5; br 6 s0 #c4c7c5"><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">30 Minutes Before</span></b></td>
-        <td valign="center" at="bt 6 s0 #c4c7c5; bb 6 s0 #c4c7c5; bl 6 s0 #c4c7c5; br 6 s0 #c4c7c5"><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Do vocal warm-ups (humming, tongue twisters) and physical stretches.</span></td>
+        <td valign="center" at="bt 0.010 s0 #c4c7c5; bb 0.010 s0 #c4c7c5; bl 0.010 s0 #c4c7c5; br 0.010 s0 #c4c7c5"><b><span size="12" color="1f1f1f">30 Minutes Before</span></b></td>
+        <td valign="center" at="bt 0.010 s0 #c4c7c5; bb 0.010 s0 #c4c7c5; bl 0.010 s0 #c4c7c5; br 0.010 s0 #c4c7c5"><span size="12" color="1f1f1f">Do vocal warm-ups (humming, tongue twisters) and physical stretches.</span></td>
       </tr>
       <tr>
-        <td valign="center" at="bt 6 s0 #c4c7c5; bb 6 s0 #c4c7c5; bl 6 s0 #c4c7c5; br 6 s0 #c4c7c5"><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">5 Minutes Before</span></b></td>
-        <td valign="center" at="bt 6 s0 #c4c7c5; bb 6 s0 #c4c7c5; bl 6 s0 #c4c7c5; br 6 s0 #c4c7c5"><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Take 5 deep, box-breathing cycles (inhale for 4s, hold for 4s, exhale for 4s, hold for 4s).</span></td>
+        <td valign="center" at="bt 0.010 s0 #c4c7c5; bb 0.010 s0 #c4c7c5; bl 0.010 s0 #c4c7c5; br 0.010 s0 #c4c7c5"><b><span size="12" color="1f1f1f">5 Minutes Before</span></b></td>
+        <td valign="center" at="bt 0.010 s0 #c4c7c5; bb 0.010 s0 #c4c7c5; bl 0.010 s0 #c4c7c5; br 0.010 s0 #c4c7c5"><span size="12" color="1f1f1f">Take 5 deep, box-breathing cycles (inhale for 4s, hold for 4s, exhale for 4s, hold for 4s).</span></td>
       </tr>
       <tr>
-        <td valign="center" at="bt 6 s0 #c4c7c5; bb 6 s0 #c4c7c5; bl 6 s0 #c4c7c5; br 6 s0 #c4c7c5"><b><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">During</span></b></td>
-        <td valign="center" at="bt 6 s0 #c4c7c5; bb 6 s0 #c4c7c5; bl 6 s0 #c4c7c5; br 6 s0 #c4c7c5"><span font="Arial" fontEA="Arial" fontCS="Arial" size="12" color="1f1f1f">Make eye contact with friendly, nodding faces in the room to build a positive feedback loop.</span></td>
+        <td valign="center" at="bt 0.010 s0 #c4c7c5; bb 0.010 s0 #c4c7c5; bl 0.010 s0 #c4c7c5; br 0.010 s0 #c4c7c5"><b><span size="12" color="1f1f1f">During</span></b></td>
+        <td valign="center" at="bt 0.010 s0 #c4c7c5; bb 0.010 s0 #c4c7c5; bl 0.010 s0 #c4c7c5; br 0.010 s0 #c4c7c5"><span size="12" color="1f1f1f">Make eye contact with friendly, nodding faces in the room to build a positive feedback loop.</span></td>
       </tr>
     </table>
   </write>

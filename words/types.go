@@ -106,6 +106,7 @@ type ThemeData struct {
 	FontCS  string
 	Fg      string
 	Bg      string
+	FontMap map[string]string
 }
 
 type ParsedParagraph struct {

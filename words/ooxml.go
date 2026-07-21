@@ -182,10 +182,14 @@ type VertAlignVal struct {
 }
 
 type RFontsVal struct {
-	Ascii    string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main ascii,attr"`
-	HAnsi    string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main hAnsi,attr"`
-	EastAsia string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main eastAsia,attr"`
-	CS       string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main cs,attr"`
+	Ascii         string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main ascii,attr"`
+	HAnsi         string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main hAnsi,attr"`
+	EastAsia      string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main eastAsia,attr"`
+	CS            string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main cs,attr"`
+	AsciiTheme    string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main asciiTheme,attr"`
+	HAnsiTheme    string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main hAnsiTheme,attr"`
+	EastAsiaTheme string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main eastAsiaTheme,attr"`
+	CSTheme       string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main cstheme,attr"`
 }
 
 type ColorVal struct {
@@ -498,6 +502,7 @@ type AThemeElements struct {
 
 type AFontScheme struct {
 	Minor *AFontSchemeFace `xml:"http://schemas.openxmlformats.org/drawingml/2006/main minorFont"`
+	Major *AFontSchemeFace `xml:"http://schemas.openxmlformats.org/drawingml/2006/main majorFont"`
 }
 
 type AFontSchemeFace struct {
@@ -507,7 +512,7 @@ type AFontSchemeFace struct {
 }
 
 type ATypeface struct {
-	Typeface string `xml:"http://schemas.openxmlformats.org/drawingml/2006/main typeface,attr"`
+	Typeface string `xml:"typeface,attr"`
 }
 
 type AClrScheme struct {

@@ -169,8 +169,17 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 		}
 	}
 
+	if themeXML != nil {
+		doc.Theme = extractTheme(themeXML)
+	}
+
+	themeFontMap := map[string]string{}
+	if doc.Theme != nil && doc.Theme.FontMap != nil {
+		themeFontMap = doc.Theme.FontMap
+	}
+
 	if stylesXML != nil {
-		doc.StyleMap, doc.StyleNameMap, doc.DefaultFont = buildStyleMap(stylesXML)
+		doc.StyleMap, doc.StyleNameMap, doc.DefaultFont = buildStyleMap(stylesXML, themeFontMap)
 	}
 
 	var numFmtMap map[string]string
@@ -192,10 +201,6 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 			}
 		}
 		}
-	}
-
-	if themeXML != nil {
-		doc.Theme = extractTheme(themeXML)
 	}
 
 	var document DocDocument
@@ -245,14 +250,14 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 	for path, hdrData := range headerFiles {
 		hdr, err := unmarshalHeader(hdrData)
 		if err == nil {
-			headerContent[path] = parseContentItems(hdr.Paras, hdr.Tables, hdr.Sdts, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode)
+			headerContent[path] = parseContentItems(hdr.Paras, hdr.Tables, hdr.Sdts, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode, themeFontMap)
 		}
 	}
 	footerContent := make(map[string][]ContentItem)
 	for path, ftrData := range footerFiles {
 		ftr, err := unmarshalFooter(ftrData)
 		if err == nil {
-			footerContent[path] = parseContentItems(ftr.Paras, ftr.Tables, ftr.Sdts, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode)
+			footerContent[path] = parseContentItems(ftr.Paras, ftr.Tables, ftr.Sdts, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode, themeFontMap)
 		}
 	}
 
@@ -273,7 +278,7 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 		if err := xml.Unmarshal(footnotesXML, &fndoc); err == nil {
 			for _, fn := range fndoc.Footnotes {
 				if fn.Type == "normal" || fn.Type == "" {
-					items := parseContentItems(fn.Paras, nil, nil, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode)
+					items := parseContentItems(fn.Paras, nil, nil, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode, themeFontMap)
 					doc.Notes = append(doc.Notes, NoteItem{Type: "footnote", ID: fn.ID, Body: items})
 				}
 			}
@@ -285,7 +290,7 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 		if err := xml.Unmarshal(endnotesXML, &endoc); err == nil {
 			for _, en := range endoc.Endnotes {
 				if en.Type == "normal" || en.Type == "" {
-					items := parseContentItems(en.Paras, nil, nil, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode)
+					items := parseContentItems(en.Paras, nil, nil, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode, themeFontMap)
 					doc.Notes = append(doc.Notes, NoteItem{Type: "endnote", ID: en.ID, Body: items})
 				}
 			}
@@ -296,13 +301,13 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 		var cmdoc DocComments
 		if err := xml.Unmarshal(commentsXML, &cmdoc); err == nil {
 			for _, cm := range cmdoc.Comments {
-				items := parseContentItems(cm.Paras, nil, nil, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode)
+				items := parseContentItems(cm.Paras, nil, nil, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode, themeFontMap)
 				doc.Notes = append(doc.Notes, NoteItem{Type: "comment", ID: cm.ID, Author: cm.Author, Date: cm.Date, Body: items})
 			}
 		}
 	}
 
-	doc.Content = parseContentItems(body.Paras, body.Tables, body.Sdts, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode)
+	doc.Content = parseContentItems(body.Paras, body.Tables, body.Sdts, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode, themeFontMap)
 
 	for _, bm := range body.Bookmarks {
 		if bm.Name != "" {
@@ -393,7 +398,7 @@ type DocFooter struct {
 
 // --- Style Resolver ---
 
-func buildStyleMap(stylesXML []byte) (map[string]StyleDef, map[string]string, StyleDef) {
+func buildStyleMap(stylesXML []byte, themeFontMap map[string]string) (map[string]StyleDef, map[string]string, StyleDef) {
 	var styles DocStyles
 	if err := xml.Unmarshal(stylesXML, &styles); err != nil {
 		return nil, nil, StyleDef{Family: "Times New Roman", SizePt: 11}
@@ -411,9 +416,29 @@ func buildStyleMap(stylesXML []byte) (map[string]StyleDef, map[string]string, St
 					defaultFont.Family = rp.RFonts.Ascii
 				} else if rp.RFonts.HAnsi != "" {
 					defaultFont.Family = rp.RFonts.HAnsi
+				} else if rp.RFonts.AsciiTheme != "" {
+					if f, ok := themeFontMap[rp.RFonts.AsciiTheme]; ok {
+						defaultFont.Family = f
+					}
+				} else if rp.RFonts.HAnsiTheme != "" {
+					if f, ok := themeFontMap[rp.RFonts.HAnsiTheme]; ok {
+						defaultFont.Family = f
+					}
 				}
-				defaultFont.FontEA = rp.RFonts.EastAsia
-				defaultFont.FontCS = rp.RFonts.CS
+				if rp.RFonts.EastAsia != "" {
+					defaultFont.FontEA = rp.RFonts.EastAsia
+				} else if rp.RFonts.EastAsiaTheme != "" {
+					if f, ok := themeFontMap[rp.RFonts.EastAsiaTheme]; ok {
+						defaultFont.FontEA = f
+					}
+				}
+				if rp.RFonts.CS != "" {
+					defaultFont.FontCS = rp.RFonts.CS
+				} else if rp.RFonts.CSTheme != "" {
+					if f, ok := themeFontMap[rp.RFonts.CSTheme]; ok {
+						defaultFont.FontCS = f
+					}
+				}
 			}
 			if rp.Sz != nil {
 				defaultFont.SizePt = float64(rp.Sz.Val) / 2.0
@@ -440,9 +465,29 @@ func buildStyleMap(stylesXML []byte) (map[string]StyleDef, map[string]string, St
 					sd.Family = s.RunProps.RFonts.Ascii
 				} else if s.RunProps.RFonts.HAnsi != "" {
 					sd.Family = s.RunProps.RFonts.HAnsi
+				} else if s.RunProps.RFonts.AsciiTheme != "" {
+					if f, ok := themeFontMap[s.RunProps.RFonts.AsciiTheme]; ok {
+						sd.Family = f
+					}
+				} else if s.RunProps.RFonts.HAnsiTheme != "" {
+					if f, ok := themeFontMap[s.RunProps.RFonts.HAnsiTheme]; ok {
+						sd.Family = f
+					}
 				}
-				sd.FontEA = s.RunProps.RFonts.EastAsia
-				sd.FontCS = s.RunProps.RFonts.CS
+				if s.RunProps.RFonts.EastAsia != "" {
+					sd.FontEA = s.RunProps.RFonts.EastAsia
+				} else if s.RunProps.RFonts.EastAsiaTheme != "" {
+					if f, ok := themeFontMap[s.RunProps.RFonts.EastAsiaTheme]; ok {
+						sd.FontEA = f
+					}
+				}
+				if s.RunProps.RFonts.CS != "" {
+					sd.FontCS = s.RunProps.RFonts.CS
+				} else if s.RunProps.RFonts.CSTheme != "" {
+					if f, ok := themeFontMap[s.RunProps.RFonts.CSTheme]; ok {
+						sd.FontCS = f
+					}
+				}
 			}
 			if s.RunProps.Sz != nil {
 				sd.SizePt = float64(s.RunProps.Sz.Val) / 2.0
@@ -502,7 +547,7 @@ func buildStyleMap(stylesXML []byte) (map[string]StyleDef, map[string]string, St
 		if s.TblPr != nil {
 			if s.TblPr.Borders != nil {
 				if s.TblPr.Borders.Top != nil {
-					sd.BorderWidth = float64(s.TblPr.Borders.Top.Sz) / 8.0
+					sd.BorderWidth = float64(s.TblPr.Borders.Top.Sz) / 576.0
 					sd.BorderColor = s.TblPr.Borders.Top.Color
 					sd.BorderStyle = s.TblPr.Borders.Top.Val
 				}
@@ -610,7 +655,7 @@ func buildNumberingMap(numberingXML []byte) (map[string]string, map[int]map[int]
 
 // --- Parser ---
 
-func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap map[string]string, styleMap map[string]StyleDef, styleNameMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string) []ContentItem {
+func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap map[string]string, styleMap map[string]StyleDef, styleNameMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, themeFontMap map[string]string) []ContentItem {
 	var items []ContentItem
 
 	i := 0
@@ -639,14 +684,14 @@ func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap m
 			}
 
 			var tbItems []ContentItem
-			lp.Runs, tbItems = extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, false)
+			lp.Runs, tbItems = extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, false, themeFontMap)
 			items = append(items, tbItems...)
 			items = append(items, ContentItem{Type: "list", Paragraph: lp})
 			i++
 			continue
 		}
 
-		item, paraTbItems := parseParagraph(p, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode)
+		item, paraTbItems := parseParagraph(p, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
 		items = append(items, item)
 		items = append(items, paraTbItems...)
 
@@ -654,25 +699,25 @@ func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap m
 			if tb.TxbxContent == nil {
 				continue
 			}
-			tbItems := parseContentItems(tb.TxbxContent.Paras, tb.TxbxContent.Tables, tb.TxbxContent.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode)
+			tbItems := parseContentItems(tb.TxbxContent.Paras, tb.TxbxContent.Tables, tb.TxbxContent.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
 			items = append(items, tbItems...)
 		}
 		i++
 	}
 
 	for ti := range tables {
-		t := parseTable(tables[ti], relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode)
+		t := parseTable(tables[ti], relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
 		items = append(items, ContentItem{Type: "table", Table: t})
 	}
 
 	for _, sdt := range sdts {
-		items = append(items, parseContentItems(sdt.Content.Paras, sdt.Content.Tables, sdt.Content.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode)...)
+		items = append(items, parseContentItems(sdt.Content.Paras, sdt.Content.Tables, sdt.Content.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)...)
 	}
 
 	return items
 }
 
-func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]StyleDef, styleNameMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string) (ContentItem, []ContentItem) {
+func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]StyleDef, styleNameMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, themeFontMap map[string]string) (ContentItem, []ContentItem) {
 	lp := &ParsedParagraph{}
 
 	if p.PPr != nil {
@@ -803,7 +848,7 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 	isCode = isKnownCode || (hasCodeWord && allMonospace)
 	lp.IsCode = isCode
 
-	runs, tbItems := extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, isCode)
+	runs, tbItems := extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, isCode, themeFontMap)
 	lp.Runs = runs
 
 	if lp.HeadingLevel > 0 && !isCode {
@@ -819,7 +864,7 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 	return ContentItem{Type: "paragraph", Paragraph: lp}, tbItems
 }
 
-func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[string]string, relMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, isCode bool) ([]TextRun, []ContentItem) {
+func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[string]string, relMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, isCode bool, themeFontMap map[string]string) ([]TextRun, []ContentItem) {
 	var runs []TextRun
 	var tbItems []ContentItem
 
@@ -862,7 +907,7 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 
 		if r.Drawing != nil {
 			if r.Drawing.TxbxContent != nil {
-				items = append(items, parseContentItems(r.Drawing.TxbxContent.Paras, r.Drawing.TxbxContent.Tables, r.Drawing.TxbxContent.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode)...)
+				items = append(items, parseContentItems(r.Drawing.TxbxContent.Paras, r.Drawing.TxbxContent.Tables, r.Drawing.TxbxContent.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)...)
 			} else if img := drawingImage(r.Drawing, relMap); img != nil {
 				out = append(out, *img)
 			}
@@ -907,14 +952,14 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 
 		if r.NoBreakHyphen != nil {
 			tr.Text = "\u00AC"
-			applyRunProps(r.RPr, &tr)
+			applyRunProps(r.RPr, &tr, themeFontMap)
 			out = append(out, tr)
 			return out, items
 		}
 
 		if r.SoftHyphen != nil {
 			tr.Text = "\u00AD"
-			applyRunProps(r.RPr, &tr)
+			applyRunProps(r.RPr, &tr, themeFontMap)
 			out = append(out, tr)
 			return out, items
 		}
@@ -944,7 +989,7 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 			tr.IsHyperlink = true
 			tr.HyperlinkURL = fieldURL
 		}
-		applyRunProps(r.RPr, &tr)
+		applyRunProps(r.RPr, &tr, themeFontMap)
 		out = append(out, tr)
 		return out, items
 	}
@@ -1030,7 +1075,7 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 	return runs, tbItems
 }
 
-func parseTable(tbl DocTbl, relMap map[string]string, styleMap map[string]StyleDef, styleNameMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string) *ParsedTable {
+func parseTable(tbl DocTbl, relMap map[string]string, styleMap map[string]StyleDef, styleNameMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, themeFontMap map[string]string) *ParsedTable {
 	t := &ParsedTable{}
 
 	if tbl.TblPr != nil {
@@ -1122,7 +1167,7 @@ func parseTable(tbl DocTbl, relMap map[string]string, styleMap map[string]StyleD
 					}
 				}
 			}
-			pc.Content = parseContentItems(cell.Paras, cell.Tables, cell.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode)
+			pc.Content = parseContentItems(cell.Paras, cell.Tables, cell.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
 			pr.Cells = append(pr.Cells, pc)
 		}
 		t.Rows = append(t.Rows, pr)
@@ -1200,17 +1245,41 @@ func extractTheme(themeXML []byte) *ThemeData {
 	if err := xml.Unmarshal(themeXML, &theme); err != nil {
 		return nil
 	}
-	td := &ThemeData{}
+	td := &ThemeData{FontMap: make(map[string]string)}
 	if theme.ThemeElements != nil {
-		if fs := theme.ThemeElements.FontScheme; fs != nil && fs.Minor != nil {
-			if fs.Minor.Latin != nil && fs.Minor.Latin.Typeface != "" {
-				td.Font = fs.Minor.Latin.Typeface
+		if fs := theme.ThemeElements.FontScheme; fs != nil {
+			if fs.Minor != nil {
+				if fs.Minor.Latin != nil && fs.Minor.Latin.Typeface != "" {
+					td.Font = fs.Minor.Latin.Typeface
+				}
+				if fs.Minor.Ea != nil && fs.Minor.Ea.Typeface != "" {
+					td.FontEA = fs.Minor.Ea.Typeface
+				}
+				if fs.Minor.Cs != nil && fs.Minor.Cs.Typeface != "" {
+					td.FontCS = fs.Minor.Cs.Typeface
+				}
+				if fs.Minor.Latin != nil && fs.Minor.Latin.Typeface != "" {
+					td.FontMap["minorHAnsi"] = fs.Minor.Latin.Typeface
+					td.FontMap["minorAscii"] = fs.Minor.Latin.Typeface
+				}
+				if fs.Minor.Ea != nil && fs.Minor.Ea.Typeface != "" {
+					td.FontMap["minorEastAsia"] = fs.Minor.Ea.Typeface
+				}
+				if fs.Minor.Cs != nil && fs.Minor.Cs.Typeface != "" {
+					td.FontMap["minorBidi"] = fs.Minor.Cs.Typeface
+				}
 			}
-			if fs.Minor.Ea != nil && fs.Minor.Ea.Typeface != "" {
-				td.FontEA = fs.Minor.Ea.Typeface
-			}
-			if fs.Minor.Cs != nil && fs.Minor.Cs.Typeface != "" {
-				td.FontCS = fs.Minor.Cs.Typeface
+			if fs.Major != nil {
+				if fs.Major.Latin != nil && fs.Major.Latin.Typeface != "" {
+					td.FontMap["majorHAnsi"] = fs.Major.Latin.Typeface
+					td.FontMap["majorAscii"] = fs.Major.Latin.Typeface
+				}
+				if fs.Major.Ea != nil && fs.Major.Ea.Typeface != "" {
+					td.FontMap["majorEastAsia"] = fs.Major.Ea.Typeface
+				}
+				if fs.Major.Cs != nil && fs.Major.Cs.Typeface != "" {
+					td.FontMap["majorBidi"] = fs.Major.Cs.Typeface
+				}
 			}
 		}
 		if cs := theme.ThemeElements.ClrScheme; cs != nil {
@@ -1303,7 +1372,7 @@ func extractHyperlinkURL(instr string) (string, bool) {
 	return rest, true
 }
 
-func applyRunProps(rPr *RunProps, tr *TextRun) {
+func applyRunProps(rPr *RunProps, tr *TextRun, themeFontMap map[string]string) {
 	if rPr == nil {
 		return
 	}
@@ -1329,9 +1398,29 @@ func applyRunProps(rPr *RunProps, tr *TextRun) {
 			tr.FontFamily = rPr.RFonts.Ascii
 		} else if rPr.RFonts.HAnsi != "" {
 			tr.FontFamily = rPr.RFonts.HAnsi
+		} else if rPr.RFonts.AsciiTheme != "" {
+			if f, ok := themeFontMap[rPr.RFonts.AsciiTheme]; ok {
+				tr.FontFamily = f
+			}
+		} else if rPr.RFonts.HAnsiTheme != "" {
+			if f, ok := themeFontMap[rPr.RFonts.HAnsiTheme]; ok {
+				tr.FontFamily = f
+			}
 		}
-		tr.FontEA = rPr.RFonts.EastAsia
-		tr.FontCS = rPr.RFonts.CS
+		if rPr.RFonts.EastAsia != "" {
+			tr.FontEA = rPr.RFonts.EastAsia
+		} else if rPr.RFonts.EastAsiaTheme != "" {
+			if f, ok := themeFontMap[rPr.RFonts.EastAsiaTheme]; ok {
+				tr.FontEA = f
+			}
+		}
+		if rPr.RFonts.CS != "" {
+			tr.FontCS = rPr.RFonts.CS
+		} else if rPr.RFonts.CSTheme != "" {
+			if f, ok := themeFontMap[rPr.RFonts.CSTheme]; ok {
+				tr.FontCS = f
+			}
+		}
 	}
 	if rPr.Sz != nil {
 		tr.FontSizePt = float64(rPr.Sz.Val) / 2.0
@@ -1372,16 +1461,20 @@ func formatBorderStyle(val string) string {
 func buildBorderAttr(top, bot, left, right *BorderInfo) string {
 	var parts []string
 	if top != nil && top.Val != "none" && top.Val != "" {
-		parts = append(parts, fmt.Sprintf("bt %d %s%d #%s", top.Sz, formatBorderStyle(top.Val), top.Space, top.Color))
+		w := float64(top.Sz) / 576.0
+		parts = append(parts, fmt.Sprintf("bt %.3f %s%d #%s", w, formatBorderStyle(top.Val), top.Space, top.Color))
 	}
 	if bot != nil && bot.Val != "none" && bot.Val != "" {
-		parts = append(parts, fmt.Sprintf("bb %d %s%d #%s", bot.Sz, formatBorderStyle(bot.Val), bot.Space, bot.Color))
+		w := float64(bot.Sz) / 576.0
+		parts = append(parts, fmt.Sprintf("bb %.3f %s%d #%s", w, formatBorderStyle(bot.Val), bot.Space, bot.Color))
 	}
 	if left != nil && left.Val != "none" && left.Val != "" {
-		parts = append(parts, fmt.Sprintf("bl %d %s%d #%s", left.Sz, formatBorderStyle(left.Val), left.Space, left.Color))
+		w := float64(left.Sz) / 576.0
+		parts = append(parts, fmt.Sprintf("bl %.3f %s%d #%s", w, formatBorderStyle(left.Val), left.Space, left.Color))
 	}
 	if right != nil && right.Val != "none" && right.Val != "" {
-		parts = append(parts, fmt.Sprintf("br %d %s%d #%s", right.Sz, formatBorderStyle(right.Val), right.Space, right.Color))
+		w := float64(right.Sz) / 576.0
+		parts = append(parts, fmt.Sprintf("br %.3f %s%d #%s", w, formatBorderStyle(right.Val), right.Space, right.Color))
 	}
 	return strings.Join(parts, "; ")
 }
@@ -2040,10 +2133,10 @@ func buildInlineText(runs []TextRun, defaultFont StyleDef, mode string, isCode .
 				if r.FontFamily != "" && r.FontFamily != defaultFont.Family {
 					spanAttrs += fmt.Sprintf(" font=\"%s\"", r.FontFamily)
 				}
-				if r.FontEA != "" {
+				if r.FontEA != "" && r.FontEA != defaultFont.FontEA {
 					spanAttrs += fmt.Sprintf(" fontEA=\"%s\"", r.FontEA)
 				}
-				if r.FontCS != "" {
+				if r.FontCS != "" && r.FontCS != defaultFont.FontCS {
 					spanAttrs += fmt.Sprintf(" fontCS=\"%s\"", r.FontCS)
 				}
 				if r.FontSizePt > 0 && r.FontSizePt != defaultFont.SizePt {
@@ -2143,10 +2236,6 @@ func writeTableIndent(b *strings.Builder, t *ParsedTable, doc *ParsedDocument, i
 		fmt.Fprintf(b, " at=\"%s\"", at)
 	}
 	b.WriteString(">\n")
-
-	for i, w := range t.Grid {
-		fmt.Fprintf(b, "%s  <colspec ref=\"%d\" w=\"%.2f\"/>\n", indent, i+1, w)
-	}
 
 	for _, row := range t.Rows {
 		tag := "td"

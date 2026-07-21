@@ -105,7 +105,7 @@ func TestVerifyBadTableID(t *testing.T) {
 	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><table id="abc">` +
-		`<colspec ref="1" w="1.0"/><tr><td>x</td></tr>` +
+		`<tr><td>x</td></tr>` +
 		`</table></write></words>`
 	r := Verify(input)
 	if r.Valid {
@@ -120,7 +120,7 @@ func TestVerifyBadColSpec(t *testing.T) {
 		`<tr><td>x</td></tr></table></write></words>`
 	r := Verify(input)
 	if r.Valid {
-		t.Error("expected invalid for missing colspec ref/w")
+		t.Error("expected invalid for colspec inside table (unexpected element)")
 	}
 }
 
@@ -128,7 +128,7 @@ func TestVerifyBadAlign(t *testing.T) {
 	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><table id="1" align="wrong">` +
-		`<colspec ref="1" w="1.0"/><tr><td>x</td></tr>` +
+		`<tr><td>x</td></tr>` +
 		`</table></write></words>`
 	r := Verify(input)
 	if r.Valid {
@@ -140,7 +140,6 @@ func TestVerifyBadColspan(t *testing.T) {
 	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><table id="1">` +
-		`<colspec ref="1" w="1.0"/>` +
 		`<tr><td colspan="abc">x</td></tr></table></write></words>`
 	r := Verify(input)
 	if r.Valid {
@@ -152,7 +151,6 @@ func TestVerifyBadValign(t *testing.T) {
 	input := `<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><table id="1">` +
-		`<colspec ref="1" w="1.0"/>` +
 		`<tr><td valign="wrong">x</td></tr></table></write></words>`
 	r := Verify(input)
 	if r.Valid {
@@ -282,7 +280,6 @@ func TestVerifyValidFullDoc(t *testing.T) {
 		`<p dir="rtl" lang="ar">text</p>` +
 		`<h1>Title</h1>` +
 		`<table id="1" align="center" caption="C" summary="S">` +
-		`<colspec ref="1" w="1.0"/><colspec ref="1" w="2.0"/>` +
 		`<tr><th colspan="2" valign="center">H</th></tr>` +
 		`<tr><td rowspan="2" noWrap="true">C</td><td>x</td></tr>` +
 		`</table>` +

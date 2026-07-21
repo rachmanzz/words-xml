@@ -210,6 +210,7 @@ func verifyStyle(tokens []xml.Token, start xml.StartElement, idx *int, r *Verify
 	validStyle := map[string]bool{
 		"page": true, "gap": true, "custom": true, "col": true,
 		"cols": true, "align": true, "line": true, "tab": true,
+		"theme": true, "indent": true,
 	}
 
 	for _, tok := range section {
@@ -314,16 +315,6 @@ func verifyTable(start xml.StartElement, tokens []xml.Token, idx *int, r *Verify
 	}
 	section := tokens[*idx+1 : endIdx]
 
-	hasColSpec := false
-	for _, tok := range section {
-		if s, ok := tok.(xml.StartElement); ok {
-			if s.Name.Local == "colspec" {
-				verifyColSpec(s, r)
-				hasColSpec = true
-			}
-		}
-	}
-
 	for i := 0; i < len(section); i++ {
 		tok := section[i]
 		start, ok := tok.(xml.StartElement)
@@ -332,14 +323,13 @@ func verifyTable(start xml.StartElement, tokens []xml.Token, idx *int, r *Verify
 		}
 		if start.Name.Local == "tr" {
 			verifyTableRow(start, section, &i, r)
-		} else if start.Name.Local != "colspec" {
+		} else if start.Name.Local == "colspec" {
+			r.addError("<colspec> is not valid inside <table>; use <s:col> in <style> instead")
+		} else {
 			r.addWarn("unexpected element <%s> inside <table>", start.Name.Local)
 		}
 	}
 
-	if !hasColSpec {
-		r.addWarn("<table> missing <colspec>")
-	}
 	*idx = endIdx
 }
 
