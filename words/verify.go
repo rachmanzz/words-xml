@@ -554,6 +554,24 @@ func verifyInlineAttrs(start xml.StartElement, elemType string, r *VerifyResult)
 			}
 		case "class":
 			// ok
+		case "align":
+			valid := map[string]bool{"center": true, "both": true, "right": true}
+			if !valid[a.Value] {
+				r.addError("<%s> align must be center|both|right, got %q", elemType, a.Value)
+			}
+		case "indentLeft", "indentHanging", "indentRight", "indentFirst":
+			if _, err := strconv.ParseFloat(a.Value, 64); err != nil {
+				r.addError("<%s> %s must be number, got %q", elemType, a.Name.Local, a.Value)
+			}
+		case "valign":
+			valid := map[string]bool{"top": true, "center": true, "bottom": true, "baseline": true}
+			if !valid[a.Value] {
+				r.addError("<%s> valign must be top|center|bottom|baseline, got %q", elemType, a.Value)
+			}
+		case "c":
+			// ok, custom style name
+		case "at":
+			// ok, border attribute
 		}
 	}
 }

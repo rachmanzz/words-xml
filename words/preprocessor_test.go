@@ -2744,3 +2744,66 @@ func TestParseParagraphTextAlign(t *testing.T) {
 		t.Errorf("expected valign, got: %s", doc.WordsXML)
 	}
 }
+
+func TestPerParagraphIndent(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:ind w:left="720" w:hanging="480"/></w:pPr>
+    <w:r><w:t>Indented paragraph</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `indentLeft="0.50"`) {
+		t.Errorf("expected indentLeft, got: %s", x)
+	}
+	if !strings.Contains(x, `indentHanging="0.33"`) {
+		t.Errorf("expected indentHanging, got: %s", x)
+	}
+}
+
+func TestPerParagraphIndentFirstLine(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:ind w:left="360" w:firstLine="360"/></w:pPr>
+    <w:r><w:t>First line indent</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `indentLeft="0.25"`) {
+		t.Errorf("expected indentLeft, got: %s", x)
+	}
+	if !strings.Contains(x, `indentFirst="0.25"`) {
+		t.Errorf("expected indentFirst, got: %s", x)
+	}
+}
+
+func TestPerParagraphIndentRight(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:ind w:left="360" w:right="720"/></w:pPr>
+    <w:r><w:t>Right indent</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `indentLeft="0.25"`) {
+		t.Errorf("expected indentLeft, got: %s", x)
+	}
+	if !strings.Contains(x, `indentRight="0.50"`) {
+		t.Errorf("expected indentRight, got: %s", x)
+	}
+}

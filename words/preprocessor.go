@@ -2350,6 +2350,18 @@ func writeParagraphAttrs(b *strings.Builder, p *ParsedParagraph) {
 	if p.Align != "" && p.Align != "left" {
 		fmt.Fprintf(b, " align=\"%s\"", p.Align)
 	}
+	if p.IndentLeft > 0 {
+		fmt.Fprintf(b, " indentLeft=\"%.2f\"", p.IndentLeft)
+	}
+	if p.IndentHanging > 0 {
+		fmt.Fprintf(b, " indentHanging=\"%.2f\"", p.IndentHanging)
+	}
+	if p.IndentRight > 0 {
+		fmt.Fprintf(b, " indentRight=\"%.2f\"", p.IndentRight)
+	}
+	if p.IndentFirst > 0 {
+		fmt.Fprintf(b, " indentFirst=\"%.2f\"", p.IndentFirst)
+	}
 	if p.Bidi {
 		b.WriteString(" dir=\"rtl\"")
 	}
