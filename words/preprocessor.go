@@ -2188,31 +2188,48 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 			idx++
 			for idx < len(doc.Content) {
 				next := doc.Content[idx]
-				if next.Type != "list" || next.Paragraph.NumID != numID {
-					break
-				}
-				if doc.NumToAbstract != nil && startAbstractID >= 0 {
-					if doc.NumToAbstract[next.Paragraph.NumID] != startAbstractID {
+				if next.Type == "list" && next.Paragraph.NumID == numID {
+					if doc.NumToAbstract != nil && startAbstractID >= 0 {
+						if doc.NumToAbstract[next.Paragraph.NumID] != startAbstractID {
+							break
+						}
+					}
+					nl := next.Paragraph.ListLevel
+					if nl < level {
 						break
 					}
-				}
-				nl := next.Paragraph.ListLevel
-				if nl < level {
-					break
-				}
-				if nl == level {
-					break
-				}
-				nestedTag, nestedTypeAttr := listTagAndType(next.Paragraph, doc)
-				fmt.Fprintf(b, "%s  <%s type=\"%s\"", indent, nestedTag, nestedTypeAttr)
-				if nestedTag == "ol" {
-					if st := listStart(next.Paragraph, doc); st > 1 {
-						fmt.Fprintf(b, " start=\"%d\"", st)
+					if nl == level {
+						break
 					}
+					nestedTag, nestedTypeAttr := listTagAndType(next.Paragraph, doc)
+					fmt.Fprintf(b, "%s  <%s type=\"%s\"", indent, nestedTag, nestedTypeAttr)
+					if nestedTag == "ol" {
+						if st := listStart(next.Paragraph, doc); st > 1 {
+							fmt.Fprintf(b, " start=\"%d\"", st)
+						}
+					}
+					b.WriteString(">\n")
+					idx = emitListItems(b, idx, numID, nl, indent+"    ", doc)
+					fmt.Fprintf(b, "%s  </%s>\n", indent, nestedTag)
+					continue
 				}
-				b.WriteString(">\n")
-				idx = emitListItems(b, idx, numID, nl, indent+"    ", doc)
-				fmt.Fprintf(b, "%s  </%s>\n", indent, nestedTag)
+				if next.Type == "paragraph" && hasSameNumIDAhead(doc.Content, idx, numID, startAbstractID) {
+					continueContent := buildInlineText(next.Paragraph.Runs, doc.DefaultFont, doc.Mode)
+					if continueContent != "" {
+						fmt.Fprintf(b, "%s%s\n", indent, continueContent)
+					}
+					idx++
+					continue
+				}
+				if next.Type == "paragraph" && next.Paragraph != nil && !isSectionBreak(next.Paragraph) {
+					continueContent := buildInlineText(next.Paragraph.Runs, doc.DefaultFont, doc.Mode)
+					if continueContent != "" {
+						fmt.Fprintf(b, "%s%s\n", indent, continueContent)
+					}
+					idx++
+					continue
+				}
+				break
 			}
 			fmt.Fprintf(b, "%s</li>\n", indent)
 			continue
@@ -2234,6 +2251,27 @@ func hasSameNumIDAhead(items []ContentItem, from int, numID int, abstractID int)
 		if i-from > 20 {
 			return false
 		}
+	}
+	return false
+}
+
+func isSectionBreak(p *ParsedParagraph) bool {
+	if p == nil || len(p.Runs) == 0 {
+		return false
+	}
+	text := ""
+	for _, r := range p.Runs {
+		text += r.Text
+	}
+	text = strings.TrimSpace(text)
+	if len(text) == 0 {
+		return true
+	}
+	if strings.HasPrefix(text, "--------") || strings.HasPrefix(text, "------ ") {
+		return true
+	}
+	if p.HeadingLevel > 0 {
+		return true
 	}
 	return false
 }
