@@ -12,6 +12,27 @@ func makeMinimalDocx(bodyXML string) []byte {
 	return makeDocxWithParts(bodyXML, "", "", "")
 }
 
+func makeDocxWithFootnotes(bodyXML, footnotesXML string) []byte {
+	var buf bytes.Buffer
+	w := zip.NewWriter(&buf)
+
+	addZipFile := func(name, content string) {
+		if content == "" {
+			return
+		}
+		f, _ := w.Create(name)
+		f.Write([]byte(content))
+	}
+
+	addZipFile("word/document.xml", bodyXML)
+	if footnotesXML != "" {
+		addZipFile("word/footnotes.xml", footnotesXML)
+	}
+
+	w.Close()
+	return buf.Bytes()
+}
+
 func makeDocxWithParts(bodyXML, stylesXML, numberingXML, relsXML string) []byte {
 	var buf bytes.Buffer
 	w := zip.NewWriter(&buf)
@@ -609,6 +630,83 @@ func TestBookmark(t *testing.T) {
 	x := doc.WordsXML
 	if !strings.Contains(x, `<bm id="Section1"/>`) {
 		t.Errorf("expected <bm id=\"Section1\"/>, got: %s", x)
+	}
+}
+
+func TestBuildBodyNoteOrder(t *testing.T) {
+	docXML := []byte(xmlHeader + `<w:body>
+  <w:bookmarkStart w:id="0" w:name="Bm1"/>
+  <w:p><w:r><w:t>Para 1</w:t></w:r></w:p>
+  <w:bookmarkStart w:id="1" w:name="Bm2"/>
+  <w:p><w:r><w:t>Para 2</w:t></w:r></w:p>
+  <w:p><w:r><w:t>Para 3</w:t></w:r></w:p>
+</w:body></w:document>`)
+	bmOrder, _ := buildBodyNoteOrder(docXML)
+	if bmOrder[0] != 0 {
+		t.Errorf("expected Bm1 at pos 0, got %d", bmOrder[0])
+	}
+	if bmOrder[1] != 2 {
+		t.Errorf("expected Bm2 at pos 2, got %d", bmOrder[1])
+	}
+}
+
+func TestBuildBodyNoteOrderWithFootnoteRef(t *testing.T) {
+	docXML := []byte(xmlHeader + `<w:body>
+  <w:p><w:r><w:t>Para 1</w:t></w:r></w:p>
+  <w:p><w:r><w:footnoteReference w:id="1"/></w:r><w:r><w:t>Para 2</w:t></w:r></w:p>
+  <w:p><w:r><w:t>Para 3</w:t></w:r></w:p>
+</w:body></w:document>`)
+	_, noteRefOrder := buildBodyNoteOrder(docXML)
+	key := "footnote_1"
+	if pos, ok := noteRefOrder[key]; !ok {
+		t.Errorf("expected footnote_1 in noteRefOrder")
+	} else if pos != 1 {
+		t.Errorf("expected footnote_1 at pos 1, got %d", pos)
+	}
+}
+
+func TestDocumentOrderNotes(t *testing.T) {
+	notesXML := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:footnotes xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:footnote w:type="normal" w:id="1"><w:p><w:r><w:t>Fn1</w:t></w:r></w:p></w:footnote>
+  <w:footnote w:type="normal" w:id="2"><w:p><w:r><w:t>Fn2</w:t></w:r></w:p></w:footnote>
+</w:footnotes>`
+	body := xmlHeader + `<w:body>
+  <w:bookmarkStart w:id="0" w:name="Bm1"/>
+  <w:p><w:r><w:footnoteReference w:id="1"/></w:r><w:r><w:t>Text</w:t></w:r></w:p>
+  <w:bookmarkStart w:id="1" w:name="Bm2"/>
+  <w:p><w:r><w:footnoteReference w:id="2"/></w:r><w:r><w:t>Text</w:t></w:r></w:p>
+</w:body></w:document>`
+	data := makeDocxWithFootnotes(body, notesXML)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	bm1Idx := strings.Index(x, `<bm id="Bm1"/>`)
+	bm2Idx := strings.Index(x, `<bm id="Bm2"/>`)
+	fn1Idx := strings.Index(x, `<fn id="1"`)
+	fn2Idx := strings.Index(x, `<fn id="2"`)
+	if bm1Idx < 0 {
+		t.Fatal("Bm1 not found")
+	}
+	if bm2Idx < 0 {
+		t.Fatal("Bm2 not found")
+	}
+	if fn1Idx < 0 {
+		t.Fatal("fn id=1 not found")
+	}
+	if fn2Idx < 0 {
+		t.Fatal("fn id=2 not found")
+	}
+	if bm1Idx > fn1Idx {
+		t.Errorf("Bm1 should come before fn1: bm1=%d fn1=%d", bm1Idx, fn1Idx)
+	}
+	if fn1Idx > bm2Idx {
+		t.Errorf("fn1 should come before Bm2: fn1=%d bm2=%d", fn1Idx, bm2Idx)
+	}
+	if bm2Idx > fn2Idx {
+		t.Errorf("Bm2 should come before fn2: bm2=%d fn2=%d", bm2Idx, fn2Idx)
 	}
 }
 

@@ -60,12 +60,13 @@ type ContentItem struct {
 }
 
 type NoteItem struct {
-	Type   string
-	ID     int
-	Name   string
-	Author string
-	Date   string
-	Body   []ContentItem
+	Type    string
+	ID      int
+	Name    string
+	Author  string
+	Date    string
+	Body    []ContentItem
+	DocOrder int
 }
 
 type StyleDef struct {

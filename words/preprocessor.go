@@ -314,11 +314,26 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 
 	doc.Content = parseContentItems(body.Paras, body.Tables, body.Sdts, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode, themeFontMap)
 
-	for _, bm := range body.Bookmarks {
-		if bm.Name != "" {
-			doc.Notes = append(doc.Notes, NoteItem{Type: "bm", ID: bm.ID, Name: bm.Name, Body: nil})
+	bmOrder, noteRefOrder := buildBodyNoteOrder(docXML)
+	for i := range doc.Notes {
+		n := &doc.Notes[i]
+		key := fmt.Sprintf("%s_%d", n.Type, n.ID)
+		if pos, ok := noteRefOrder[key]; ok {
+			n.DocOrder = pos
 		}
 	}
+	for _, bm := range body.Bookmarks {
+		if bm.Name != "" {
+			docOrder := -1
+			if pos, ok := bmOrder[bm.ID]; ok {
+				docOrder = pos
+			}
+			doc.Notes = append(doc.Notes, NoteItem{Type: "bm", ID: bm.ID, Name: bm.Name, Body: nil, DocOrder: docOrder})
+		}
+	}
+	sort.SliceStable(doc.Notes, func(i, j int) bool {
+		return doc.Notes[i].DocOrder < doc.Notes[j].DocOrder
+	})
 
 	tableID := 0
 	var assignTableIDs func(items []ContentItem)
@@ -371,6 +386,108 @@ func sortedKeys(m map[string][]ContentItem) []string {
 		}
 	}
 	return keys
+}
+
+var (
+	wmlNS      = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	bookTag    = wmlNS + " bookmarkStart"
+	pTag       = wmlNS + " p"
+	rTag       = wmlNS + " r"
+	fnRefTag   = wmlNS + " footnoteReference"
+	enRefTag   = wmlNS + " endnoteReference"
+	cmRefTag   = wmlNS + " commentReference"
+	insTag     = wmlNS + " ins"
+	delTag     = wmlNS + " del"
+)
+
+func buildBodyNoteOrder(docXML []byte) (bmOrder map[int]int, noteRefOrder map[string]int) {
+	bmOrder = make(map[int]int)
+	noteRefOrder = make(map[string]int)
+	decoder := xml.NewDecoder(bytes.NewReader(docXML))
+	inBody := false
+	bodyPos := 0
+	inIns := false
+	inDel := false
+	inP := false
+	pPos := -1
+	for {
+		tok, err := decoder.Token()
+		if err != nil {
+			break
+		}
+		switch t := tok.(type) {
+		case xml.StartElement:
+			fullName := t.Name.Space + " " + t.Name.Local
+			switch {
+			case !inBody && fullName == wmlNS+" body":
+				inBody = true
+			case inBody && fullName == bookTag:
+				id := -1
+				for _, a := range t.Attr {
+					if a.Name.Local == "id" {
+						if v, err := strconv.Atoi(a.Value); err == nil {
+							id = v
+						}
+					}
+				}
+				if id >= 0 {
+					bmOrder[id] = bodyPos
+				}
+				bodyPos++
+			case inBody && fullName == pTag:
+				inP = true
+				pPos = bodyPos
+				bodyPos++
+			case inP && fullName == rTag:
+			case inP && fullName == insTag:
+				inIns = true
+			case inP && fullName == delTag:
+				inDel = true
+			case inP && (fullName == fnRefTag || fullName == enRefTag || fullName == cmRefTag) && !inIns && !inDel:
+				id := -1
+				ntype := ""
+				switch fullName {
+				case fnRefTag:
+					ntype = "footnote"
+				case enRefTag:
+					ntype = "endnote"
+				case cmRefTag:
+					ntype = "comment"
+				}
+				for _, a := range t.Attr {
+					if a.Name.Local == "id" {
+						if v, err := strconv.Atoi(a.Value); err == nil {
+							id = v
+						}
+					}
+				}
+				if id >= 0 && ntype != "" {
+					key := fmt.Sprintf("%s_%d", ntype, id)
+					if _, exists := noteRefOrder[key]; !exists {
+						noteRefOrder[key] = pPos
+					}
+				}
+			case inBody && (fullName == wmlNS+" tbl" || fullName == wmlNS+" sdt"):
+				bodyPos++
+			case inBody && fullName == wmlNS+" sectPr":
+				bodyPos++
+			}
+		case xml.EndElement:
+			fullName := t.Name.Space + " " + t.Name.Local
+			switch {
+			case inP && fullName == pTag:
+				inP = false
+				pPos = -1
+				inIns = false
+				inDel = false
+			case inP && fullName == insTag:
+				inIns = false
+			case inP && fullName == delTag:
+				inDel = false
+			}
+		}
+	}
+	return bmOrder, noteRefOrder
 }
 
 func unmarshalHeader(data []byte) (*DocHeader, error) {
