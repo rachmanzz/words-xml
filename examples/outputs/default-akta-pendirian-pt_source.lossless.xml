@@ -28,6 +28,8 @@
     <s:custom name="No List" type="numbering"/>
     <s:custom name="Normal Table" type="table"/>
     <s:theme font="Aptos"/>
+    <s:align el="p" value="center"/>
+    <s:align el="p" value="both"/>
   </style>
   <write>
     <p><b><span font="Courier New" fontCS="Courier New" lang="fr-FR">AKTA PENDIRIAN PERSEROAN TERBATAS</span></b></p>

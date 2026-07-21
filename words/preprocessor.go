@@ -2090,6 +2090,34 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 		b.WriteString("/>\n")
 	}
 
+	alignSeen := make(map[string]bool)
+	for _, item := range doc.Content {
+		if item.Type != "paragraph" || item.Paragraph == nil {
+			continue
+		}
+		p := item.Paragraph
+		if p.Align == "" {
+			continue
+		}
+		if p.StyleID != "" {
+			if sd, ok := doc.StyleMap[p.StyleID]; ok && sd.Align == p.Align {
+				continue
+			}
+		}
+		var el string
+		if p.HeadingLevel > 0 {
+			el = fmt.Sprintf("h%d", p.HeadingLevel)
+		} else {
+			el = "p"
+		}
+		key := fmt.Sprintf("%s_%s", el, p.Align)
+		if alignSeen[key] {
+			continue
+		}
+		alignSeen[key] = true
+		fmt.Fprintf(b, "    <s:align el=\"%s\" value=\"%s\"/>\n", el, p.Align)
+	}
+
 	b.WriteString("  </style>\n")
 }
 
