@@ -1080,11 +1080,11 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 
 		tr := TextRun{}
 
-	if r.Tab != nil {
-		tr.IsTab = true
-		out = append(out, tr)
-		tr = TextRun{}
-	}
+		if r.Tab != nil {
+			tr.IsTab = true
+			out = append(out, tr)
+			tr = TextRun{}
+		}
 
 		if r.Break != nil {
 			tr.IsLineBreak = true
@@ -1093,7 +1093,7 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 				tr.BreakType = "textWrapping"
 			}
 			out = append(out, tr)
-			return out, items
+			tr = TextRun{}
 		}
 
 		if r.NoBreakHyphen != nil {
