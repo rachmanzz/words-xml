@@ -2216,7 +2216,7 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 				if next.Type == "paragraph" && hasSameNumIDAhead(doc.Content, idx, numID, startAbstractID) {
 					continueContent := buildInlineText(next.Paragraph.Runs, doc.DefaultFont, doc.Mode)
 					if continueContent != "" {
-						fmt.Fprintf(b, "%s%s\n", indent, continueContent)
+						fmt.Fprintf(b, "<br type=\"textWrapping\"/>%s%s\n", indent, continueContent)
 					}
 					idx++
 					continue
@@ -2224,7 +2224,7 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 				if next.Type == "paragraph" && next.Paragraph != nil && !isSectionBreak(next.Paragraph) {
 					continueContent := buildInlineText(next.Paragraph.Runs, doc.DefaultFont, doc.Mode)
 					if continueContent != "" {
-						fmt.Fprintf(b, "%s%s\n", indent, continueContent)
+						fmt.Fprintf(b, "<br type=\"textWrapping\"/>%s%s\n", indent, continueContent)
 					}
 					idx++
 					continue
