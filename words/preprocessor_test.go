@@ -523,6 +523,48 @@ func TestHyperlinkAnchor(t *testing.T) {
 	}
 }
 
+func TestHyperlinkFieldLocalAnchor(t *testing.T) {
+	// HYPERLINK \l "section1" — local bookmark via instrText
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:r><w:fldChar w:fldCharType="begin"/></w:r>
+    <w:r><w:instrText> HYPERLINK \l "section1" </w:instrText></w:r>
+    <w:r><w:fldChar w:fldCharType="separate"/></w:r>
+    <w:r><w:t>local anchor</w:t></w:r>
+    <w:r><w:fldChar w:fldCharType="end"/></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `href="#section1"`) {
+		t.Errorf("expected local anchor href=#section1, got: %s", doc.WordsXML)
+	}
+}
+
+func TestHyperlinkFieldWithOptions(t *testing.T) {
+	// HYPERLINK "url" \o "tooltip" — URL with options, only URL extracted
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:r><w:fldChar w:fldCharType="begin"/></w:r>
+    <w:r><w:instrText> HYPERLINK "https://example.com" \o "tooltip" </w:instrText></w:r>
+    <w:r><w:fldChar w:fldCharType="separate"/></w:r>
+    <w:r><w:t>with options</w:t></w:r>
+    <w:r><w:fldChar w:fldCharType="end"/></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `href="https://example.com"`) {
+		t.Errorf("expected href=https://example.com, got: %s", doc.WordsXML)
+	}
+}
+
 func TestParaDefaultBoldNotLeakToRunWithRPr(t *testing.T) {
 	// Paragraph has pPr/rPr/w:b (paragraph-level bold default).
 	// Run[0] has no rPr -> should inherit bold.

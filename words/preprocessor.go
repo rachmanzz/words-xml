@@ -865,7 +865,7 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 			}
 			lp.HeadingLevel = resolveHeadingLevel(lp.StyleID, lp.StyleName, styleMap)
 		}
-		if p.PPr.Bidi != nil {
+		if p.PPr.Bidi.IsOn() {
 			lp.Bidi = true
 		}
 		if p.PPr.Lang != nil && p.PPr.Lang.Val != "" {
@@ -928,13 +928,13 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 		if p.PPr.Shd != nil {
 			lp.Shading = p.PPr.Shd.Fill
 		}
-		if p.PPr.KeepNext != nil {
+		if p.PPr.KeepNext.IsOn() {
 			lp.KeepNext = true
 		}
-		if p.PPr.KeepLines != nil {
+		if p.PPr.KeepLines.IsOn() {
 			lp.KeepLines = true
 		}
-		if p.PPr.WidowControl != nil {
+		if p.PPr.WidowControl.IsOn() {
 			lp.WidowControl = true
 		}
 		if p.PPr.RPr != nil {
@@ -992,34 +992,34 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 			lp.RevisionAuthor = p.PPr.PPrChange.Author
 			lp.RevisionDate = p.PPr.PPrChange.Date
 		}
-		if p.PPr.SuppressAutoHyph != nil {
+		if p.PPr.SuppressAutoHyph.IsOn() {
 			lp.SuppressAutoHyph = true
 		}
-		if p.PPr.SnapToGrid != nil {
+		if p.PPr.SnapToGrid.IsOn() {
 			lp.SnapToGrid = true
 		}
-		if p.PPr.Kinsoku != nil {
+		if p.PPr.Kinsoku.IsOn() {
 			lp.Kinsoku = true
 		}
-		if p.PPr.WordWrap != nil {
+		if p.PPr.WordWrap.IsOn() {
 			lp.WordWrap = true
 		}
-		if p.PPr.OverflowPunct != nil {
+		if p.PPr.OverflowPunct.IsOn() {
 			lp.OverflowPunct = true
 		}
-		if p.PPr.TopLinePunct != nil {
+		if p.PPr.TopLinePunct.IsOn() {
 			lp.TopLinePunct = true
 		}
-		if p.PPr.AutoSpaceDE != nil {
+		if p.PPr.AutoSpaceDE.IsOn() {
 			lp.AutoSpaceDE = true
 		}
-		if p.PPr.AutoSpaceDN != nil {
+		if p.PPr.AutoSpaceDN.IsOn() {
 			lp.AutoSpaceDN = true
 		}
 		if p.PPr.TextDirection != nil {
 			lp.TextDirection = p.PPr.TextDirection.Val
 		}
-		if p.PPr.SuppressOverlap != nil {
+		if p.PPr.SuppressOverlap.IsOn() {
 			lp.SuppressOverlap = true
 		}
 		if p.PPr.DivID != nil {
@@ -1268,7 +1268,7 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 		return out, items
 	}
 
-	if p.PPr != nil && p.PPr.PageBreakBefore != nil {
+	if p.PPr != nil && p.PPr.PageBreakBefore.IsOn() {
 		runs = append(runs, TextRun{IsLineBreak: true, BreakType: "page"})
 	}
 
@@ -1658,12 +1658,47 @@ func extractHyperlinkURL(instr string) (string, bool) {
 	if !strings.HasPrefix(instr, "HYPERLINK") {
 		return "", false
 	}
-	rest := strings.TrimPrefix(instr, "HYPERLINK")
-	rest = strings.TrimSpace(rest)
-	if len(rest) >= 2 && rest[0] == '"' && rest[len(rest)-1] == '"' {
-		return rest[1 : len(rest)-1], true
+	rest := strings.TrimSpace(strings.TrimPrefix(instr, "HYPERLINK"))
+
+	// Handle \l "anchor" — local bookmark link (no URL before \l)
+	// e.g. HYPERLINK \l "section1"  -> #section1
+	if strings.HasPrefix(rest, `\l`) {
+		anchor := strings.TrimSpace(strings.TrimPrefix(rest, `\l`))
+		anchor = strings.Trim(anchor, `"`)
+		if anchor != "" {
+			return "#" + anchor, true
+		}
+		return "", false
 	}
-	return rest, true
+
+	// Extract quoted URL (may be followed by options like \o "tooltip" \t "_blank")
+	// e.g. HYPERLINK "https://example.com" \o "tooltip"
+	if len(rest) > 0 && rest[0] == '"' {
+		end := strings.Index(rest[1:], `"`)
+		if end >= 0 {
+			url := rest[1 : end+1]
+			// Check for \l anchor appended: HYPERLINK "url" \l "anchor"
+			after := strings.TrimSpace(rest[end+2:])
+			if strings.HasPrefix(after, `\l`) {
+				anchor := strings.TrimSpace(strings.TrimPrefix(after, `\l`))
+				anchor = strings.Trim(anchor, `"`)
+				if anchor != "" {
+					return url + "#" + anchor, true
+				}
+			}
+			return url, true
+		}
+	}
+
+	// Bare URL (no quotes)
+	if rest != "" {
+		// Strip any trailing \x options
+		if idx := strings.Index(rest, ` \`); idx >= 0 {
+			rest = strings.TrimSpace(rest[:idx])
+		}
+		return rest, true
+	}
+	return "", false
 }
 
 func applyRunProps(rPr *RunProps, tr *TextRun, themeFontMap map[string]string) {

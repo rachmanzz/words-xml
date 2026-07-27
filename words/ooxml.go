@@ -65,30 +65,30 @@ type ParaProps struct {
 	JC              *JCVal       `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main jc"`
 	Spacing         *SpacingVal  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main spacing"`
 	Ind             *IndVal      `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main ind"`
-	Bidi            *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main bidi"`
+	Bidi            *OnOffVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main bidi"`
 	PBdr            *PBdrProps   `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main pBdr"`
 	Tabs            *TabsVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main tabs"`
-	PageBreakBefore *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main pageBreakBefore"`
+	PageBreakBefore *OnOffVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main pageBreakBefore"`
 	TextAlign       *JCVal       `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main textAlignment"`
 	Lang            *LangVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main lang"`
 	OutlineLvl      *IntVal      `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main outlineLvl"`
 	Shd             *ShdVal      `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main shd"`
-	KeepNext        *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main keepNext"`
-	KeepLines       *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main keepLines"`
-	WidowControl    *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main widowControl"`
+	KeepNext        *OnOffVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main keepNext"`
+	KeepLines       *OnOffVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main keepLines"`
+	WidowControl    *OnOffVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main widowControl"`
 	RPr               *RunProps    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main rPr"`
 	SectPr            *SectPrProps `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main sectPr"`
 	PPrChange         *PPrChange   `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main pPrChange"`
-	SuppressAutoHyph  *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main suppressAutoHyphens"`
-	SnapToGrid        *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main snapToGrid"`
-	Kinsoku           *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main kinsoku"`
-	WordWrap          *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main wordWrap"`
-	OverflowPunct     *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main overflowPunct"`
-	TopLinePunct      *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main topLinePunct"`
-	AutoSpaceDE       *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main autoSpaceDE"`
-	AutoSpaceDN       *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main autoSpaceDN"`
+	SuppressAutoHyph  *OnOffVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main suppressAutoHyphens"`
+	SnapToGrid        *OnOffVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main snapToGrid"`
+	Kinsoku           *OnOffVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main kinsoku"`
+	WordWrap          *OnOffVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main wordWrap"`
+	OverflowPunct     *OnOffVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main overflowPunct"`
+	TopLinePunct      *OnOffVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main topLinePunct"`
+	AutoSpaceDE       *OnOffVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main autoSpaceDE"`
+	AutoSpaceDN       *OnOffVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main autoSpaceDN"`
 	TextDirection      *TextDirVal  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main textDirection"`
-	SuppressOverlap   *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main suppressOverlap"`
+	SuppressOverlap   *OnOffVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main suppressOverlap"`
 	DivID             *IntVal      `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main divId"`
 	CnfStyle          *CnfStyleVal `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main cnfStyle"`
 	FramePr           *FramePrVal  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main framePr"`
@@ -259,7 +259,7 @@ type HighlightVal struct {
 }
 
 type FldCharVal struct {
-	Type string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main type,attr"`
+	Type string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main fldCharType,attr"`
 }
 
 // OnOffVal represents a toggle property that can be explicitly turned off
