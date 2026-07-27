@@ -232,6 +232,120 @@ func TestInlineFormatting(t *testing.T) {
 	}
 }
 
+func TestBoldExplicitOff(t *testing.T) {
+	// w:b val="0" explicitly turns bold OFF — must not emit <b>.
+	// w:i val="0" explicitly turns italic OFF — must not emit <i>.
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:r><w:rPr><w:b w:val="0"/></w:rPr><w:t>NotBold</w:t></w:r>
+    <w:r><w:rPr><w:i w:val="0"/></w:rPr><w:t>NotItalic</w:t></w:r>
+    <w:r><w:rPr><w:b w:val="false"/></w:rPr><w:t>AlsoNotBold</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if strings.Contains(x, "<b>NotBold</b>") {
+		t.Errorf("w:b val=0 should NOT emit bold, got: %s", x)
+	}
+	if strings.Contains(x, "<i>NotItalic</i>") {
+		t.Errorf("w:i val=0 should NOT emit italic, got: %s", x)
+	}
+	if strings.Contains(x, "<b>AlsoNotBold</b>") {
+		t.Errorf("w:b val=false should NOT emit bold, got: %s", x)
+	}
+	// text should still appear
+	if !strings.Contains(x, "NotBold") {
+		t.Errorf("text NotBold should still appear in output")
+	}
+}
+
+func TestBoldExplicitOffOverridesParaDefault(t *testing.T) {
+	// Paragraph default has bold. Run has w:b val="0" — should override and NOT be bold.
+	// This is the key Word behavior: val="0" explicitly cancels inherited bold.
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:rPr><w:b/></w:rPr></w:pPr>
+    <w:r><w:t>inherited-bold</w:t></w:r>
+    <w:r><w:rPr><w:b w:val="0"/></w:rPr><w:t>bold-off</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	// run without rPr inherits paragraph bold
+	if !strings.Contains(x, "<b>inherited-bold</b>") {
+		t.Errorf("expected run without rPr to inherit paragraph bold, got: %s", x)
+	}
+	// run with w:b val="0" should NOT be bold
+	if strings.Contains(x, "<b>bold-off</b>") {
+		t.Errorf("w:b val=0 should cancel paragraph bold, got: %s", x)
+	}
+}
+
+func TestStyleBoldInheritance(t *testing.T) {
+	// Paragraph uses a style that has bold in its rPr.
+	// Runs without their own rPr should inherit bold from the style.
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="StrongPara">
+    <w:name w:val="StrongPara"/>
+    <w:rPr><w:b/></w:rPr>
+  </w:style>
+</w:styles>`
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:pStyle w:val="StrongPara"/><w:rPr><w:b/></w:rPr></w:pPr>
+    <w:r><w:t>should-be-bold</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, styles, "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, "<b>should-be-bold</b>") {
+		t.Errorf("expected run in bold style paragraph to be bold, got: %s", x)
+	}
+}
+
+func TestStyleBoldNotAppliedWithoutParaRPr(t *testing.T) {
+	// Paragraph uses a bold style but has NO w:pPr/w:rPr.
+	// In this case paraDefaults is nil — style bold does NOT propagate
+	// (Word only propagates style rPr through explicit pPr/rPr).
+	// Runs without explicit bold should NOT be bold.
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="StrongPara">
+    <w:name w:val="StrongPara"/>
+    <w:rPr><w:b/></w:rPr>
+  </w:style>
+</w:styles>`
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:pStyle w:val="StrongPara"/></w:pPr>
+    <w:r><w:t>no-para-rpr</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, styles, "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	// No pPr/rPr means paraDefaults is nil — style bold should NOT apply to runs
+	if strings.Contains(x, "<b>no-para-rpr</b>") {
+		t.Errorf("style bold should not apply when no pPr/rPr present, got: %s", x)
+	}
+}
+
 func TestFontSpan(t *testing.T) {
 	body := xmlHeader + `<w:body>
   <w:p>

@@ -210,25 +210,25 @@ type DocRun struct {
 }
 
 type RunProps struct {
-	B          *struct{}     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main b"`
-	BCs        *struct{}     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main bCs"`
-	I          *struct{}     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main i"`
-	ICs        *struct{}     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main iCs"`
+	B          *OnOffVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main b"`
+	BCs        *OnOffVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main bCs"`
+	I          *OnOffVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main i"`
+	ICs        *OnOffVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main iCs"`
 	U          *UVal         `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main u"`
-	Strike     *struct{}     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main strike"`
-	DStrike    *struct{}     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main dstrike"`
-	SmallCaps  *struct{}     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main smallCaps"`
-	Caps       *struct{}     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main caps"`
+	Strike     *OnOffVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main strike"`
+	DStrike    *OnOffVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main dstrike"`
+	SmallCaps  *OnOffVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main smallCaps"`
+	Caps       *OnOffVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main caps"`
 	VertAlign  *VertAlignVal `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main vertAlign"`
 	RFonts     *RFontsVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main rFonts"`
 	Sz         *IntVal       `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main sz"`
 	SzCs       *IntVal       `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main szCs"`
 	Color      *ColorVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main color"`
 	Highlight  *HighlightVal `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main highlight"`
-	Vanish     *struct{}     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main vanish"`
+	Vanish     *OnOffVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main vanish"`
 	Lang       *LangVal      `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main lang"`
 	Spacing    *IntVal       `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main spacing"`
-	Rtl        *struct{}     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main rtl"`
+	Rtl        *OnOffVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main rtl"`
 }
 
 type UVal struct {
@@ -260,6 +260,20 @@ type HighlightVal struct {
 
 type FldCharVal struct {
 	Type string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main type,attr"`
+}
+
+// OnOffVal represents a toggle property that can be explicitly turned off
+// with val="0" or val="false". Absent val (or val="1"/"true"/"on") means ON.
+type OnOffVal struct {
+	Val string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main val,attr"`
+}
+
+// IsOn returns true when the element is present and val is not "0" or "false".
+func (o *OnOffVal) IsOn() bool {
+	if o == nil {
+		return false
+	}
+	return o.Val != "0" && o.Val != "false"
 }
 
 type DocInstrText struct {

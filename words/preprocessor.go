@@ -620,22 +620,22 @@ func buildStyleMap(stylesXML []byte, themeFontMap map[string]string) (map[string
 			if s.RunProps.Color != nil && s.RunProps.Color.Val != "" {
 				sd.Color = s.RunProps.Color.Val
 			}
-			if s.RunProps.B != nil {
+			if s.RunProps.B.IsOn() {
 				sd.Bold = true
 			}
-			if s.RunProps.I != nil {
+			if s.RunProps.I.IsOn() {
 				sd.Italic = true
 			}
 			if s.RunProps.U != nil {
 				sd.Underline = s.RunProps.U.Val
 			}
-			if s.RunProps.Strike != nil {
+			if s.RunProps.Strike.IsOn() {
 				sd.Strikethrough = true
 			}
-			if s.RunProps.SmallCaps != nil {
+			if s.RunProps.SmallCaps.IsOn() {
 				sd.SmallCaps = true
 			}
-			if s.RunProps.Caps != nil {
+			if s.RunProps.Caps.IsOn() {
 				sd.Uppercase = true
 			}
 		}
@@ -939,6 +939,45 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 		}
 		if p.PPr.RPr != nil {
 			var defaults TextRun
+			// Seed defaults from the paragraph's style rPr first (style inheritance),
+			// then override with the explicit paragraph-level rPr.
+			if lp.StyleID != "" {
+				if sd, ok := styleMap[lp.StyleID]; ok {
+					if sd.Bold {
+						defaults.Bold = true
+					}
+					if sd.Italic {
+						defaults.Italic = true
+					}
+					if sd.Underline != "" {
+						defaults.Underline = sd.Underline
+					}
+					if sd.Strikethrough {
+						defaults.Strike = true
+					}
+					if sd.SmallCaps {
+						defaults.SmallCaps = true
+					}
+					if sd.Uppercase {
+						defaults.AllCaps = true
+					}
+					if sd.FontEA != "" {
+						defaults.FontEA = sd.FontEA
+					}
+					if sd.FontCS != "" {
+						defaults.FontCS = sd.FontCS
+					}
+					if sd.SizePt > 0 {
+						defaults.FontSizePt = sd.SizePt
+					}
+					if sd.SizeCS > 0 {
+						defaults.FontSizeCS = sd.SizeCS
+					}
+					if sd.Color != "" {
+						defaults.FontColor = sd.Color
+					}
+				}
+			}
 			applyParaRunDefaults(p.PPr.RPr, &defaults, themeFontMap)
 			lp.ParaDefaults = &defaults
 		}
@@ -1280,8 +1319,8 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 				tr.HyperlinkURL = hl.ID
 			}
 			if r.RPr != nil {
-				tr.Bold = r.RPr.B != nil
-				tr.Italic = r.RPr.I != nil
+				tr.Bold = r.RPr.B.IsOn()
+				tr.Italic = r.RPr.I.IsOn()
 			}
 			runs = append(runs, tr)
 		}
@@ -1631,28 +1670,28 @@ func applyRunProps(rPr *RunProps, tr *TextRun, themeFontMap map[string]string) {
 	if rPr == nil {
 		return
 	}
-	if rPr.B != nil {
+	if rPr.B.IsOn() {
 		tr.Bold = true
 	}
-	if rPr.BCs != nil {
+	if rPr.BCs.IsOn() {
 		tr.IsBoldCS = true
 	}
-	if rPr.I != nil {
+	if rPr.I.IsOn() {
 		tr.Italic = true
 	}
-	if rPr.ICs != nil {
+	if rPr.ICs.IsOn() {
 		tr.IsItalicCS = true
 	}
 	if rPr.U != nil {
 		tr.Underline = rPr.U.Val
 	}
-	if rPr.Strike != nil || rPr.DStrike != nil {
+	if rPr.Strike.IsOn() || rPr.DStrike.IsOn() {
 		tr.Strike = true
 	}
-	if rPr.SmallCaps != nil {
+	if rPr.SmallCaps.IsOn() {
 		tr.SmallCaps = true
 	}
-	if rPr.Caps != nil {
+	if rPr.Caps.IsOn() {
 		tr.AllCaps = true
 	}
 	if rPr.VertAlign != nil {
@@ -1703,39 +1742,39 @@ func applyRunProps(rPr *RunProps, tr *TextRun, themeFontMap map[string]string) {
 	if rPr.Highlight != nil {
 		tr.Highlight = rPr.Highlight.Val
 	}
-	tr.Hidden = rPr.Vanish != nil
+	tr.Hidden = rPr.Vanish.IsOn()
 	if rPr.Lang != nil {
 		tr.Lang = rPr.Lang.Val
 	}
-	tr.IsRTL = rPr.Rtl != nil
+	tr.IsRTL = rPr.Rtl.IsOn()
 }
 
 func applyParaRunDefaults(rPr *RunProps, tr *TextRun, themeFontMap map[string]string) {
 	if rPr == nil {
 		return
 	}
-	if rPr.B != nil {
+	if rPr.B.IsOn() {
 		tr.Bold = true
 	}
-	if rPr.BCs != nil {
+	if rPr.BCs.IsOn() {
 		tr.IsBoldCS = true
 	}
-	if rPr.I != nil {
+	if rPr.I.IsOn() {
 		tr.Italic = true
 	}
-	if rPr.ICs != nil {
+	if rPr.ICs.IsOn() {
 		tr.IsItalicCS = true
 	}
 	if rPr.U != nil {
 		tr.Underline = rPr.U.Val
 	}
-	if rPr.Strike != nil || rPr.DStrike != nil {
+	if rPr.Strike.IsOn() || rPr.DStrike.IsOn() {
 		tr.Strike = true
 	}
-	if rPr.SmallCaps != nil {
+	if rPr.SmallCaps.IsOn() {
 		tr.SmallCaps = true
 	}
-	if rPr.Caps != nil {
+	if rPr.Caps.IsOn() {
 		tr.AllCaps = true
 	}
 	if rPr.VertAlign != nil {
@@ -1786,13 +1825,13 @@ func applyParaRunDefaults(rPr *RunProps, tr *TextRun, themeFontMap map[string]st
 	if rPr.Highlight != nil {
 		tr.Highlight = rPr.Highlight.Val
 	}
-	if rPr.Vanish != nil {
+	if rPr.Vanish.IsOn() {
 		tr.Hidden = true
 	}
 	if rPr.Lang != nil {
 		tr.Lang = rPr.Lang.Val
 	}
-	tr.IsRTL = rPr.Rtl != nil
+	tr.IsRTL = rPr.Rtl.IsOn()
 }
 
 func formatBorderStyle(val string) string {
