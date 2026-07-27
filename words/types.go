@@ -225,7 +225,11 @@ type TextRun struct {
 	IsSym        bool
 	SymChar      string
 	IsInserted   bool
+	InsAuthor    string
+	InsDate      string
 	IsDeleted    bool
+	DelAuthor    string
+	DelDate      string
 	IsRTL        bool
 }
 

@@ -301,11 +301,15 @@ type DocSym struct {
 }
 
 type DocIns struct {
-	Runs []DocRun `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main r"`
+	Author string   `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main author,attr"`
+	Date   string   `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main date,attr"`
+	Runs   []DocRun `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main r"`
 }
 
 type DocDel struct {
-	Runs []DocRun `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main r"`
+	Author string   `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main author,attr"`
+	Date   string   `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main date,attr"`
+	Runs   []DocRun `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main r"`
 }
 
 type DocPict struct {

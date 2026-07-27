@@ -1077,13 +1077,19 @@ func TestTrackedChangesLossless(t *testing.T) {
 		t.Error("<ins> should not appear in semantic mode")
 	}
 
-	// Lossless mode: should have <ins>
+	// Lossless mode: should have <ins> with author/date metadata
 	doc, err = ProcessDOCXBytesMode(data, "lossless")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !strings.Contains(doc.WordsXML, "<ins>") {
+	if !strings.Contains(doc.WordsXML, "<ins") {
 		t.Error("<ins> should appear in lossless mode")
+	}
+	if !strings.Contains(doc.WordsXML, `author="Author"`) {
+		t.Errorf("expected author attribute in lossless <ins>, got: %s", doc.WordsXML)
+	}
+	if !strings.Contains(doc.WordsXML, `date="2024-01-01T00:00:00Z"`) {
+		t.Errorf("expected date attribute in lossless <ins>, got: %s", doc.WordsXML)
 	}
 }
 

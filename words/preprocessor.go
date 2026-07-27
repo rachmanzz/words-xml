@@ -801,6 +801,10 @@ func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap m
 
 		if p.PPr != nil && p.PPr.NumPr != nil {
 			numID := p.PPr.NumPr.NumID.Val
+			// w:numId=0 means "remove list formatting" — treat as regular paragraph
+			if numID == 0 {
+				goto parsePara
+			}
 			ilvl := 0
 			if p.PPr.NumPr.Ilvl != nil {
 				ilvl = p.PPr.NumPr.Ilvl.Val
@@ -828,6 +832,7 @@ func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap m
 			continue
 		}
 
+		parsePara:
 		item, paraTbItems := parseParagraph(p, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
 		items = append(items, item)
 		items = append(items, paraTbItems...)
@@ -1122,6 +1127,16 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 	runs, tbItems := extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, isCode, themeFontMap, lp.ParaDefaults)
 	lp.Runs = runs
 
+	// First-run lang fallback: if paragraph has no explicit lang, use the first run's lang
+	if lp.Lang == "" {
+		for _, r := range runs {
+			if r.Lang != "" {
+				lp.Lang = r.Lang
+				break
+			}
+		}
+	}
+
 	if lp.HeadingLevel > 0 && !isCode {
 		var textLen int
 		for _, r := range runs {
@@ -1300,6 +1315,8 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 				insRuns, _ := proc(ir)
 				for i := range insRuns {
 					insRuns[i].IsInserted = true
+					insRuns[i].InsAuthor = r.Ins.Author
+					insRuns[i].InsDate = r.Ins.Date
 				}
 				runs = append(runs, insRuns...)
 			}
@@ -1309,6 +1326,8 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 				delRuns, _ := proc(dr)
 				for i := range delRuns {
 					delRuns[i].IsDeleted = true
+					delRuns[i].DelAuthor = r.Del.Author
+					delRuns[i].DelDate = r.Del.Date
 				}
 				runs = append(runs, delRuns...)
 			}
@@ -2953,10 +2972,26 @@ func buildInlineText(runs []TextRun, defaultFont StyleDef, mode string, isCode .
 			continue
 		}
 		if r.IsInserted && mode == "lossless" {
-			core = "<ins>" + core + "</ins>"
+			tag := "<ins"
+			if r.InsAuthor != "" {
+				tag += fmt.Sprintf(" author=\"%s\"", xmlEscape(r.InsAuthor))
+			}
+			if r.InsDate != "" {
+				tag += fmt.Sprintf(" date=\"%s\"", xmlEscape(r.InsDate))
+			}
+			tag += ">"
+			core = tag + core + "</ins>"
 		}
 		if r.IsDeleted && mode == "lossless" {
-			core = "<del>" + core + "</del>"
+			tag := "<del"
+			if r.DelAuthor != "" {
+				tag += fmt.Sprintf(" author=\"%s\"", xmlEscape(r.DelAuthor))
+			}
+			if r.DelDate != "" {
+				tag += fmt.Sprintf(" date=\"%s\"", xmlEscape(r.DelDate))
+			}
+			tag += ">"
+			core = tag + core + "</del>"
 		}
 		b.WriteString(core)
 	}
