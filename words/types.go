@@ -140,7 +140,46 @@ type ParsedParagraph struct {
 	BorderBottom  *BorderInfo
 	BorderLeft    *BorderInfo
 	BorderRight   *BorderInfo
-	Runs          []TextRun
+	Shading       string
+	KeepNext      bool
+	KeepLines     bool
+	WidowControl  bool
+	ParaDefaults  *TextRun
+	SectionBreak  string
+	RevisionAuthor     string
+	RevisionDate       string
+	SuppressAutoHyph   bool
+	SnapToGrid         bool
+	Kinsoku            bool
+	WordWrap           bool
+	OverflowPunct      bool
+	TopLinePunct       bool
+	AutoSpaceDE        bool
+	AutoSpaceDN        bool
+	TextDirection      string
+	SuppressOverlap    bool
+	DivID              int
+	CnfStyle           string
+	FramePr            *FrameProps
+	Runs               []TextRun
+}
+
+type FrameProps struct {
+	DropCap    string
+	Lines      int
+	Width      int
+	Height     int
+	VSpace     int
+	HSpace     int
+	Wrap       string
+	HAnchor    string
+	VAnchor    string
+	X          int
+	XAlign     string
+	Y          int
+	YAlign     string
+	HRule      string
+	AnchorLock bool
 }
 
 type ParsedTab struct {

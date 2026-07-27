@@ -821,7 +821,7 @@ func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap m
 			}
 
 			var tbItems []ContentItem
-			lp.Runs, tbItems = extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, false, themeFontMap)
+			lp.Runs, tbItems = extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, false, themeFontMap, nil)
 			items = append(items, tbItems...)
 			items = append(items, ContentItem{Type: "list", Paragraph: lp})
 			i++
@@ -925,6 +925,92 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 				lp.BorderRight = &BorderInfo{Val: p.PPr.PBdr.Right.Val, Sz: p.PPr.PBdr.Right.Sz, Space: p.PPr.PBdr.Right.Space, Color: p.PPr.PBdr.Right.Color}
 			}
 		}
+		if p.PPr.Shd != nil {
+			lp.Shading = p.PPr.Shd.Fill
+		}
+		if p.PPr.KeepNext != nil {
+			lp.KeepNext = true
+		}
+		if p.PPr.KeepLines != nil {
+			lp.KeepLines = true
+		}
+		if p.PPr.WidowControl != nil {
+			lp.WidowControl = true
+		}
+		if p.PPr.RPr != nil {
+			var defaults TextRun
+			applyParaRunDefaults(p.PPr.RPr, &defaults, themeFontMap)
+			lp.ParaDefaults = &defaults
+		}
+		if p.PPr.SectPr != nil {
+			if p.PPr.SectPr.Type != nil {
+				lp.SectionBreak = p.PPr.SectPr.Type.Val
+			} else {
+				lp.SectionBreak = "nextPage"
+			}
+		}
+		if p.PPr.PPrChange != nil {
+			lp.RevisionAuthor = p.PPr.PPrChange.Author
+			lp.RevisionDate = p.PPr.PPrChange.Date
+		}
+		if p.PPr.SuppressAutoHyph != nil {
+			lp.SuppressAutoHyph = true
+		}
+		if p.PPr.SnapToGrid != nil {
+			lp.SnapToGrid = true
+		}
+		if p.PPr.Kinsoku != nil {
+			lp.Kinsoku = true
+		}
+		if p.PPr.WordWrap != nil {
+			lp.WordWrap = true
+		}
+		if p.PPr.OverflowPunct != nil {
+			lp.OverflowPunct = true
+		}
+		if p.PPr.TopLinePunct != nil {
+			lp.TopLinePunct = true
+		}
+		if p.PPr.AutoSpaceDE != nil {
+			lp.AutoSpaceDE = true
+		}
+		if p.PPr.AutoSpaceDN != nil {
+			lp.AutoSpaceDN = true
+		}
+		if p.PPr.TextDirection != nil {
+			lp.TextDirection = p.PPr.TextDirection.Val
+		}
+		if p.PPr.SuppressOverlap != nil {
+			lp.SuppressOverlap = true
+		}
+		if p.PPr.DivID != nil {
+			lp.DivID = p.PPr.DivID.Val
+		}
+		if p.PPr.CnfStyle != nil {
+			lp.CnfStyle = p.PPr.CnfStyle.Val
+		}
+		if p.PPr.FramePr != nil {
+			fp := &FrameProps{
+				DropCap: p.PPr.FramePr.DropCap,
+				Lines:   p.PPr.FramePr.Lines,
+				Width:   p.PPr.FramePr.W,
+				Height:  p.PPr.FramePr.H,
+				VSpace:  p.PPr.FramePr.VSpace,
+				HSpace:  p.PPr.FramePr.HSpace,
+				Wrap:    p.PPr.FramePr.Wrap,
+				HAnchor: p.PPr.FramePr.HAnchor,
+				VAnchor: p.PPr.FramePr.VAnchor,
+				X:       p.PPr.FramePr.X,
+				XAlign:  p.PPr.FramePr.XAlign,
+				Y:       p.PPr.FramePr.Y,
+				YAlign:  p.PPr.FramePr.YAlign,
+				HRule:   p.PPr.FramePr.HRule,
+			}
+			if p.PPr.FramePr.AnchorLock != nil {
+				fp.AnchorLock = true
+			}
+			lp.FramePr = fp
+		}
 	}
 
 	isQuote := lp.StyleName == "Quote" || lp.StyleName == "IntenseQuote" || lp.StyleName == "BlockText"
@@ -994,7 +1080,7 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 	isCode = isKnownCode || (hasCodeWord && allMonospace)
 	lp.IsCode = isCode
 
-	runs, tbItems := extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, isCode, themeFontMap)
+	runs, tbItems := extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, isCode, themeFontMap, lp.ParaDefaults)
 	lp.Runs = runs
 
 	if lp.HeadingLevel > 0 && !isCode {
@@ -1010,7 +1096,7 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 	return ContentItem{Type: "paragraph", Paragraph: lp}, tbItems
 }
 
-func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[string]string, relMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, isCode bool, themeFontMap map[string]string) ([]TextRun, []ContentItem) {
+func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[string]string, relMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, isCode bool, themeFontMap map[string]string, paraDefaults *TextRun) ([]TextRun, []ContentItem) {
 	var runs []TextRun
 	var tbItems []ContentItem
 
@@ -1079,6 +1165,9 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 		}
 
 		tr := TextRun{}
+		if paraDefaults != nil {
+			tr = *paraDefaults
+		}
 
 		if r.Tab != nil {
 			tr.IsTab = true
@@ -1535,16 +1624,30 @@ func applyRunProps(rPr *RunProps, tr *TextRun, themeFontMap map[string]string) {
 	if rPr == nil {
 		return
 	}
-	tr.Bold = rPr.B != nil
-	tr.IsBoldCS = rPr.BCs != nil
-	tr.Italic = rPr.I != nil
-	tr.IsItalicCS = rPr.ICs != nil
+	if rPr.B != nil {
+		tr.Bold = true
+	}
+	if rPr.BCs != nil {
+		tr.IsBoldCS = true
+	}
+	if rPr.I != nil {
+		tr.Italic = true
+	}
+	if rPr.ICs != nil {
+		tr.IsItalicCS = true
+	}
 	if rPr.U != nil {
 		tr.Underline = rPr.U.Val
 	}
-	tr.Strike = rPr.Strike != nil || rPr.DStrike != nil
-	tr.SmallCaps = rPr.SmallCaps != nil
-	tr.AllCaps = rPr.Caps != nil
+	if rPr.Strike != nil || rPr.DStrike != nil {
+		tr.Strike = true
+	}
+	if rPr.SmallCaps != nil {
+		tr.SmallCaps = true
+	}
+	if rPr.Caps != nil {
+		tr.AllCaps = true
+	}
 	if rPr.VertAlign != nil {
 		if rPr.VertAlign.Val == "superscript" {
 			tr.SuperScript = true
@@ -1594,6 +1697,91 @@ func applyRunProps(rPr *RunProps, tr *TextRun, themeFontMap map[string]string) {
 		tr.Highlight = rPr.Highlight.Val
 	}
 	tr.Hidden = rPr.Vanish != nil
+	if rPr.Lang != nil {
+		tr.Lang = rPr.Lang.Val
+	}
+	tr.IsRTL = rPr.Rtl != nil
+}
+
+func applyParaRunDefaults(rPr *RunProps, tr *TextRun, themeFontMap map[string]string) {
+	if rPr == nil {
+		return
+	}
+	if rPr.B != nil {
+		tr.Bold = true
+	}
+	if rPr.BCs != nil {
+		tr.IsBoldCS = true
+	}
+	if rPr.I != nil {
+		tr.Italic = true
+	}
+	if rPr.ICs != nil {
+		tr.IsItalicCS = true
+	}
+	if rPr.U != nil {
+		tr.Underline = rPr.U.Val
+	}
+	if rPr.Strike != nil || rPr.DStrike != nil {
+		tr.Strike = true
+	}
+	if rPr.SmallCaps != nil {
+		tr.SmallCaps = true
+	}
+	if rPr.Caps != nil {
+		tr.AllCaps = true
+	}
+	if rPr.VertAlign != nil {
+		if rPr.VertAlign.Val == "superscript" {
+			tr.SuperScript = true
+		} else if rPr.VertAlign.Val == "subscript" {
+			tr.SubScript = true
+		}
+	}
+	if rPr.RFonts != nil {
+		if rPr.RFonts.Ascii != "" {
+			tr.FontFamily = rPr.RFonts.Ascii
+		} else if rPr.RFonts.HAnsi != "" {
+			tr.FontFamily = rPr.RFonts.HAnsi
+		} else if rPr.RFonts.AsciiTheme != "" {
+			if f, ok := themeFontMap[rPr.RFonts.AsciiTheme]; ok {
+				tr.FontFamily = f
+			}
+		} else if rPr.RFonts.HAnsiTheme != "" {
+			if f, ok := themeFontMap[rPr.RFonts.HAnsiTheme]; ok {
+				tr.FontFamily = f
+			}
+		}
+		if rPr.RFonts.EastAsia != "" {
+			tr.FontEA = rPr.RFonts.EastAsia
+		} else if rPr.RFonts.EastAsiaTheme != "" {
+			if f, ok := themeFontMap[rPr.RFonts.EastAsiaTheme]; ok {
+				tr.FontEA = f
+			}
+		}
+		if rPr.RFonts.CS != "" {
+			tr.FontCS = rPr.RFonts.CS
+		} else if rPr.RFonts.CSTheme != "" {
+			if f, ok := themeFontMap[rPr.RFonts.CSTheme]; ok {
+				tr.FontCS = f
+			}
+		}
+	}
+	if rPr.Sz != nil {
+		tr.FontSizePt = float64(rPr.Sz.Val) / 2.0
+	}
+	if rPr.SzCs != nil {
+		tr.FontSizeCS = float64(rPr.SzCs.Val) / 2.0
+	}
+	if rPr.Color != nil {
+		tr.FontColor = rPr.Color.Val
+	}
+	if rPr.Highlight != nil {
+		tr.Highlight = rPr.Highlight.Val
+	}
+	if rPr.Vanish != nil {
+		tr.Hidden = true
+	}
 	if rPr.Lang != nil {
 		tr.Lang = rPr.Lang.Val
 	}
@@ -2400,6 +2588,18 @@ func writeParagraphAttrs(b *strings.Builder, p *ParsedParagraph) {
 	if p.IndentFirst > 0 {
 		fmt.Fprintf(b, " indentFirst=\"%.2f\"", p.IndentFirst)
 	}
+	if p.SpacingBefore > 0 {
+		fmt.Fprintf(b, " spacingBefore=\"%.2f\"", p.SpacingBefore)
+	}
+	if p.SpacingAfter > 0 {
+		fmt.Fprintf(b, " spacingAfter=\"%.2f\"", p.SpacingAfter)
+	}
+	if p.LineSpacing > 0 {
+		fmt.Fprintf(b, " lineSpacing=\"%.2f\"", p.LineSpacing)
+	}
+	if p.LineRule != "" && p.LineRule != "auto" {
+		fmt.Fprintf(b, " lineRule=\"%s\"", p.LineRule)
+	}
 	if p.Bidi {
 		b.WriteString(" dir=\"rtl\"")
 	}
@@ -2408,6 +2608,115 @@ func writeParagraphAttrs(b *strings.Builder, p *ParsedParagraph) {
 	}
 	if p.VAlign != "" {
 		fmt.Fprintf(b, " valign=\"%s\"", p.VAlign)
+	}
+	if p.Shading != "" {
+		fmt.Fprintf(b, " shd=\"%s\"", p.Shading)
+	}
+	if p.KeepNext {
+		b.WriteString(" keepNext=\"true\"")
+	}
+	if p.KeepLines {
+		b.WriteString(" keepLines=\"true\"")
+	}
+	if p.WidowControl {
+		b.WriteString(" widowControl=\"true\"")
+	}
+	if p.SectionBreak != "" {
+		fmt.Fprintf(b, " sectionBreak=\"%s\"", p.SectionBreak)
+	}
+	if p.RevisionAuthor != "" {
+		fmt.Fprintf(b, " revisionAuthor=\"%s\"", xmlEscape(p.RevisionAuthor))
+	}
+	if p.RevisionDate != "" {
+		fmt.Fprintf(b, " revisionDate=\"%s\"", p.RevisionDate)
+	}
+	if p.SuppressAutoHyph {
+		b.WriteString(" suppressAutoHyph=\"true\"")
+	}
+	if p.SnapToGrid {
+		b.WriteString(" snapToGrid=\"true\"")
+	}
+	if p.Kinsoku {
+		b.WriteString(" kinsoku=\"true\"")
+	}
+	if p.WordWrap {
+		b.WriteString(" wordWrap=\"true\"")
+	}
+	if p.OverflowPunct {
+		b.WriteString(" overflowPunct=\"true\"")
+	}
+	if p.TopLinePunct {
+		b.WriteString(" topLinePunct=\"true\"")
+	}
+	if p.AutoSpaceDE {
+		b.WriteString(" autoSpaceDE=\"true\"")
+	}
+	if p.AutoSpaceDN {
+		b.WriteString(" autoSpaceDN=\"true\"")
+	}
+	if p.TextDirection != "" {
+		fmt.Fprintf(b, " textDirection=\"%s\"", p.TextDirection)
+	}
+	if p.SuppressOverlap {
+		b.WriteString(" suppressOverlap=\"true\"")
+	}
+	if p.DivID > 0 {
+		fmt.Fprintf(b, " divID=\"%d\"", p.DivID)
+	}
+	if p.CnfStyle != "" {
+		fmt.Fprintf(b, " cnfStyle=\"%s\"", xmlEscape(p.CnfStyle))
+	}
+	if p.FramePr != nil {
+		fp := p.FramePr
+		frameAttrs := ""
+		if fp.DropCap != "" {
+			frameAttrs += fmt.Sprintf(" dropCap=\"%s\"", fp.DropCap)
+		}
+		if fp.Lines > 0 {
+			frameAttrs += fmt.Sprintf(" lines=\"%d\"", fp.Lines)
+		}
+		if fp.Width > 0 {
+			frameAttrs += fmt.Sprintf(" width=\"%d\"", fp.Width)
+		}
+		if fp.Height > 0 {
+			frameAttrs += fmt.Sprintf(" height=\"%d\"", fp.Height)
+		}
+		if fp.VSpace > 0 {
+			frameAttrs += fmt.Sprintf(" vSpace=\"%d\"", fp.VSpace)
+		}
+		if fp.HSpace > 0 {
+			frameAttrs += fmt.Sprintf(" hSpace=\"%d\"", fp.HSpace)
+		}
+		if fp.Wrap != "" {
+			frameAttrs += fmt.Sprintf(" wrap=\"%s\"", fp.Wrap)
+		}
+		if fp.HAnchor != "" {
+			frameAttrs += fmt.Sprintf(" hAnchor=\"%s\"", fp.HAnchor)
+		}
+		if fp.VAnchor != "" {
+			frameAttrs += fmt.Sprintf(" vAnchor=\"%s\"", fp.VAnchor)
+		}
+		if fp.X > 0 {
+			frameAttrs += fmt.Sprintf(" x=\"%d\"", fp.X)
+		}
+		if fp.XAlign != "" {
+			frameAttrs += fmt.Sprintf(" xAlign=\"%s\"", fp.XAlign)
+		}
+		if fp.Y > 0 {
+			frameAttrs += fmt.Sprintf(" y=\"%d\"", fp.Y)
+		}
+		if fp.YAlign != "" {
+			frameAttrs += fmt.Sprintf(" yAlign=\"%s\"", fp.YAlign)
+		}
+		if fp.HRule != "" {
+			frameAttrs += fmt.Sprintf(" hRule=\"%s\"", fp.HRule)
+		}
+		if fp.AnchorLock {
+			frameAttrs += " anchorLock=\"true\""
+		}
+		if frameAttrs != "" {
+			fmt.Fprintf(b, " frame=\"%s\"", frameAttrs[1:])
+		}
 	}
 	at := buildBorderAttr(p.BorderTop, p.BorderBottom, p.BorderLeft, p.BorderRight)
 	if at != "" {

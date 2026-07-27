@@ -72,6 +72,58 @@ type ParaProps struct {
 	TextAlign       *JCVal       `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main textAlignment"`
 	Lang            *LangVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main lang"`
 	OutlineLvl      *IntVal      `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main outlineLvl"`
+	Shd             *ShdVal      `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main shd"`
+	KeepNext        *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main keepNext"`
+	KeepLines       *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main keepLines"`
+	WidowControl    *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main widowControl"`
+	RPr               *RunProps    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main rPr"`
+	SectPr            *SectPrProps `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main sectPr"`
+	PPrChange         *PPrChange   `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main pPrChange"`
+	SuppressAutoHyph  *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main suppressAutoHyphens"`
+	SnapToGrid        *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main snapToGrid"`
+	Kinsoku           *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main kinsoku"`
+	WordWrap          *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main wordWrap"`
+	OverflowPunct     *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main overflowPunct"`
+	TopLinePunct      *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main topLinePunct"`
+	AutoSpaceDE       *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main autoSpaceDE"`
+	AutoSpaceDN       *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main autoSpaceDN"`
+	TextDirection      *TextDirVal  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main textDirection"`
+	SuppressOverlap   *struct{}    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main suppressOverlap"`
+	DivID             *IntVal      `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main divId"`
+	CnfStyle          *CnfStyleVal `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main cnfStyle"`
+	FramePr           *FramePrVal  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main framePr"`
+}
+
+type TextDirVal struct {
+	Val string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main val,attr"`
+}
+
+type CnfStyleVal struct {
+	Val string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main val,attr"`
+}
+
+type FramePrVal struct {
+	DropCap   string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main dropCap,attr"`
+	Lines     int    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main lines,attr"`
+	W         int    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main w,attr"`
+	H         int    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main h,attr"`
+	VSpace    int    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main vSpace,attr"`
+	HSpace    int    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main hSpace,attr"`
+	Wrap      string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main wrap,attr"`
+	HAnchor   string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main hAnchor,attr"`
+	VAnchor   string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main vAnchor,attr"`
+	X         int    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main x,attr"`
+	XAlign    string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main xAlign,attr"`
+	Y         int    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main y,attr"`
+	YAlign    string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main yAlign,attr"`
+	HRule     string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main hRule,attr"`
+	AnchorLock *struct{} `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main anchorLock"`
+}
+
+type ShdVal struct {
+	Val   string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main val,attr"`
+	Color string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main color,attr"`
+	Fill  string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main fill,attr"`
 }
 
 type TabsVal struct {
@@ -109,10 +161,14 @@ type SpacingVal struct {
 }
 
 type IndVal struct {
-	Left      int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main left,attr"`
-	Right     int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main right,attr"`
-	FirstLine int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main firstLine,attr"`
-	Hanging   int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main hanging,attr"`
+	Left           int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main left,attr"`
+	Right          int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main right,attr"`
+	FirstLine      int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main firstLine,attr"`
+	Hanging        int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main hanging,attr"`
+	LeftChars      int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main leftChars,attr"`
+	RightChars     int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main rightChars,attr"`
+	FirstLineChars int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main firstLineChars,attr"`
+	HangingChars   int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main hangingChars,attr"`
 }
 
 type PBdrProps struct {
@@ -120,6 +176,8 @@ type PBdrProps struct {
 	Bottom *BorderVal `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main bottom"`
 	Left   *BorderVal `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main left"`
 	Right  *BorderVal `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main right"`
+	Between *BorderVal `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main between"`
+	Bar     *BorderVal `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main bar"`
 }
 
 type BorderVal struct {
@@ -526,4 +584,41 @@ type AClrSchemeEntry struct {
 
 type ASrgbClr struct {
 	Val string `xml:"val,attr"`
+}
+
+type SectPrProps struct {
+	Type     *SectType   `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main type"`
+	PgSz     *PgSzVal   `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main pgSz"`
+	PgMar    *PgMarVal  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main pgMar"`
+	TitlePg  *struct{}  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main titlePg"`
+	Footer   *CTRel     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main footerReference"`
+	Header   *CTRel     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main headerReference"`
+}
+
+type SectType struct {
+	Val string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main val,attr"`
+}
+
+type PgSzVal struct {
+	W     int    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main w,attr"`
+	H     int    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main h,attr"`
+	ORient string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main orient,attr"`
+}
+
+type PgMarVal struct {
+	Top    int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main top,attr"`
+	Bottom int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main bottom,attr"`
+	Left   int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main left,attr"`
+	Right  int `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main right,attr"`
+}
+
+type CTRel struct {
+	Type string `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main type,attr"`
+	ID   string `xml:"http://schemas.openxmlformats.org/officeDocument/2006/relationships r:id,attr"`
+}
+
+type PPrChange struct {
+	Author string     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main author,attr"`
+	Date   string     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main date,attr"`
+	RPr    *ParaProps `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main pPr"`
 }

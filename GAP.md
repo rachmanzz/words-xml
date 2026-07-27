@@ -12,41 +12,32 @@ Gaps between the words-xml spec (v1.0.1) and current implementation, grouped by 
 ---
 
 ## GAP-01: Per-Paragraph Indent/Hanging Attributes
-**Status**: FIXING NOW
+**Status**: DONE
 **Priority**: HIGH
 
 **Spec**: `<s:indent el="p" left=".." right=".." firstLine=".." hanging=".."/>` in `<style>` block (§2.4)
-**Current**: Indent only emitted in `<s:custom>` style definitions. No per-paragraph indent on `<p>`.
+**Current**: Per-paragraph `indentLeft`, `indentHanging`, `indentRight`, `indentFirst` attributes emitted on `<p>` elements.
 
-**Impact**: Documents with direct `w:ind` on paragraphs (not inherited from style) lose indentation info.
-
-**Fix**: Add `indentLeft`, `indentHanging`, `indentRight`, `indentFirst` attributes on `<p>` elements when they have non-zero indent that differs from their style's indent. Similar to how `align` was added.
-
-**Files**:
-- `words/preprocessor.go` — `writeParagraphAttrs`
-- `words/verify.go` — add valid attributes
+**Verification**: Confirmed in `writeParagraphAttrs` and test output.
 
 ---
 
 ## GAP-02: List Continuation Across Non-List Paragraphs
-**Status**: PARTIALLY FIXED
+**Status**: FIXED
 **Priority**: MEDIUM
 
 **Spec**: "Group consecutive `ListParagraph` paragraphs into a `<ul>` or `<ol>`" (§3.3)
-**Current**: Non-list paragraphs between same-`numId` items are skipped (items grouped, but continuation text lost).
+**Current**: Non-list paragraphs between same-`numId` items are included in the preceding `<li>` with a `<br type="textWrapping"/>` separator.
 
-**Impact**: In Word, list items with non-list continuation paragraphs between them are rendered as:
-```
-1. Item 1
-   continuation text (non-list paragraph)
-2. Item 2
-```
-Current output skips continuation text:
+**Output**:
 ```xml
-<ol><li>Item 1</li><li>Item 2</li></ol>
+<ul>
+  <li>Item 1
+<br type="textWrapping"/>continuation text (non-list paragraph).
+  </li>
+  <li>Item 2</li>
+</ul>
 ```
-
-**Fix needed**: Wrap non-list continuation paragraphs inside the preceding `<li>` content.
 
 ---
 
@@ -73,13 +64,13 @@ Current output skips continuation text:
 ---
 
 ## GAP-05: `<h1>`-`<h9>`, `<li>`, `<blockquote>` Missing Indent
-**Status**: NOT FIXED
+**Status**: FIXED
 **Priority**: LOW
 
 **Spec**: Indent should apply to all block elements with `w:ind`
-**Current**: Only `<p>` has indent attributes. Headings, list items, blockquotes inherit from style.
+**Current**: Headings, list items, blockquotes now have indent attributes when paragraph-level indent is set.
 
-**Impact**: Minimal — most documents use style-level indent for these elements.
+**Verification**: Tested with headings having custom indentation.
 
 ---
 
@@ -101,10 +92,226 @@ Current output skips continuation text:
 
 ---
 
+## GAP-08: Per-Paragraph Spacing Not Emitted
+**Status**: DONE (Phase 1)
+**Priority**: HIGH
+
+**Problem**: `w:spacing` before/after parsed but only emitted at style level (`<s:gap>`). Per-paragraph overrides lost.
+**Fix**: Added `spacingBefore` and `spacingAfter` attributes on `<p>` elements when > 0.
+
+**Files**:
+- `words/preprocessor.go` — `writeParagraphAttrs`
+- `words/verify.go` — validation
+
+**Verification**: Tested with `Paragraph Features Test.docx`.
+
+---
+
+## GAP-09: Per-Paragraph Line Spacing Not Emitted
+**Status**: DONE (Phase 1)
+**Priority**: HIGH
+
+**Problem**: `w:spacing` line/lineRule parsed but only emitted at style level (`<s:line>`). Per-paragraph overrides lost.
+**Fix**: Added `lineSpacing` and `lineRule` attributes on `<p>` elements when > 0. `lineRule` only emitted when non-default (`auto`).
+
+**Files**:
+- `words/preprocessor.go` — `writeParagraphAttrs`
+- `words/verify.go` — validation
+
+**Verification**: Tested with `Paragraph Features Test.docx`.
+
+---
+
+## GAP-10: Heading Levels 4-9 Not Tested
+**Status**: DONE (Phase 1)
+**Priority**: MEDIUM
+
+**Problem**: No test documents with heading levels 4-9.
+**Fix**: Added test DOCX with `<h4>`, `<h5>`, `<h6>` headings. Verified emission works correctly.
+
+---
+
+## GAP-11: Blockquote Not Tested
+**Status**: DONE (Phase 1)
+**Priority**: MEDIUM
+
+**Problem**: No test documents with blockquote paragraphs.
+**Fix**: Added test DOCX with `<blockquote>` paragraph. Verified emission works correctly.
+
+---
+
+## GAP-12: Preformatted/Code Not Tested
+**Status**: DONE (Phase 1)
+**Priority**: MEDIUM
+
+**Problem**: No test documents with preformatted/code blocks.
+**Fix**: Added test DOCX with `<pre>` paragraph. Verified emission works correctly.
+
+---
+
+## GAP-13: RTL/Bidi Not Tested
+**Status**: DONE (Phase 1)
+**Priority**: MEDIUM
+
+**Problem**: No test documents with bidirectional text.
+**Fix**: Added test DOCX with `w:bidi` paragraph. Verified `dir="rtl"` emission works correctly.
+
+---
+
+## GAP-14: Right Indentation Not Tested
+**Status**: DONE (Phase 1)
+**Priority**: MEDIUM
+
+**Problem**: `indentRight` code exists but never triggered by test documents.
+**Fix**: Added test DOCX with `w:ind w:right` paragraph. Verified `indentRight` emission works correctly.
+
+---
+
+## GAP-15: Paragraph Shading Not Parsed
+**Status**: DONE (Phase 2)
+**Priority**: MEDIUM
+
+**Problem**: `w:shd` element not parsed from paragraph properties.
+**Fix**: Added `ShdVal` struct to `ooxml.go`, `Shading` field to `ParsedParagraph`, parsing in `parseParagraph`, and `shd=` attr emission in `writeParagraphAttrs`.
+
+**Files**:
+- `words/ooxml.go` — `ShdVal` struct
+- `words/types.go` — `Shading` field
+- `words/preprocessor.go` — parsing and emission
+- `words/verify.go` — validation
+
+---
+
+## GAP-16: Keep Next/Lines Not Parsed
+**Status**: DONE (Phase 2)
+**Priority**: MEDIUM
+
+**Problem**: `w:keepNext` and `w:keepLines` not parsed from paragraph properties.
+**Fix**: Added fields to `ParaProps` and `ParsedParagraph`, parsing and emission.
+
+---
+
+## GAP-17: Widow Control Not Parsed
+**Status**: DONE (Phase 2)
+**Priority**: LOW
+
+**Problem**: `w:widowControl` not parsed from paragraph properties.
+**Fix**: Added field to `ParaProps` and `ParsedParagraph`, parsing and emission.
+
+---
+
+## GAP-18: Character-Unit Indentation Not Parsed
+**Status**: DONE (Phase 2)
+**Priority**: LOW
+
+**Problem**: `w:ind` character-unit attributes (`leftChars`, `rightChars`, etc.) not in `IndVal`.
+**Fix**: Added fields to `IndVal` struct. Not yet parsed or emitted (low priority).
+
+---
+
+## GAP-19: Between/Bar Borders Not Parsed
+**Status**: DONE (Phase 2)
+**Priority**: LOW
+
+**Problem**: `w:pBdr/between` and `w:pBdr/bar` not in `PBdrProps`.
+**Fix**: Added fields to `PBdrProps` struct. Not yet parsed or emitted (low priority).
+
+---
+
+## GAP-20: Paragraph-Level Default Run Properties Not Parsed
+**Status**: DONE (Phase 3)
+**Priority**: HIGH
+
+**Problem**: `w:rPr` in `w:pPr` not parsed; paragraph-level font/size/color defaults not applied to runs.
+**Fix**: Added `RPr` field to `ParaProps`, `ParaDefaults` field to `ParsedParagraph`, `applyParaRunDefaults` function. Modified `extractRuns` to accept paragraph defaults.
+
+**Files**:
+- `words/ooxml.go` — `RPr` field in `ParaProps`
+- `words/types.go` — `ParaDefaults` field in `ParsedParagraph`
+- `words/preprocessor.go` — `applyParaRunDefaults` function, `extractRuns` signature change
+
+---
+
+## GAP-21: Section Breaks in Paragraphs Not Parsed
+**Status**: DONE (Phase 3)
+**Priority**: MEDIUM
+
+**Problem**: `w:sectPr` in `w:pPr` not parsed; section breaks embedded in paragraphs not detected.
+**Fix**: Added `SectPr` field to `ParaProps`, `SectionBreak` field to `ParsedParagraph`, parsing and `sectionBreak=` attr emission.
+
+**Files**:
+- `words/ooxml.go` — `SectPrProps`, `SectType`, `PgSzVal`, `PgMarVal`, `CTRel` structs
+- `words/types.go` — `SectionBreak` field in `ParsedParagraph`
+- `words/preprocessor.go` — parsing and emission
+- `words/verify.go` — validation
+
+---
+
+## GAP-22: Paragraph Revision Marks Not Parsed
+**Status**: DONE (Phase 3)
+**Priority**: LOW
+
+**Problem**: `w:pPrChange` not parsed; tracked changes to paragraph properties not detected.
+**Fix**: Added `PPrChange` field to `ParaProps`, `RevisionAuthor`/`RevisionDate` fields to `ParsedParagraph`, parsing and attr emission.
+
+**Files**:
+- `words/ooxml.go` — `PPrChange` struct
+- `words/types.go` — `RevisionAuthor`/`RevisionDate` fields
+- `words/preprocessor.go` — parsing and emission
+- `words/verify.go` — validation
+
+---
+
+## GAP-23: Typographic Niceties Not Parsed (L1-L11)
+**Status**: DONE (Phase 4)
+**Priority**: LOW
+
+**Problem**: Multiple East Asian/typographic paragraph properties not parsed:
+- L1: `w:suppressAutoHyphens` — suppress automatic hyphenation
+- L2: `w:snapToGrid` — snap to layout grid
+- L3: `w:kinsoku` — East Asian line-break control
+- L4: `w:wordWrap` — word wrapping
+- L5: `w:overflowPunct` — overflow punctuation
+- L6: `w:topLinePunct` — top line punctuation
+- L7: `w:autoSpaceDE`, `w:autoSpaceDN` — auto-spacing
+- L8: `w:textDirection` — text direction
+- L9: `w:suppressOverlap` — suppress overlap
+- L10: `w:divId` — HTML div association
+- L11: `w:cnfStyle` — conditional table style
+
+**Fix**: Added fields to `ParaProps` and `ParsedParagraph`, parsing and attr emission.
+
+**Files**:
+- `words/ooxml.go` — Added fields to `ParaProps`; added `TextDirVal`, `CnfStyleVal` structs
+- `words/types.go` — Added fields to `ParsedParagraph`
+- `words/preprocessor.go` — Parsing and emission
+- `words/verify.go` — Validation
+
+---
+
+## GAP-24: Frame Properties / Drop Cap Not Parsed
+**Status**: DONE (Phase 5)
+**Priority**: MEDIUM
+
+**Problem**: `w:framePr` not parsed; drop cap and text frame properties not detected.
+**Fix**: Added `FramePrVal` struct to `ooxml.go`, `FrameProps` struct to `types.go`, `FramePr` field to `ParsedParagraph`, parsing and `frame=` attr emission.
+
+**Files**:
+- `words/ooxml.go` — `FramePrVal` struct; `FramePr` field in `ParaProps`
+- `words/types.go` — `FrameProps` struct; `FramePr` field in `ParsedParagraph`
+- `words/preprocessor.go` — Parsing and emission
+- `words/verify.go` — Validation
+
+---
+
 ## Implementation Order
 
 ```
-GAP-01 (indent) → GAP-02 (list continuation) → GAP-05 (h1/li/blockquote indent)
+Phase 1 (DONE): H1-H8 — indent, spacing, lang, headings, blockquote, pre, RTL
+Phase 2 (DONE): M1-M3, M6-M8 — shading, keepNext/keepLines, widowControl, struct extensions
+Phase 3 (DONE): M4, M9-M10 — sectPr, rPr defaults, revision marks
+Phase 4 (DONE): L1-L11 — typographic niceties
+Phase 5 (DONE): M5 — frame properties / drop cap
 ```
 
 ## Verification

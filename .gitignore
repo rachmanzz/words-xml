@@ -2,3 +2,4 @@ words-xml
 coverage.out
 coverage*.out
 coverage.html
+local-examples/

@@ -563,15 +563,60 @@ func verifyInlineAttrs(start xml.StartElement, elemType string, r *VerifyResult)
 			if _, err := strconv.ParseFloat(a.Value, 64); err != nil {
 				r.addError("<%s> %s must be number, got %q", elemType, a.Name.Local, a.Value)
 			}
+		case "spacingBefore", "spacingAfter", "lineSpacing":
+			if _, err := strconv.ParseFloat(a.Value, 64); err != nil {
+				r.addError("<%s> %s must be number, got %q", elemType, a.Name.Local, a.Value)
+			}
+		case "lineRule":
+			valid := map[string]bool{"auto": true, "exact": true, "atLeast": true}
+			if !valid[a.Value] {
+				r.addError("<%s> lineRule must be auto|exact|atLeast, got %q", elemType, a.Value)
+			}
 		case "valign":
 			valid := map[string]bool{"top": true, "center": true, "bottom": true, "baseline": true}
 			if !valid[a.Value] {
 				r.addError("<%s> valign must be top|center|bottom|baseline, got %q", elemType, a.Value)
 			}
+		case "shd":
+			// ok, hex color or pattern
+		case "keepNext", "keepLines":
+			if a.Value != "true" {
+				r.addError("<%s> %s must be true, got %q", elemType, a.Name.Local, a.Value)
+			}
+		case "widowControl":
+			if a.Value != "true" {
+				r.addError("<%s> widowControl must be true, got %q", elemType, a.Value)
+			}
+		case "sectionBreak":
+			valid := map[string]bool{"nextPage": true, "continuous": true, "evenPage": true, "oddPage": true}
+			if !valid[a.Value] {
+				r.addError("<%s> sectionBreak must be nextPage|continuous|evenPage|oddPage, got %q", elemType, a.Value)
+			}
 		case "c":
 			// ok, custom style name
 		case "at":
 			// ok, border attribute
+		case "revisionAuthor":
+			// ok, revision author
+		case "revisionDate":
+			// ok, revision date (ISO 8601)
+		case "suppressAutoHyph", "snapToGrid", "kinsoku", "wordWrap", "overflowPunct", "topLinePunct", "autoSpaceDE", "autoSpaceDN", "suppressOverlap":
+			if a.Value != "true" {
+				r.addError("<%s> %s must be true, got %q", elemType, a.Name.Local, a.Value)
+			}
+		case "textDirection":
+			valid := map[string]bool{"lr": true, "rl": true, "lrV": true, "rlV": true, "vert": true, "vertR": true, "of": true, "on": true}
+			if !valid[a.Value] {
+				r.addError("<%s> textDirection must be lr|rl|lrV|rlV|vert|vertR|of|on, got %q", elemType, a.Value)
+			}
+		case "divID":
+			if _, err := strconv.Atoi(a.Value); err != nil {
+				r.addError("<%s> divID must be number, got %q", elemType, a.Value)
+			}
+		case "cnfStyle":
+			// ok, conditional format style
+		case "frame":
+			// ok, frame properties (drop cap, text frame)
 		}
 	}
 }
