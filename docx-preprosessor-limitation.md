@@ -1,7 +1,7 @@
 # DOCX Preprocessor — Limitations
 
 This document consolidates the **limitations and exclusions** of the DOCX Preprocessor
-(`docx-preprosessor.md`, `words` v1.0.1). It is the authoritative reference for what the
+(`docx-preprosessor.md`, `words` v1.1.0). It is the authoritative reference for what the
 preprocessor intentionally does **not** handle.
 
 The preprocessor is a **deterministic, LLM-free, noise-removing transformer**. Its job is to
@@ -12,7 +12,7 @@ binary or presentation detail of the source `.docx`.
 
 ## 1. Excluded by Policy (binary / too complex)
 
-These are **out of scope** for v1.0.1. They are emitted as placeholders or dropped entirely.
+These are **out of scope** for v1.1.0. They are emitted as placeholders or dropped entirely.
 
 | Excluded construct | OOXML source | Behavior in `words` | Impact |
 |--------------------|--------------|--------------------|--------|
@@ -42,7 +42,7 @@ These are **out of scope** for v1.0.1. They are emitted as placeholders or dropp
 
 Removed on purpose to keep the semantic body clean. They do **not** appear in `words`.
 
-- **Paragraph presentation**: `pageBreakBefore`, `outlineLvl`.
+- **Paragraph presentation**: `outlineLvl` is **used to derive heading levels** (not dropped — it determines which `<h1>`-`<h9>` element is emitted).
   Note: `w:jc` (justification) is **preserved** as `<s:align>` in `<style>` (LOSSLESS_METADATA).
   Note: `w:pBdr` (borders) is **preserved** via compact `at` attribute on `<p>`/`<h1>`-`<h9>`.
   Note: `w:pPr/w:spacing/@w:line` is **preserved** as `<s:line>` in `<style>` (P1, LOSSLESS_METADATA).
@@ -106,7 +106,7 @@ The following items were previously listed as dropped but are now **preserved** 
 | **Table styling** (`w:tblPr`/`w:tcPr`) | borders preserved via `at` attribute; shading dropped; `w:tblGrid`/`w:gridCol` → `<s:col ref="n">` linked to `<table id="n">`; `colspan`/`rowspan` preserved; `w:tblW` → `<table width>` (P5); `w:jc` → `<table align>` (P6); `w:tblInd` → `<table indent>` (P10); `w:tblCellSpacing` → `<table cellSpacing>` (P11); `w:tblCaption` → `<table caption>` (P3); `w:tblDescription` → `<table summary>` (P4); `w:tcPr/w:vAlign` → `<td valign>` / `<th valign>` (P7); `w:tcPr/w:textDirection` → `<td textDir>` / `<th textDir>` (P12); `w:tcPr/w:noWrap` → `<td noWrap>` / `<th noWrap>` (P13) | shading/color lost |
 | **Section layout** (`w:sectPr`) | page size + margins → `<s:page>`; **multiple sections** (`<s:page>` per section); headers/footers → `<header>`/`<footer>`; `w:cols` → `<s:cols n=".." space=".."/>` (P19) | — |
 | **Vertical alignment** (`w:vertAlign`) | mapped to `<sup>`/`<sub>` | only sup/sub; other vertAlign values dropped |
-| **Multilingual** (`w:lang`) | propagated to `lang` attribute per element (BCP 47) — block-level and `<span lang="...">` (P2) | resolved in spec v1.0.1 |
+| **Multilingual** (`w:lang`) | propagated to `lang` attribute per element (BCP 47) — block-level and `<span lang="...">` (P2) | resolved in spec v1.1.0 |
 | **Code detection** (style/font heuristics) | pattern-matched to `<pre>`; monospace font OR style name | false positives/negatives possible (custom styles named "Code" for non-code content) |
 
 ---
@@ -144,7 +144,7 @@ The following items were previously listed as dropped but are now **preserved** 
 - Consider extracting textbox images via OCR (currently the textbox *text* is kept, the
   embedded image is still `<img>`).
 
-### Resolved in v1.0.1
+### Resolved in v1.1.0
 
 The following gaps were identified and addressed during specification review:
 

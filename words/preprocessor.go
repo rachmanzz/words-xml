@@ -1268,9 +1268,16 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 				continue
 			}
 			tr := TextRun{Text: text, IsHyperlink: true}
-			url := relMap[hl.RID]
-			if url != "" {
-				tr.HyperlinkURL = url
+			// Check r:id first (external hyperlinks via relationships)
+			if hl.RID != "" {
+				url := relMap[hl.RID]
+				if url != "" {
+					tr.HyperlinkURL = url
+				}
+			}
+			// If no URL from r:id, check w:id (can be anchor or direct URI)
+			if tr.HyperlinkURL == "" && hl.ID != "" {
+				tr.HyperlinkURL = hl.ID
 			}
 			if r.RPr != nil {
 				tr.Bold = r.RPr.B != nil
@@ -1876,7 +1883,7 @@ func formatForLLM(doc *ParsedDocument) string {
 	if mode == "" {
 		mode = "semantic"
 	}
-	b.WriteString(fmt.Sprintf("<words xmlns=\"urn:words:v1\" xmlns:s=\"urn:words:v1:style\" version=\"1.0.1\" mode=\"%s\">\n", mode))
+	b.WriteString(fmt.Sprintf("<words xmlns=\"urn:words:v1\" xmlns:s=\"urn:words:v1:style\" version=\"1.1.0\" mode=\"%s\">\n", mode))
 
 	if doc.Meta.Title != "" || doc.Meta.Author != "" || doc.Meta.Created != "" || doc.Meta.Modified != "" || doc.Meta.Keywords != "" {
 		b.WriteString("  <meta>\n")
@@ -2670,49 +2677,49 @@ func writeParagraphAttrs(b *strings.Builder, p *ParsedParagraph) {
 		fp := p.FramePr
 		frameAttrs := ""
 		if fp.DropCap != "" {
-			frameAttrs += fmt.Sprintf(" dropCap=\"%s\"", fp.DropCap)
+			frameAttrs += fmt.Sprintf(" dropCap='%s'", fp.DropCap)
 		}
 		if fp.Lines > 0 {
-			frameAttrs += fmt.Sprintf(" lines=\"%d\"", fp.Lines)
+			frameAttrs += fmt.Sprintf(" lines='%d'", fp.Lines)
 		}
 		if fp.Width > 0 {
-			frameAttrs += fmt.Sprintf(" width=\"%d\"", fp.Width)
+			frameAttrs += fmt.Sprintf(" width='%d'", fp.Width)
 		}
 		if fp.Height > 0 {
-			frameAttrs += fmt.Sprintf(" height=\"%d\"", fp.Height)
+			frameAttrs += fmt.Sprintf(" height='%d'", fp.Height)
 		}
 		if fp.VSpace > 0 {
-			frameAttrs += fmt.Sprintf(" vSpace=\"%d\"", fp.VSpace)
+			frameAttrs += fmt.Sprintf(" vSpace='%d'", fp.VSpace)
 		}
 		if fp.HSpace > 0 {
-			frameAttrs += fmt.Sprintf(" hSpace=\"%d\"", fp.HSpace)
+			frameAttrs += fmt.Sprintf(" hSpace='%d'", fp.HSpace)
 		}
 		if fp.Wrap != "" {
-			frameAttrs += fmt.Sprintf(" wrap=\"%s\"", fp.Wrap)
+			frameAttrs += fmt.Sprintf(" wrap='%s'", fp.Wrap)
 		}
 		if fp.HAnchor != "" {
-			frameAttrs += fmt.Sprintf(" hAnchor=\"%s\"", fp.HAnchor)
+			frameAttrs += fmt.Sprintf(" hAnchor='%s'", fp.HAnchor)
 		}
 		if fp.VAnchor != "" {
-			frameAttrs += fmt.Sprintf(" vAnchor=\"%s\"", fp.VAnchor)
+			frameAttrs += fmt.Sprintf(" vAnchor='%s'", fp.VAnchor)
 		}
 		if fp.X > 0 {
-			frameAttrs += fmt.Sprintf(" x=\"%d\"", fp.X)
+			frameAttrs += fmt.Sprintf(" x='%d'", fp.X)
 		}
 		if fp.XAlign != "" {
-			frameAttrs += fmt.Sprintf(" xAlign=\"%s\"", fp.XAlign)
+			frameAttrs += fmt.Sprintf(" xAlign='%s'", fp.XAlign)
 		}
 		if fp.Y > 0 {
-			frameAttrs += fmt.Sprintf(" y=\"%d\"", fp.Y)
+			frameAttrs += fmt.Sprintf(" y='%d'", fp.Y)
 		}
 		if fp.YAlign != "" {
-			frameAttrs += fmt.Sprintf(" yAlign=\"%s\"", fp.YAlign)
+			frameAttrs += fmt.Sprintf(" yAlign='%s'", fp.YAlign)
 		}
 		if fp.HRule != "" {
-			frameAttrs += fmt.Sprintf(" hRule=\"%s\"", fp.HRule)
+			frameAttrs += fmt.Sprintf(" hRule='%s'", fp.HRule)
 		}
 		if fp.AnchorLock {
-			frameAttrs += " anchorLock=\"true\""
+			frameAttrs += " anchorLock='true'"
 		}
 		if frameAttrs != "" {
 			fmt.Fprintf(b, " frame=\"%s\"", frameAttrs[1:])

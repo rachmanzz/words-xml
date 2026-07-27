@@ -90,8 +90,8 @@ func verifyRoot(tokens []xml.Token, r *VerifyResult) {
 
 	if version == "" {
 		r.addError("missing version attribute on <words>")
-	} else if version != "1.0.1" {
-		r.addError("version must be \"1.0.1\", got %q", version)
+	} else if version != "1.1.0" {
+		r.addError("version must be \"1.1.0\", got %q", version)
 	}
 
 	if mode == "" {
@@ -196,8 +196,8 @@ func verifyStyle(tokens []xml.Token, start xml.StartElement, idx *int, r *Verify
 	}
 	if unit == "" {
 		r.addWarn("<style> missing unit attribute")
-	} else if unit != "in" && unit != "cm" && unit != "pt" && unit != "px" {
-		r.addWarn("<style> unit must be in|cm|pt|px, got %q", unit)
+	} else if unit != "in" && unit != "cm" && unit != "pt" && unit != "px" && unit != "mm" {
+		r.addWarn("<style> unit must be in|cm|pt|px|mm, got %q", unit)
 	}
 
 	endIdx := findMatchingEnd(tokens, *idx)
@@ -286,6 +286,8 @@ func verifyBlockContent(tokens []xml.Token, r *VerifyResult, context string) {
 			verifySpan(start, r)
 		case "sym", "tab":
 			// ok
+		case "ins", "del":
+			// tracked change elements (lossless mode)
 		default:
 			r.addWarn("unknown element <%s> in %s", local, context)
 		}
@@ -470,13 +472,7 @@ func verifyLiAttrs(start xml.StartElement, r *VerifyResult) {
 		case "tag":
 			// ok, freeform
 		case "type":
-			valid := map[string]bool{
-				"decimal": true, "lowerLetter": true, "upperLetter": true,
-				"lowerRoman": true, "upperRoman": true, "bullet": true,
-			}
-			if !valid[a.Value] {
-				r.addError("<li> type must be decimal|lowerLetter|upperLetter|lowerRoman|upperRoman|bullet, got %q", a.Value)
-			}
+			// MOD-2: any numFmt value is valid (raw preservation)
 		}
 	}
 }
@@ -532,7 +528,7 @@ func verifyBreak(start xml.StartElement, r *VerifyResult) {
 			hasType = true
 			valid := map[string]bool{"page": true, "textWrapping": true, "column": true, "clear": true}
 			if !valid[a.Value] {
-				r.addError("<br> type must be page|textWrapping|column, got %q", a.Value)
+				r.addError("<br> type must be page|textWrapping|column|clear, got %q", a.Value)
 			}
 		}
 	}
@@ -576,6 +572,10 @@ func verifyInlineAttrs(start xml.StartElement, elemType string, r *VerifyResult)
 			valid := map[string]bool{"top": true, "center": true, "bottom": true, "baseline": true}
 			if !valid[a.Value] {
 				r.addError("<%s> valign must be top|center|bottom|baseline, got %q", elemType, a.Value)
+			}
+			// Paragraphs only allow top|center|baseline; cells allow top|center|bottom
+			if (elemType == "p" || elemType == "h1" || elemType == "h2" || elemType == "h3" || elemType == "h4" || elemType == "h5" || elemType == "h6" || elemType == "h7" || elemType == "h8" || elemType == "h9" || elemType == "li" || elemType == "blockquote") && a.Value == "bottom" {
+				r.addError("<%s> valign must not be bottom (only top|center|baseline), got %q", elemType, a.Value)
 			}
 		case "shd":
 			// ok, hex color or pattern

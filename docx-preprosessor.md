@@ -17,7 +17,7 @@ The preprocessor operates in one of two modes:
 - `mode="semantic"` (default): stripped-down representation for **AI training** and **downstream consumption**.
 - `mode="lossless"`: preserves additional metadata for **round‑tripping** or **document‑reconstruction**. Differences from semantic mode:
   - Whitespace is NOT normalized (original spacing preserved).
-  - Tracked changes (`w:ins`/`w:del`) are emitted as `<ins>`/`<del>` elements.
+  - Tracked changes (`w:ins`/`w:del`): text included as plain text in semantic mode; `<ins>`/`<del>` wrapped in lossless mode.
   - All other transformation rules remain the same.
 
 ### 1.1 Problem (semantic mode)
@@ -87,12 +87,13 @@ A flat, semantic, versioned XML:
     <s:gap el="h" c="Heading1" before=".." after=".."/>
     <s:gap el="p" before=".." after=".."/>
     <s:line el="p" value="1.5" rule="auto"/>  # line spacing (LOSSLESS_METADATA)
+    <s:line el="p" c="Heading1" value="1.5" rule="auto"/>  # heading-specific line spacing
     <s:indent el="p"          # paragraph indentation (MOD-5)
               left=".." right=".." firstLine=".." hanging=".."/>
     <s:align el="p" value="left|center|right|both"/> # paragraph alignment (LOSSLESS_METADATA)
     <s:cols n=".." space=".."/>  # multi-column layout — P19
     <s:col ref="n" w=".."/>     # column widths / grid; ref = table id (1-based index)
-    <s:tab el="p|h1" pos="1.0" align="left|center|right|decimal" leader="none|dot|dash|underscore|bar"/>  # tab stop definition
+    <s:tab el="p|h1" pos="1.0" align="left|center|right|decimal" leader="none|dot|dash|underscore|bar"/>  # tab stop definition (deduplicated — identical stops emitted once)
     <s:theme font=".." fontEA=".." fontCS=".." bg=".." fg=".."/>  # optional global defaults (font + color tokens)
     <s:custom name=".." basedOn=".." type="paragraph|character|table"
               font=".." fontEA=".." fontCS=".." size=".." sizeCS=".."
@@ -219,6 +220,7 @@ with page size and margins.
 
   - `<s:indent>` — paragraph indentation (MOD-5), from `w:pPr/w:ind`:
     - `el` — target element (usually `p`).
+    - `c` — optional style name (e.g., `c="Heading1"` for heading-specific indent).
     - `left`, `right` — left/right indent.
     - `firstLine` — first-line indent (positive) ; `hanging` — hanging indent (positive).
     - Sign convention follows Word: `w:ind/@w:firstLine` positive → `firstLine`;
@@ -226,9 +228,19 @@ with page size and margins.
 
   - `<s:align>` — paragraph alignment (LOSSLESS_METADATA), from `w:pPr/w:jc`:
     - `el` — target element (usually `p`).
+    - `c` — optional style name (e.g., `c="Heading1"` for heading-specific alignment).
     - `value` — alignment: `left`, `center`, `right`, `both` (justify).
     - Mapped from `w:jc/@w:val`: `left` → `left`, `center` → `center`, `right` → `right`,
       `both` → `both`.
+    - **Per-paragraph overrides**: when a paragraph's alignment differs from its style's alignment,
+      an additional `<s:align>` entry is emitted in `<style>` for that specific paragraph.
+
+  - `<s:line>` — line spacing keyed by element (`el`) and optional style (`c`):
+    - `el` — target element (usually `p`).
+    - `c` — optional style name (e.g., `c="Heading1"` for heading-specific line spacing).
+    - `value` = line spacing multiplier (e.g., `1.5` for 1.5 line spacing, `2` for double);
+    - `rule` = `auto` (proportional), `exact` (fixed), `atLeast` (minimum). From `w:spacing/@w:line`
+    and `@w:lineRule`. Example: `<s:line el="p" value="1.5" rule="auto"/>`.
 
   **Page-size presets** (resolved in the declared `unit`; values shown in `pt`):
 
@@ -252,6 +264,8 @@ with page size and margins.
 
   > Resolution must use the declared `unit` (e.g., `unit="mm"` → A4 = `w="210" h="297"`).
   > Conversion: `pt ÷ 2.834645669` → `mm`; `pt ÷ 72` → `in`.
+  > Preset matching compares converted page dimensions in **points** (not the declared unit)
+  > to avoid floating-point rounding issues.
 
 ### 2.5 Units
 
@@ -272,13 +286,88 @@ Allowed units: `in` (inch, default), `pt` (point), `px` (pixel), `cm`, `mm`.
 - `<s:col>` — column/grid widths (from `w:tblGrid` / `w:gridCol`). Each `<s:col>` carries a
   `ref="n"` attribute that matches the `<table id="n">` it belongs to (1-based document
   order). Tables without a `w:tblGrid` emit no `<s:col>`.
+- `<s:tab>` — tab stop definitions (from `w:pPr/w:tabs` on paragraphs and `w:style/w:tabs` on
+  style definitions). Emitted in two passes: content-derived tabs (from paragraph `w:tabs`)
+  first, then style-derived tabs (from `w:style` entries). Tabs are deduplicated by the
+  key `{element, position, alignment, leader}` — only unique combinations are emitted.
+  Content tabs take priority over style tabs for the same dedup key.
 - `<s:theme>` — optional global defaults (font, fontEA, fontCS, bg, fg) from theme part + docDefaults.
 - `<s:custom>` — custom style definition (from `w:style` in `styles.xml`):
   `name` = style name (REQUIRED); `basedOn` = parent style name (optional);
   `type` = paragraph|character|table (optional); formatting properties as attributes
   (font, size, color, bold, italic, alignment, spacing, indentation, borders, etc.).
-  Only emitted for custom styles (not standard Heading1-9, Normal, etc.).
+  Only emitted for custom styles — excluded builtin IDs:
+  `Normal`, `DefaultParagraphFont`, `Heading1`–`Heading9`, `Title`, `Subtitle`,
+  `Quote`, `IntenseQuote`, `BlockText`, `ListParagraph`, `ListBullet`, `ListNumber`,
+  `Caption`, `TOCHeading`, `Hyperlink`, `FootnoteText`, `EndnoteText`,
+  `FootnoteReference`, `EndnoteReference`, `CommentText`, `Header`, `Footer`.
+  Also excluded when the style name (lowercased) is `"normal"` or `"default paragraph font"`.
   Example: `<s:custom name="MyHeading" basedOn="Heading1" font="Arial" color="FF0000"/>`.
+  Note: `color` and `borderColor` values are emitted **without** the leading `#` prefix.
+  `name` falls back to the style ID if the style name is empty.
+
+### DocDefaults — Document-Level Default Font
+
+The preprocessor extracts document-level default font properties from `styles.xml` →
+`w:docDefaults/w:rPrDefault/w:rPr`. These defaults set the **baseline** for all runs
+in the document:
+
+- **Font family**: `w:rFonts/@w:ascii` (Latin), `@w:eastAsia` (East Asian), `@w:cs` (Complex Script).
+- **Font size**: `w:sz/@w:val` (half-points → converted to pt: `val ÷ 2`).
+- **Font size CS**: `w:szCs/@w:val` (Complex Script size, same conversion).
+- **Color**: `w:color/@w:val` (hex).
+
+If `w:docDefaults` is absent or `styles.xml` cannot be parsed, the preprocessor falls
+back to **Times New Roman 11pt** as the default baseline. All font attributes are then
+emitted unconditionally only when they differ from this fallback.
+
+### Theme Font Resolution
+
+Run-level font references may use **theme keywords** instead of explicit family names.
+The preprocessor resolves these through the theme part (`word/theme/theme1.xml`):
+
+| Theme keyword | Resolution source |
+|---|---|
+| `asciiTheme` / `hAnsiTheme` | Theme font scheme (minor/major Latin family) |
+| `eastAsiaTheme` | Theme font scheme (minor/major East Asian family) |
+| `cstheme` | Theme font scheme (minor/major Complex Script family) |
+
+The font scheme is extracted from `w:theme/@w:name` elements within the theme part.
+For example, `minorFont` + `latin` → the minor Latin font family name.
+
+Resolution order for a run's font (Latin family):
+1. `w:rFonts/@w:ascii` if present → use directly.
+2. `w:rFonts/@w:hAnsi` if present → use directly.
+3. `w:rFonts/@w:asciiTheme` → resolve through the theme font map.
+4. `w:rFonts/@w:hAnsiTheme` → resolve through the theme font map.
+5. Fall back to DocDefaults if none present.
+
+East Asian font (`fontEA`):
+1. `w:rFonts/@w:eastAsia` if present → use directly.
+2. `w:rFonts/@w:eastAsiaTheme` → resolve through the theme font map.
+3. Fall back to DocDefaults EastAsia if none present.
+
+Complex Script font (`fontCS`):
+1. `w:rFonts/@w:cs` if present → use directly.
+2. `w:rFonts/@w:cstheme` → resolve through the theme font map.
+3. Fall back to DocDefaults CS if none present.
+
+### Default Font Baseline Suppression
+
+To reduce token count, `<span>` attributes are **suppressed** when they match the
+document's DocDefaults or theme defaults. For example, if the document default font
+is Arial 11pt and a run also uses Arial 11pt, no `<span>` element is emitted for that
+run — the default is inherited.
+
+Suppressed attributes:
+- `font` — suppressed when matching DocDefaults `ascii`/`hAnsi` font family.
+- `fontEA` — suppressed when matching DocDefaults `eastAsia` font family.
+- `fontCS` — suppressed when matching DocDefaults `cs` font family.
+- `size` — suppressed when matching DocDefaults `sz` (in pt).
+- `color` — suppressed when matching DocDefaults `color`.
+
+This means downstream consumers must apply DocDefaults/`s:theme` as the baseline
+before interpreting per-run `<span>` attributes.
 
 ### `c` Attribute — Original Style Name
 
@@ -312,7 +401,7 @@ All block elements (`<p>`, `<h1>`-`<h9>`, `<li>`, `<blockquote>`, `<pre>`) can c
 | `keepNext` | bool | `w:pPr/w:keepNext` | Keep paragraph with next paragraph |
 | `keepLines` | bool | `w:pPr/w:keepLines` | Keep all lines of paragraph together |
 | `widowControl` | bool | `w:pPr/w:widowControl` | Allow widow/orphan lines |
-| `sectionBreak` | string | `w:pPr/w:sectPr/w:type/@w:val` | Section break type (`nextPage`, `continuous`, `evenPage`, `oddPage`) |
+| `sectionBreak` | string | `w:pPr/w:sectPr/w:type/@w:val` | Section break type (`nextPage`, `continuous`, `evenPage`, `oddPage`); defaults to `nextPage` when `w:type` is absent. Also emitted on the **last paragraph** if it carries a `w:sectPr` (document-final section break). |
 | `revisionAuthor` | string | `w:pPr/w:pPrChange/@w:author` | Tracked change author name |
 | `revisionDate` | string | `w:pPr/w:pPrChange/@w:date` | Tracked change date (ISO 8601) |
 | `suppressAutoHyph` | bool | `w:pPr/w:suppressAutoHyphens` | Suppress automatic hyphenation |
@@ -355,13 +444,23 @@ Sub-attributes:
 
 **Precedence**: Per-paragraph attributes override style-level defaults (`<s:gap>`, `<s:line>`, `<s:indent>`, `<s:align>`). When a per-paragraph attribute is present, it takes precedence over the corresponding style-level value.
 
+**Paragraph-level Run Defaults**: If a paragraph contains `w:pPr/w:rPr` (run properties inside paragraph properties), these serve as **default run formatting** for all runs in the paragraph. Each run inherits these defaults before applying its own run-level properties. Run-level properties override paragraph-level defaults when present.
+
+**Attribute Suppression Rules**:
+- `align="left"` is **suppressed** (not emitted) because `left` is the default alignment.
+- `lineRule="auto"` is **suppressed** because `auto` is the default line rule.
+- **Alignment deduplication**: when a paragraph's alignment matches its style-level
+  alignment (from `<s:align>` in `<style>`), the per-paragraph `align` attribute is
+  **suppressed** to avoid redundancy. Only deviations from the style default are emitted.
+
 ### `at` Attribute — Compact Border Representation
 
 The `at` attribute provides a compact syntax for borders on block elements and table cells.
 Format: `at="[side] [width] [style][space] [color]; ..."` where:
 - `side`: `bt` (top), `bb` (bottom), `bl` (left), `br` (right)
-- `width`: border width in the declared unit
-- `style`: `s` (single), `d` (double), `ds` (dashed), `dt` (dotted), `n` (none)
+- `width`: border width in the declared unit (converted from OOXML 1/576 of a point: `ptVal / 576.0`)
+- `style`: `s` (single), `d` (double), `ds` (dashed / dashSmallGap), `dt` (dotted), `n` (none)
+  Unknown OOXML border values fall back to `s` (single) to avoid breaking output.
 - `space`: spacing value (appended to style code, e.g., `s1` = single, space 1)
 - `color`: hex color (e.g., `#000000`)
 - Multiple borders separated by `;`
@@ -396,6 +495,8 @@ before the root `</words>`**. It carries footnote/endnote bodies, bookmarks, and
 
 - `<fn id="n" type="footnote|endnote">` — body with matching type attribute
   The marker in `<write>` is an empty element `<fn-ref id="n" type="footnote|endnote"/>`; the body lives here.
+  `id` is the raw OOXML `w:id` value (not renumbered sequentially); footnotes and endnotes
+  share a single ID namespace within a document.
 - `<bm id="name"/>` — bookmark position marker (self-closing, `id` = bookmark name from `w:bookmarkStart/@w:name`).
 - `<comment id="n" author="..." date="...">text</comment>` — comment text with author and date metadata.
   `id` is a 1-based index; `author` from `w:comment/@w:author`; `date` from `w:comment/@w:date` (ISO 8601).
@@ -405,6 +506,13 @@ before the root `</words>`**. It carries footnote/endnote bodies, bookmarks, and
   but wrapped in the footnote container.
 - Bookmarks and comments are placed in document order within the `<notes>` block.
 - Footnotes, endnotes, bookmarks, and comments are all placed in document order within a single `<notes>` block.
+- **Ordering**: all notes are sorted by the position of their reference in the body
+  (`<fn-ref>`, `<comment>` reference, `<bm>`). This preserves document reading order
+  even when notes are defined out of order in the source XML.
+  - Note references inside tracked changes (`w:ins`/`w:del`) are **excluded** from ordering.
+  - If a note is referenced multiple times, only the **first** reference position is used.
+  - **Bookmark interleaving**: bookmarks that appear between footnotes and endnotes in
+    document order are interleaved with them in the `<notes>` block, not grouped separately.
 
 ---
 
@@ -435,6 +543,7 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 | `w:bidi` (p), `w:rPr/w:rtl` (r), `w:dir`/`w:bdo` | direction | `dir="rtl"` attribute on element | RTL/bidi support (MOD-7) |
 | `w:pPr/w:outlineLvl` | style | DROP (inferred from heading) | redundant |
 | `w:pPr/w:suppressLineNumbers` | misc | DROP | renderer hint |
+| `w:pPr/w:pageBreakBefore` | break | `<br type="page"/>` prepended to paragraph runs | page break before paragraph |
 | `w:pPr/w:keepNext` | layout | `keepNext="true"` on `<p>` | paragraph formatting |
 | `w:pPr/w:keepLines` | layout | `keepLines="true"` on `<p>` | paragraph formatting |
 | `w:pPr/w:widowControl` | layout | `widowControl="true"` on `<p>` | widow/orphan control |
@@ -480,14 +589,16 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 | `w:rPr/w:szCs` | keep | `sizeCS="..."` on `<span>` — P18 | Complex Script font size |
 | `w:br`,`w:cr` | break | `<br type="textWrapping|page|column|clear"/>` | explicit break w/ kind (MIN-1) |
 | `w:tab` | break | `<tab/>` | tab character preserved |
-| `w:noBreakHyphen`,`w:softHyphen`,`w:sym` | text | keep as char | literal |
+| `w:noBreakHyphen` | text | rendered as `\u00AC` (not-breaking hyphen) | literal character |
+| `w:softHyphen` | text | rendered as `\u00AD` (soft hyphen) | literal character |
+| `w:sym` | text | hex code parsed to Unicode rune | literal character |
 | `w:hyperlink` | link | `<a href>` (r:id or instrText HYPERLINK) | link (MOD-3) |
 | `w:instrText` (field code) | field | DROP unless HYPERLINK | field codes are noise |
 | `w:fldSimple`,`w:fldChar` | field | DROP | TOC/PAGE/etc. noise |
 | `w:bookmarkStart/End` | anchor | KEEP in `<notes>` as `<bm id="name"/>` | bookmark position preserved |
 | `w:commentRange*`,`w:commentReference` | comment | KEEP in `<notes>` as `<comment>` | comment text preserved |
 | `w:proofError` | proof | DROP | spelling/grammar noise |
-| `w:ins`,`w:del` (track changes) | change | `<ins>/<del>` (optional, LOSSLESS_METADATA) | revision tracking preserved for legal docs |
+| `w:ins`,`w:del` (track changes) | change | text included as plain text (semantic); `<ins>`/`<del>` wrapped (lossless) | change content preserved; markup stripped in semantic mode |
 | `w:sdt`,`w:smartTag`,`w:customXml` | wrapper | unwrap children | tag wrappers |
 | `w:sectPr` | section | feed `<s:page>` in `<style>` | page layout |
 | `w:sectPr/w:cols` | keep | `<s:cols n=".." space=".."/>` in `<style>` — P19 | multi-column layout |
@@ -510,8 +621,8 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 | `w:tr`/`w:tc` | struct | `<tr>`/`<th>`/`<td>` | table cells |
 | `w:gridSpan`/`w:vMerge` | merge | `colspan`/`rowspan` on `<td>`/`<th>`; continue cells omitted | grid integrity preserved |
 | `w:footnoteReference`/`w:endnoteReference` | note | `<fn-ref id="n" type="...">` marker; `<fn id="n" type="...">` body in `<notes>` | note marker + body, type distinguishes footnote/endnote |
-| `w:drawing` (image blip) | **EXCLUDE** | `<img alt>` placeholder | images excluded |
-| `w:pict` (VML) | **EXCLUDE** | DROP | legacy VML, no text extracted |
+| `w:drawing` (image blip) | **EXCLUDE** | `<img alt="..."/>` placeholder | images excluded |
+| `w:pict` (VML) | **EXCLUDE** | `<img alt="..."/>` placeholder | legacy VML, no text extracted |
 | `w:txbxContent` (textbox body) | KEEP | unwrap paragraphs/runs/tables into `<write>` | textbox text extracted (CRIT-1) |
 | `w:hdrReference`,`w:ftrReference` | section | KEEP in `<header>`/`<footer>` blocks; margins via `<s:page mh/mf>` | header/footer content preserved |
 | `w:object` (OLE) | **EXCLUDE** | DROP | complex object |
@@ -519,9 +630,10 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 | `w:Math` (OMML) | **EXCLUDE** | DROP | math too complex |
 | `w:altChunk` | EXCLUDE | DROP | external html chunk |
 
-> **EXCLUDED by policy**: images (non-textbox), OLE objects, charts, SmartArt/diagrams,
-> and Office Math. These are either binary or require specialized renderers, so the
-> preprocessor emits a placeholder or drops them.
+> **EXCLUDED by policy**: images, OLE objects, charts, SmartArt/diagrams,
+> and Office Math. Images emit `<img alt="..."/>` placeholders — pixel/vector data
+> is NOT extracted. These are either binary or require specialized renderers, so the
+> preprocessor drops them.
 > **Textboxes (`w:txbxContent`) are NOT excluded** — their text content is extracted into
 > `<write>` (CRIT-1). Images embedded *inside* a textbox are still excluded as `<img>`.
 > **Headers/footers content** is now KEPT — see §2.6. Only the presentation chrome
@@ -535,43 +647,72 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 | `Heading1`                 | `<h1>`        |
 | `Heading2`                 | `<h2>`        |
 | `Heading3`                 | `<h3>`        |
-| `Title`                    | `<h1>`           |
+| `Title`, `Heading`         | `<h1>`           |
+| `Subtitle`                 | `<h2>`        |
 | `ListParagraph` (+ numPr)  | `<li>` (inside `<ul>`/`<ol>`) |
 | `Quote`/`IntenseQuote`/`BlockText` | `<blockquote>` (MIN-2) |
 | Code-like styles (see below) | `<pre>`               |
 | (none / `Normal`)          | `<p>`                     |
 
+- **Heading demotion heuristic**: headings are demoted back to `<p>` when:
+  - Text content exceeds 60 characters, OR
+  - Paragraph alignment is `both` (justified)
+  - **Exception**: paragraphs that qualify as `<pre>` (code blocks) are **exempt** from
+    demotion — they remain `<pre>` regardless of text length or alignment.
+
 - **Code block detection**: a paragraph maps to `<pre>` when either:
   - Its `w:pStyle w:val` resolved via `styles.xml` matches a code-like style name
-    (`Code`, `HTML`, `XML`, `PlainText`, `SourceCode`, `Example`, `Output`, or any style
+    (`Code`, `Code Block`, `CodeBlock`, `Plain Text`, `Plaintext`, `Source Code`, `SourceCode`, `Preformatted`, `Preformatted Text`, `Source`, `Output`, or any style
     whose `w:name` contains `"Code"`, `"Source"`, or `"Output"` as a word), OR
-  - The **first run** in the paragraph uses a monospace font family
+  - Its `w:pStyle w:val` (styleID) matches a known code-like ID
+    (`code`, `codeblock`, `codeblock1`, `codeblock2`, `plaintext`, `sourcecode`, `preformatted`, `source`, `output`), OR
+  - Its style name or ID contains a code-related keyword (`"Code"`, `"Source"`, or `"Output"`)
+    **AND** **ALL runs** in the paragraph use a monospace font family
     (`w:rPr/w:rFonts/@w:ascii` or `@w:hAnsi` matching `Courier New`, `Consolas`,
     `Lucida Console`, `Menlo`, `Monaco`, `monospace`, or any font containing `"Mono"` or
     `"Courier"`, case-insensitive).
+  - Keyword matching is **case-insensitive** and requires **word boundaries** (e.g., `"SourceCode"`
+    matches but `"Source"` embedded in `"ResourceCode"` would not).
+  - **Empty paragraphs**: a paragraph with no runs (`len(p.Runs) == 0`) cannot be detected
+    as code — the monospace font check requires at least one run.
   - The entire paragraph content (including all runs) becomes the text content of `<pre>`,
     with original spacing preserved per §3.5.
   - If a paragraph qualifies as `<pre>`, all inline formatting tags (`<b>`, `<i>`,
     etc.) inside it are suppressed — only the raw text is kept.
 - Drop `w:pPr` presentation noise (`w14:paraId`, `w:rsidR`, shading, tabs, etc.); layout attributes (spacing, indent, alignment) are preserved in `<style>` per §3.0; borders preserved via `at` attribute.
 - The `c` attribute preserves the **original style name** for downstream semantic tagging.
+- **Style entry `el` values**: heading-specific style entries use `el="h"` for `<s:gap>` but `el="p"` for `<s:indent>`, `<s:align>`, and `<s:line>`. This is an implementation convention.
 - **Style resolution**: if `w:pStyle w:val` is a custom name, resolve it via `styles.xml`
   (`w:styleId` → `w:name`) to a semantic role (Heading/Quote/etc.) when possible; otherwise
   fall back to `c="<customName>"` and treat as `<p>`.
+- **Heading level offset**: OOXML `w:outlineLvl` is 0-based (0 = Heading1, 1 = Heading2, ...).
+  The preprocessor converts to 1-based: `HeadingLevel = outlineLvl.Val + 1`.
+  Style-level `outlineLvl` (from `w:style`) is used to populate the style map's heading level.
 - **Style inheritance chain**: Word styles inherit from a parent via `w:basedOn`. The
   preprocessor MUST walk the inheritance chain to determine the final semantic role.
   For example, if `MyHeading` has `<w:basedOn w:val="Heading1"/>`, it is treated as
    `<h1 c="MyHeading">`. Resolution algorithm:
-  1. Start with the paragraph's `w:pStyle w:val`.
-  2. Look up its `w:style` entry in `styles.xml`.
-  3. If it has a `w:basedOn` reference, recurse into the parent style.
-  4. Stop at a known semantic style (Heading1-9, Title, Quote, Normal, ListParagraph, Code)
-     or when no `w:basedOn` exists.
-  5. Map the deepest known ancestor to the appropriate target element.
+   1. Start with the paragraph's `w:pStyle w:val`.
+   2. Look up its `w:style` entry in `styles.xml`.
+   3. If it has a `w:basedOn` reference, recurse into the parent style.
+   4. Stop at a known semantic style (Heading1-9, Title, Quote, Normal, ListParagraph, Code)
+      or when no `w:basedOn` exists.
+   5. Map the deepest known ancestor to the appropriate target element.
+   6. **Cycle detection**: a `visited` map prevents infinite loops from circular `basedOn`
+      references. If a style is encountered twice during the walk, the chain terminates.
 
 ### 3.2 Runs → inline formatting
 
-- `w:r` → `w:t` text becomes the element's text content.
+- `w:r` → `w:t` text becomes the element's text content. Multiple `w:t` elements within
+  a single `w:r` are concatenated in order.
+- **Run state reset**: when a `w:tab` or `w:br`/`w:cr` is encountered, the preprocessor
+  resets the run state to a fresh `TextRun` for the following content. Formatting from the
+  previous run does not carry over to the tab/break or subsequent content — each run is
+  self-contained.
+- **Paragraph run defaults**: when a run has no explicit `w:rPr`, paragraph-level run
+  defaults (`w:pPr/w:rPr`) are applied — font, size, bold, italic, color, highlight,
+  caps, strikethrough, underline, and superscript/subscript propagate to the run.
+  Run-level formatting **overrides** paragraph-level defaults when both are present.
 - **Language (BCP 47)**: The `lang` attribute is set on the **target block element**
   (`<p>`, `<h1>`-`<h9>`, `<li>`, `<td>`, etc.) based on:
   1. Paragraph-level `w:pPr/w:pStyle/lang` if present
@@ -580,6 +721,9 @@ Every OOXML construct the preprocessor encounters is classified into one of four
   If runs within the same paragraph have different languages, the first run's language
   takes precedence. Inline language changes are lost (`<span>` supports font/size/color/highlight
   but not `lang`).
+  - **Cell language cascade**: for `<td>` elements, language resolution walks up:
+    cell `w:tc/w:tcPr/w:lang` → row `w:tr/w:trPr/w:lang` → table `w:tbl/w:tblPr/w:lang`
+    → document body `w:lang`. The first non-empty value found is used.
 - `w:rPr` with `w:b` → wrap run in `<b>`.
 - `w:rPr` with `w:i` → wrap run in `<i>`.
 - `w:rPr` with `w:u` → wrap run in `<u>`.
@@ -590,6 +734,7 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 - `w:rPr` with `w:sz` → wrap run in `<span size="..">` (font size in half-points, converted to pt: `w:val ÷ 2`).
 - `w:rPr` with `w:color` → wrap run in `<span color="..">` (hex color from `@w:val`, e.g., `"FF0000"`).
 - `w:rPr` with `w:highlight` → wrap run in `<span highlight="..">` (highlight color name from `@w:val`).
+  Highlight value `"none"` is **suppressed** (not emitted).
 - Multiple font properties on the same run are combined into a single `<span>` element with all applicable attributes.
 - **Direction (MOD-7)**: paragraph `w:bidi`, run `w:rPr/w:rtl`, or inline `w:dir`/`w:bdo`
   → emit `dir="rtl"` on the affected element. Mixed LTR/RTL runs each carry their own `dir`.
@@ -597,7 +742,19 @@ Every OOXML construct the preprocessor encounters is classified into one of four
   1. `w:hyperlink/@r:id` → look up `document.xml.rels` → `<a href="...">`.
   2. Else if `w:hyperlink` contains `w:instrText` with `HYPERLINK "..."` → extract the
      URL from the field code → `<a href="...">`.
-  3. Internal/bookmark targets (no URL) → `<a href="#bookmarkName">` when resolvable.
+   3. Internal/bookmark targets (no URL) → `<a href="#bookmarkName">` when resolvable.
+  - **Inner run formatting**: bold, italic, underline, and strikethrough from hyperlink
+    runs are preserved as inline elements inside `<a>`. Other run properties (font, color,
+    size) are not extracted from hyperlink runs.
+- **HYPERLINK field code flow**: some DOCX files encode hyperlinks via field codes
+  instead of `w:hyperlink` elements. The preprocessor handles this via:
+  1. `w:fldChar w:fldCharType="begin"` — start of field.
+  2. `w:instrText` containing `HYPERLINK "https://..."` — the field instruction with URL.
+  3. `w:fldChar w:fldCharType="separate"` — separator between instruction and result.
+  4. Runs with visible text — the hyperlink display text.
+  5. `w:fldChar w:fldCharType="end"` — end of field.
+  The URL is extracted from the `instrText` value and the visible runs become the
+  link text. Non-HYPERLINK field codes (TOC, PAGE, etc.) are dropped.
 - **Textboxes (CRIT-1)**: `w:txbxContent` (inside `w:drawing` shapes or
   `mc:AlternateContent`) is unwrapped — its child paragraphs/runs/tables are processed by
   the normal rules. Only the *text* is kept; the shape/frame chrome is dropped.
@@ -608,14 +765,18 @@ Every OOXML construct the preprocessor encounters is classified into one of four
     This prevents sentence fragmentation while keeping document order intact.
   - If the textbox is the sole content of its host paragraph (no surrounding runs), its
     paragraphs replace the host `<p>` directly.
+  - Both `wp:inline` and `wp:anchor` drawings are treated identically — anchor drawings
+    are converted to an inline structure for extraction purposes.
 - **Footnotes/endnotes**: `w:footnoteReference`/`w:endnoteReference` → `<fn-ref id="n" type="footnote|endnote"/>`
   marker in `<write>`. The body is extracted from `word/footnotes.xml` or `word/endnotes.xml`,
   processed through normal paragraph/run rules, and placed in the `<notes>` block as
   `<fn id="n" type="footnote|endnote">...</fn>` (see §2.7).
 - **Tracked changes (LOSSLESS_METADATA)**: `w:ins` → `<ins>...</ins>`,
   `w:del` → `<del>...</del>` (deleted text included for context).
-  Only emitted when the preprocessor is in `mode="lossless"`; in `mode="semantic"` (default),
-  they are dropped per §3.0.
+  In `mode="lossless"`, ins/del runs are wrapped in `<ins>`/`<del>` elements with
+  `author` and `date` metadata. In `mode="semantic"` (default), ins/del content is
+  included as **plain text** (no wrapper tags) — the text is preserved, only the
+  change-tracking markup is stripped.
 
 ### 3.3 Lists
 
@@ -658,6 +819,27 @@ Every OOXML construct the preprocessor encounters is classified into one of four
   This structure allows arbitrary nesting depth and mixed list types (e.g., `<ol>` inside
   `<li>` inside `<ul>`).
 
+- **List continuation (GAP-02)**: when a non-list paragraph appears between list items
+  sharing the same `w:numId`, it is treated as **continuation content** of the preceding
+  `<li>`. The continuation text is appended with a `<br type="textWrapping"/>` separator.
+  The implementation looks ahead up to 20 items to detect same-`numId` continuations.
+  Additionally, **any** non-list paragraph that is not a section break (see below) is
+  treated as continuation content when it appears immediately after a list item.
+  Example: if "Item 1" is followed by a non-list paragraph "continuation text" followed
+  by "Item 2", the output is:
+  ```xml
+  <ul type="bullet">
+    <li>Item 1<br type="textWrapping"/>continuation text</li>
+    <li>Item 2</li>
+  </ul>
+  ```
+
+- **Section break for list continuation**: a paragraph is treated as a "section break"
+  that terminates list continuation if any of:
+  - The paragraph is empty (no runs or only whitespace).
+  - The paragraph text starts with `"--------"` or `"------ "` (horizontal rule).
+  - The paragraph has a heading level (`HeadingLevel > 0`).
+
 ### 3.4 Tables
 
 - `w:tbl` → `<table id="n">` where `n` is a 1-based index across all tables in the
@@ -697,7 +879,12 @@ Every OOXML construct the preprocessor encounters is classified into one of four
   - `mode="lossless"` — minimal transformation; whitespace and tracked changes preserved
     for round-tripping or legal/document-reconstruction scenarios.
 - **Whitespace normalization** (applies in `semantic` mode only):
-  - Collapse repeated spaces to single space, trim line breaks inside a run.
+  - `\r\n` → `\n` (Windows line endings normalized).
+  - `\r` → `\n` (old Mac line endings normalized).
+  - `\t` → single space (tab characters in text content converted).
+  - Collapse repeated spaces to single space (iterative until stable).
+  - Trim leading `\n` from text content.
+  - Trim trailing `\n` and spaces from text content.
   - `w:tab` → `<tab/>` (tab character preserved); `w:br`/`w:cr` → `<br type="…"/>`.
   - **Exception**: content inside `<pre>` blocks is exempt — all original spacing,
     indentation, and line breaks are preserved verbatim regardless of mode.

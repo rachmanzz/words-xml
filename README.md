@@ -2,7 +2,7 @@
 
 Go library + CLI to convert `.docx` (OOXML) files into **words-XML** — a compact, deterministic, LLM-friendly XML representation.
 
-Spec: [words-XML v1.0.1](https://github.com/rachmanzz/docx-preprocessor/blob/main/docx-preprosessor.md)
+Spec: [words-XML v1.1.0](https://github.com/rachmanzz/docx-preprocessor/blob/main/docx-preprosessor.md)
 
 ## Install
 
@@ -58,7 +58,7 @@ if !result.Valid {
 ## Output Example
 
 ```xml
-<words xmlns="urn:words:v1" version="1.0.1" mode="semantic">
+<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">
   <style unit="in">
     <s:page size="Letter" mt="1.00" mb="1.00" ml="1.00" mr="1.00"/>
     <s:gap el="h" c="Heading1" before="18.00" after="4.00"/>

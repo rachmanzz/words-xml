@@ -1,4 +1,4 @@
-# GAP Analysis: words-xml v1.0.1
+# GAP Analysis: words-xml v1.1.0
 
 Audit date: 2026-07-22
 Status: ACTIVE
@@ -7,7 +7,7 @@ Status: ACTIVE
 
 ## Summary
 
-Gaps between the words-xml spec (v1.0.1) and current implementation, grouped by severity.
+Gaps between the words-xml spec (v1.1.0) and current implementation, grouped by severity.
 
 ---
 
@@ -321,3 +321,37 @@ After each fix:
 2. `go run examples/scripts/generate/main.go` — all outputs generated
 3. `go run examples/scripts/verify/main.go` — all outputs verified clean
 4. Manual check on `TEMP AKTA PENDIRIAN PT.docx` for indent correctness
+
+---
+
+## Spec Audit: 28 Spec/Impl Gaps Fixed (2026-07-27)
+
+**Status**: DONE — all 28 gaps resolved via documentation-only changes to `docx-preprosessor.md`
+
+| # | Gap | Resolution |
+|---|-----|------------|
+| 1 | `<img>` w/h in spec | Removed from spec — code correctly omits extent as noise |
+| 2 | Code detection third trigger | Clarified: requires code keyword AND all monospace runs |
+| 3 | Default font fallback | Added: Times New Roman 11pt when styles.xml unparseable |
+| 4-5 | Broad list continuation + isSectionBreak | Documented heuristics in spec |
+| 6 | s:page preset matching | Noted: points used internally for comparison |
+| 7 | Whitespace normalization | Expanded: tab→space, CRLF→LF, leading newline trim, trailing space trim |
+| 8 | s:tab two-pass emission | Documented: content first, style second, dedup across both |
+| 9 | s:custom builtin exclusion | Full list of 21 builtin IDs added to spec |
+| 10 | Per-paragraph alignment dedup | Documented: matching style alignment suppressed |
+| 11 | Heading level +1 offset | Documented: OOXML 0-based → spec 1-based |
+| 12 | Style inheritance cycle detection | Documented: visited map prevents infinite loops |
+| 13 | Section break default nextPage | Documented: when w:type is absent |
+| 14 | Heading demotion exemption | Documented: code paragraphs exempt from demotion |
+| 15 | Note refs in tracked changes | Documented: excluded from ordering |
+| 17 | Anchor drawings | Documented: treated same as inline |
+| 18 | Hyperlink inner runs | Documented: only bold/italic/underline/strikethrough extracted |
+| 19 | dashSmallGap border style | Added `ds` = dashed / dashSmallGap to border style list |
+| 20 | Border width divisor | Documented: OOXML 1/576 of a point |
+| 21 | Cell language cascade | Documented: tc → tr → tbl → body fallback |
+| 22 | Bookmark interleaving | Documented: bookmarks interleaved with notes |
+| 23 | Word boundary matching | Documented: case-insensitive + word boundary required |
+| 24 | Last paragraph section break | Documented: sectPr emitted even on final paragraph |
+| 25 | Paragraph run defaults | Documented: propagated to runs without explicit formatting |
+| 27 | Note ref id numbering | Documented: raw OOXML id, not renumbered |
+| 28 | Tracked changes semantic mode | Corrected: text preserved as plain text, not dropped |

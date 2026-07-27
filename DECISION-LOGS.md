@@ -123,7 +123,7 @@ Every significant choice is recorded here so the rationale is preserved over tim
 #### `[DECISION] Custom XML serialization, not Marshal`
 - **Date**: 2026-07-20
 - **Context**: `encoding/xml.Marshal` produces XML that does not match the `words`
-  v1.0.1 spec — attribute ordering, self-closing elements, and namespace handling
+  v1.1.0 spec — attribute ordering, self-closing elements, and namespace handling
   all differ.
 - **Decision**: Output XML is generated manually with `strings.Builder`. Each element
   is written explicitly with `fmt.Fprintf`.

@@ -8,7 +8,7 @@
 
 ## 1. Summary
 
-A Go compiler that transforms Microsoft Word (`.docx`) OOXML into **words-XML** (v1.0.1) —
+A Go compiler that transforms Microsoft Word (`.docx`) OOXML into **words-XML** (v1.1.0) —
 a compact, deterministic, LLM-friendly XML representation.
 
 Spec: [`docx-preprosessor.md`](https://github.com/rachmanzz/docx-preprocessor/blob/main/docx-preprosessor.md)
@@ -19,7 +19,7 @@ Reference implementation: [`dcdtunning/backend/internal/preprocess/docx.go`](../
 ## 2. Goals
 
 1. Build a CLI tool (and importable Go library) that reads `.docx` and emits `words` XML.
-2. Strictly follow the `words` v1.0.1 spec — output must be valid, well-formed, and idempotent.
+2. Strictly follow the `words` v1.1.0 spec — output must be valid, well-formed, and idempotent.
 3. Support two modes: `semantic` (default) and `lossless`.
 4. Zero LLM dependencies — transformation is purely deterministic.
 
@@ -69,7 +69,7 @@ Reference implementation: [`dcdtunning/backend/internal/preprocess/docx.go`](../
 [6] Emit output XML ── strings.Builder + fmt.Fprintf
     │
     ▼
-    words-XML (v1.0.1)
+    words-XML (v1.1.0)
 ```
 
 ---
@@ -201,7 +201,7 @@ counting. This is optional and can be added in a later milestone.
 
 | Document | Location |
 |----------|----------|
-| Words spec v1.0.1 | `https://github.com/rachmanzz/docx-preprocessor/blob/main/docx-preprosessor.md` |
+| Words spec v1.1.0 | `https://github.com/rachmanzz/docx-preprocessor/blob/main/docx-preprosessor.md` |
 | Preprocessor limitations | `https://github.com/rachmanzz/docx-preprocessor/blob/main/docx-preprosessor-limitation.md` |
 | DOCX→words gap analysis | `https://github.com/rachmanzz/docx-preprocessor/blob/main/docx-words-gap.md` |
 | Reference implementation | `../dcdtunning/backend/internal/preprocess/docx.go` |

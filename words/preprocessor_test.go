@@ -354,6 +354,38 @@ func TestHyperlinkBold(t *testing.T) {
 	}
 }
 
+func TestHyperlinkWithDirectID(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:hyperlink w:id="https://direct-example.com"><w:r><w:t>direct link</w:t></w:r></w:hyperlink>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `<a href="https://direct-example.com">direct link</a>`) {
+		t.Errorf("expected hyperlink with direct URL, got: %s", doc.WordsXML)
+	}
+}
+
+func TestHyperlinkAnchor(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:hyperlink w:id="#section1"><w:r><w:t>jump to section</w:t></w:r></w:hyperlink>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `<a href="#section1">jump to section</a>`) {
+		t.Errorf("expected anchor hyperlink, got: %s", doc.WordsXML)
+	}
+}
+
 func TestQuote(t *testing.T) {
 	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -888,8 +920,8 @@ func TestRootElement(t *testing.T) {
 	if !strings.Contains(x, `xmlns:s="urn:words:v1:style"`) {
 		t.Error("expected xmlns:s=\"urn:words:v1:style\"")
 	}
-	if !strings.Contains(x, `version="1.0.1"`) {
-		t.Error("expected version=\"1.0.1\"")
+	if !strings.Contains(x, `version="1.1.0"`) {
+		t.Error("expected version=\"1.1.0\"")
 	}
 }
 
