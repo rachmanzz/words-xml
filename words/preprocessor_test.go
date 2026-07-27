@@ -256,10 +256,11 @@ func TestFontSpan(t *testing.T) {
 }
 
 func TestBoldCSItalicCS(t *testing.T) {
+	// Runs with a distinct CS font (Arabic Typesetting) — bCs/iCs should emit <bcs>/<ics>.
 	body := xmlHeader + `<w:body>
   <w:p>
-    <w:r><w:rPr><w:bCs/></w:rPr><w:t>BoldCS</w:t></w:r>
-    <w:r><w:rPr><w:iCs/></w:rPr><w:t>ItalicCS</w:t></w:r>
+    <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:cs="Arabic Typesetting"/><w:bCs/></w:rPr><w:t>BoldCS</w:t></w:r>
+    <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:cs="Arabic Typesetting"/><w:iCs/></w:rPr><w:t>ItalicCS</w:t></w:r>
   </w:p>
 </w:body></w:document>`
 	data := makeMinimalDocx(body)
@@ -268,11 +269,33 @@ func TestBoldCSItalicCS(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	x := doc.WordsXML
-	if !strings.Contains(x, "<bcs>BoldCS</bcs>") {
-		t.Error("expected <bcs>BoldCS</bcs>")
+	if !strings.Contains(x, "<bcs>") || !strings.Contains(x, "BoldCS") {
+		t.Errorf("expected <bcs> with BoldCS, got: %s", x)
 	}
-	if !strings.Contains(x, "<ics>ItalicCS</ics>") {
-		t.Error("expected <ics>ItalicCS</ics>")
+	if !strings.Contains(x, "<ics>") || !strings.Contains(x, "ItalicCS") {
+		t.Errorf("expected <ics> with ItalicCS, got: %s", x)
+	}
+}
+
+func TestBoldCSItalicCSSuppressedWhenSameFont(t *testing.T) {
+	// When CS font == ASCII font (Latin font artifact), bCs/iCs should NOT emit <bcs>/<ics>.
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:r><w:rPr><w:rFonts w:ascii="Courier New" w:cs="Courier New"/><w:bCs/></w:rPr><w:t>NotBoldCS</w:t></w:r>
+    <w:r><w:rPr><w:rFonts w:ascii="Courier New" w:cs="Courier New"/><w:iCs/></w:rPr><w:t>NotItalicCS</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if strings.Contains(x, "<bcs>") {
+		t.Errorf("expected <bcs> suppressed when CS font == ASCII font, got: %s", x)
+	}
+	if strings.Contains(x, "<ics>") {
+		t.Errorf("expected <ics> suppressed when CS font == ASCII font, got: %s", x)
 	}
 }
 

@@ -2829,13 +2829,19 @@ func buildInlineText(runs []TextRun, defaultFont StyleDef, mode string, isCode .
 				if r.Bold {
 					core = "<b>" + core + "</b>"
 				}
-				if r.IsBoldCS {
+				// Only emit <bcs> when:
+				// 1. w:b is not already set (avoid double-wrapping), AND
+				// 2. the CS font differs from the main font (real complex script font in use).
+				// When CS font == main font (e.g. both "Courier New"), w:bCs is a
+				// Latin-font artifact set by Word with no visual effect on Latin text.
+				if r.IsBoldCS && !r.Bold && r.FontCS != "" && r.FontCS != r.FontFamily {
 					core = "<bcs>" + core + "</bcs>"
 				}
 				if r.Italic {
 					core = "<i>" + core + "</i>"
 				}
-				if r.IsItalicCS {
+				// Same rule as <bcs>: only emit <ics> when CS font differs from main font.
+				if r.IsItalicCS && !r.Italic && r.FontCS != "" && r.FontCS != r.FontFamily {
 					core = "<ics>" + core + "</ics>"
 				}
 				if r.Underline != "" {
