@@ -194,12 +194,14 @@ type LangVal struct {
 type DocRun struct {
 	RPr          *RunProps       `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main rPr"`
 	Text         []DocText       `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main t"`
+	DelText      []DocText       `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main delText"`
 	FldChar      *FldCharVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main fldChar"`
 	InstrText    []DocInstrText  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main instrText"`
 	Pict         *DocPict        `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main pict"`
 	Drawing      *DocDrawing     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main drawing"`
 	Sym          *DocSym         `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main sym"`
 	Break        *BrVal          `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main br"`
+	Cr           *struct{}       `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main cr"`
 	Tab          *struct{}       `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main tab"`
 	FootnoteRef  *NoteRef        `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main footnoteReference"`
 	EndnoteRef   *NoteRef        `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main endnoteReference"`
@@ -422,7 +424,7 @@ type DocTblRow struct {
 }
 
 type TrPr struct {
-	TblHeader *struct{} `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main tblHeader"`
+	TblHeader *OnOffVal `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main tblHeader"`
 }
 
 type DocTblCell struct {
@@ -437,7 +439,7 @@ type TcPr struct {
 	VMerge   *VMergeVal  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main vMerge"`
 	VAlign   *JCVal      `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main vAlign"`
 	TextDir  *JCVal      `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main textDirection"`
-	NoWrap   *struct{}   `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main noWrap"`
+	NoWrap   *OnOffVal   `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main noWrap"`
 	Borders  *TblBorders `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main tcBorders"`
 }
 

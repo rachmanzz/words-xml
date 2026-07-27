@@ -1160,10 +1160,18 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 			return out, items
 		}
 		if len(r.InstrText) > 0 {
-			instr := strings.TrimSpace(r.InstrText[0].Text)
-			if strings.HasPrefix(instr, "HYPERLINK") {
-				if u, ok := extractHyperlinkURL(instr); ok {
-					fieldURL = u
+			// Concatenate all instrText segments (field instruction can span multiple elements)
+			var sb strings.Builder
+			for _, it := range r.InstrText {
+				sb.WriteString(it.Text)
+			}
+			instr := strings.TrimSpace(sb.String())
+			if instr != "" {
+				// Accumulate: a field instruction may arrive in pieces across runs
+				if fieldURL == "" {
+					if u, ok := extractHyperlinkURL(instr); ok {
+						fieldURL = u
+					}
 				}
 			}
 			return out, items
@@ -1192,7 +1200,12 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 
 		text := ""
 		preserveSpace := false
-		for _, t := range r.Text {
+		// Use w:t for normal runs, fall back to w:delText for deleted runs
+		textSrc := r.Text
+		if len(textSrc) == 0 && len(r.DelText) > 0 {
+			textSrc = r.DelText
+		}
+		for _, t := range textSrc {
 			text += t.Text
 			if t.Space == "preserve" {
 				preserveSpace = true
@@ -1222,6 +1235,11 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 			}
 			out = append(out, tr)
 			tr = TextRun{}
+		}
+
+		// w:cr is a carriage return — equivalent to a textWrapping line break
+		if r.Cr != nil {
+			out = append(out, TextRun{IsLineBreak: true, BreakType: "textWrapping"})
 		}
 
 		if r.NoBreakHyphen != nil {
@@ -1410,7 +1428,7 @@ func parseTable(tbl DocTbl, relMap map[string]string, styleMap map[string]StyleD
 
 	for _, row := range tbl.Rows {
 		pr := ParsedTableRow{}
-		if row.TrPr != nil && row.TrPr.TblHeader != nil {
+		if row.TrPr != nil && row.TrPr.TblHeader.IsOn() {
 			pr.IsHeader = true
 		}
 		for _, cell := range row.Cells {
@@ -1432,7 +1450,7 @@ func parseTable(tbl DocTbl, relMap map[string]string, styleMap map[string]StyleD
 				if cell.TcPr.TextDir != nil {
 					pc.TextDir = cell.TcPr.TextDir.Val
 				}
-				pc.NoWrap = cell.TcPr.NoWrap != nil
+				pc.NoWrap = cell.TcPr.NoWrap.IsOn()
 				if cell.TcPr.Borders != nil {
 					if cell.TcPr.Borders.Top != nil {
 						pc.BorderTop = &BorderInfo{Val: cell.TcPr.Borders.Top.Val, Sz: cell.TcPr.Borders.Top.Sz, Space: cell.TcPr.Borders.Top.Space, Color: cell.TcPr.Borders.Top.Color}
