@@ -1058,6 +1058,24 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 	}
 
 	isQuote := lp.StyleName == "Quote" || lp.StyleName == "IntenseQuote" || lp.StyleName == "BlockText"
+	// Walk the basedOn chain to detect custom styles based on Quote/IntenseQuote/BlockText
+	if !isQuote && lp.StyleID != "" {
+		quoteAncestors := map[string]bool{"Quote": true, "IntenseQuote": true, "BlockText": true}
+		visited := make(map[string]bool)
+		current := lp.StyleID
+		for current != "" && !visited[current] {
+			visited[current] = true
+			sd, ok := styleMap[current]
+			if !ok {
+				break
+			}
+			if quoteAncestors[sd.Name] {
+				isQuote = true
+				break
+			}
+			current = sd.BasedOn
+		}
+	}
 	lp.IsQuote = isQuote
 
 	isCode := false
