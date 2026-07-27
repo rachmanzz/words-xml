@@ -1165,7 +1165,7 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 		}
 
 		tr := TextRun{}
-		if paraDefaults != nil {
+		if paraDefaults != nil && r.RPr == nil {
 			tr = *paraDefaults
 		}
 

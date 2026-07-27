@@ -386,6 +386,33 @@ func TestHyperlinkAnchor(t *testing.T) {
 	}
 }
 
+func TestParaDefaultBoldNotLeakToRunWithRPr(t *testing.T) {
+	// Paragraph has pPr/rPr/w:b (paragraph-level bold default).
+	// Run[0] has no rPr -> should inherit bold.
+	// Run[1] has rPr but no w:b -> should NOT be bold.
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:rPr><w:b/></w:rPr></w:pPr>
+    <w:r><w:t>bold-inherited</w:t></w:r>
+    <w:r><w:rPr><w:color w:val="FF0000"/></w:rPr><w:t>not-bold</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	// run without rPr should be bold
+	if !strings.Contains(x, "<b>bold-inherited</b>") {
+		t.Errorf("expected run without rPr to inherit paragraph bold, got: %s", x)
+	}
+	// run with rPr but no bold should NOT be bold
+	if strings.Contains(x, "<b>not-bold</b>") {
+		t.Errorf("expected run with explicit rPr (no bold) to NOT be bold, got: %s", x)
+	}
+}
+
 func TestQuote(t *testing.T) {
 	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
