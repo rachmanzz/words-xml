@@ -135,3 +135,66 @@ func TestSdtContentDocumentOrder(t *testing.T) {
 	}
 }
 
+
+// TestHeadingBreaksList verifies that a heading between list items
+// causes the heading to be emitted as <hN> rather than absorbed into a <li>.
+func TestHeadingBreaksList(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Heading3">
+    <w:name w:val="heading 3"/>
+    <w:pPr><w:outlineLvl w:val="2"/></w:pPr>
+  </w:style>
+</w:styles>`
+
+	numbering := `<?xml version="1.0" encoding="UTF-8"?>
+<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:abstractNum w:abstractNumId="1">
+    <w:lvl w:ilvl="0"><w:numFmt w:val="bullet"/><w:lvlText w:val="•"/></w:lvl>
+  </w:abstractNum>
+  <w:num w:numId="1"><w:abstractNumId w:val="1"/></w:num>
+</w:numbering>`
+
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr>
+    <w:r><w:t>item one</w:t></w:r>
+  </w:p>
+  <w:p>
+    <w:pPr><w:pStyle w:val="Heading3"/></w:pPr>
+    <w:r><w:t>A Section Heading</w:t></w:r>
+  </w:p>
+  <w:p>
+    <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr>
+    <w:r><w:t>item two</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+
+	data := makeDocxWithExtras(body, styles, numbering, "", "", "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+
+	// Heading should appear as <h3>, not absorbed into <li>
+	if !strings.Contains(x, "<h3") {
+		t.Errorf("heading not emitted as <h3>: %s", x)
+	}
+	headingPos := strings.Index(x, "A Section Heading")
+	liOnePos := strings.Index(x, "item one")
+	liTwoPos := strings.Index(x, "item two")
+	if headingPos < 0 || liOnePos < 0 || liTwoPos < 0 {
+		t.Fatalf("missing content: heading=%d liOne=%d liTwo=%d\n%s", headingPos, liOnePos, liTwoPos, x)
+	}
+	// Order: item one < heading < item two
+	if !(liOnePos < headingPos && headingPos < liTwoPos) {
+		t.Errorf("order wrong: liOne=%d heading=%d liTwo=%d", liOnePos, headingPos, liTwoPos)
+	}
+	// Heading must NOT be inside a <li> — check no <br type="textWrapping"> precedes it
+	brPos := strings.LastIndex(x[:headingPos], `<br type="textWrapping"/>`)
+	liClosePos := strings.LastIndex(x[:headingPos], `</li>`)
+	if brPos > liClosePos {
+		t.Errorf("heading appears to be inside a <li> (preceded by <br type=textWrapping>): %s", x)
+	}
+}

@@ -2985,14 +2985,7 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 					idx++
 					continue
 				}
-				if next.Type == "paragraph" && next.Paragraph != nil && !isSectionBreak(next.Paragraph) {
-					continueContent := buildInlineText(next.Paragraph.Runs, doc.DefaultFont, doc.Mode)
-					if continueContent != "" {
-						fmt.Fprintf(b, "<br type=\"textWrapping\"/>%s%s\n", indent, continueContent)
-					}
-					idx++
-					continue
-				}
+
 				break
 			}
 			fmt.Fprintf(b, "%s</li>\n", indent)
@@ -3011,6 +3004,10 @@ func hasSameNumIDAhead(items []ContentItem, from int, numID int, abstractID int)
 		}
 		// Stop looking if we encounter a different list (not a gap paragraph/table)
 		if item.Type == "list" && item.Paragraph.NumID != numID {
+			return false
+		}
+		// Stop looking if we encounter a heading — it is a structural break
+		if item.Type == "paragraph" && item.Paragraph != nil && item.Paragraph.HeadingLevel > 0 {
 			return false
 		}
 		// Allow up to 50 gap items (paragraphs, tables) between list items
