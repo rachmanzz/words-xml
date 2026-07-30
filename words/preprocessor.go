@@ -870,6 +870,13 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 			}
 			lp.HeadingLevel = resolveHeadingLevel(lp.StyleID, lp.StyleName, styleMap)
 		}
+		// Para-level w:outlineLvl overrides style-derived heading level
+		if p.PPr.OutlineLvl != nil && lp.HeadingLevel == 0 {
+			lvl := p.PPr.OutlineLvl.Val + 1
+			if lvl >= 1 && lvl <= 9 {
+				lp.HeadingLevel = lvl
+			}
+		}
 		if p.PPr.Bidi.IsOn() {
 			lp.Bidi = true
 		}

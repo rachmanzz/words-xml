@@ -212,6 +212,7 @@ type DocRun struct {
 }
 
 type RunProps struct {
+	RStyle     *StringVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main rStyle"`
 	B          *OnOffVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main b"`
 	BCs        *OnOffVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main bCs"`
 	I          *OnOffVal     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main i"`
