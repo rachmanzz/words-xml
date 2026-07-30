@@ -258,14 +258,14 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 	for path, hdrData := range headerFiles {
 		hdr, err := unmarshalHeader(hdrData)
 		if err == nil {
-			headerContent[path] = parseContentItems(hdr.Paras, hdr.Tables, hdr.Sdts, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode, themeFontMap)
+			headerContent[path] = parseContentItemsOrdered(&hdr.DocOrderedContent, hdr.Children, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode, themeFontMap)
 		}
 	}
 	footerContent := make(map[string][]ContentItem)
 	for path, ftrData := range footerFiles {
 		ftr, err := unmarshalFooter(ftrData)
 		if err == nil {
-			footerContent[path] = parseContentItems(ftr.Paras, ftr.Tables, ftr.Sdts, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode, themeFontMap)
+			footerContent[path] = parseContentItemsOrdered(&ftr.DocOrderedContent, ftr.Children, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode, themeFontMap)
 		}
 	}
 
@@ -486,7 +486,13 @@ func postProcessRunOrder(docXML []byte, body *DocBody) {
 				inPara = true
 				break
 			}
-			if local == "r" && inPara && !inRun {
+			// Skip runs inside w:hyperlink, w:dir, w:bdo — they are not in allRuns
+			// (allRuns only has direct p.Runs, not p.Hyperlinks[].Runs etc.)
+			if inPara && (local == "hyperlink" || local == "dir" || local == "bdo") {
+				skipDepth++
+				break
+			}
+			if local == "r" && inPara && !inRun && skipDepth == 0 {
 				inRun = true
 				runDepth = 1
 				seenText = false
@@ -546,6 +552,10 @@ func postProcessRunOrder(docXML []byte, body *DocBody) {
 					runIdx++
 					inRun = false
 				}
+				break
+			}
+			if inPara && (local == "hyperlink" || local == "dir" || local == "bdo") && skipDepth > 0 {
+				skipDepth--
 				break
 			}
 			if local == "p" && inPara {
@@ -666,15 +676,19 @@ func unmarshalFooter(data []byte) (*DocFooter, error) {
 }
 
 type DocHeader struct {
-	Paras  []DocPara `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main p"`
-	Tables []DocTbl  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main tbl"`
-	Sdts   []DocSdt  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main sdt"`
+	DocOrderedContent
+}
+
+func (h *DocHeader) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	return unmarshalOrderedContent(&h.DocOrderedContent, d, start)
 }
 
 type DocFooter struct {
-	Paras  []DocPara `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main p"`
-	Tables []DocTbl  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main tbl"`
-	Sdts   []DocSdt  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main sdt"`
+	DocOrderedContent
+}
+
+func (f *DocFooter) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	return unmarshalOrderedContent(&f.DocOrderedContent, d, start)
 }
 
 // --- Style Resolver ---
@@ -954,12 +968,12 @@ func buildNumberingMap(numberingXML []byte) (map[string]string, map[int]map[int]
 
 // parseContentItemsOrdered processes body children in document order,
 // preserving the interleaving of paragraphs, tables, and SDTs.
-func parseContentItemsOrdered(body *DocBody, children []BodyChild, relMap map[string]string, styleMap map[string]StyleDef, styleNameMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, themeFontMap map[string]string) []ContentItem {
+func parseContentItemsOrdered(content OrderedContentAccessor, children []BodyChild, relMap map[string]string, styleMap map[string]StyleDef, styleNameMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, themeFontMap map[string]string) []ContentItem {
 	var items []ContentItem
 	for _, child := range children {
 		switch child.Type {
 		case BodyChildPara:
-			p := *body.ParaAt(child.Idx)
+			p := *content.ParaAt(child.Idx)
 			if p.PPr != nil && p.PPr.NumPr != nil {
 				numID := p.PPr.NumPr.NumID.Val
 				if numID != 0 {
@@ -986,7 +1000,7 @@ func parseContentItemsOrdered(body *DocBody, children []BodyChild, relMap map[st
 						if tb.TxbxContent == nil {
 							continue
 						}
-						tbI := parseContentItems(tb.TxbxContent.Paras, tb.TxbxContent.Tables, tb.TxbxContent.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
+						tbI := parseContentItemsOrdered(&tb.TxbxContent.DocOrderedContent, tb.TxbxContent.Children, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
 						items = append(items, tbI...)
 					}
 					continue
@@ -999,15 +1013,15 @@ func parseContentItemsOrdered(body *DocBody, children []BodyChild, relMap map[st
 				if tb.TxbxContent == nil {
 					continue
 				}
-				tbI := parseContentItems(tb.TxbxContent.Paras, tb.TxbxContent.Tables, tb.TxbxContent.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
+				tbI := parseContentItemsOrdered(&tb.TxbxContent.DocOrderedContent, tb.TxbxContent.Children, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
 				items = append(items, tbI...)
 			}
 		case BodyChildTable:
-			t := parseTable(*body.TableAt(child.Idx), relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
+			t := parseTable(*content.TableAt(child.Idx), relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
 			items = append(items, ContentItem{Type: "table", Table: t})
 		case BodyChildSdt:
-			sdt := body.SdtAt(child.Idx)
-			items = append(items, parseContentItems(sdt.Content.Paras, sdt.Content.Tables, sdt.Content.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)...)
+			sdt := content.SdtAt(child.Idx)
+			items = append(items, parseContentItemsOrdered(&sdt.Content.DocOrderedContent, sdt.Content.Children, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)...)
 		}
 	}
 	return items
@@ -1062,7 +1076,7 @@ func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap m
 			if tb.TxbxContent == nil {
 				continue
 			}
-			tbItems := parseContentItems(tb.TxbxContent.Paras, tb.TxbxContent.Tables, tb.TxbxContent.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
+			tbItems := parseContentItemsOrdered(&tb.TxbxContent.DocOrderedContent, tb.TxbxContent.Children, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
 			items = append(items, tbItems...)
 		}
 		i++
@@ -1074,7 +1088,7 @@ func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap m
 	}
 
 	for _, sdt := range sdts {
-		items = append(items, parseContentItems(sdt.Content.Paras, sdt.Content.Tables, sdt.Content.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)...)
+		items = append(items, parseContentItemsOrdered(&sdt.Content.DocOrderedContent, sdt.Content.Children, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)...)
 	}
 
 	return items
@@ -1448,7 +1462,7 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 
 		if r.Drawing != nil {
 			if r.Drawing.TxbxContent != nil {
-				items = append(items, parseContentItems(r.Drawing.TxbxContent.Paras, r.Drawing.TxbxContent.Tables, r.Drawing.TxbxContent.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)...)
+				items = append(items, parseContentItemsOrdered(&r.Drawing.TxbxContent.DocOrderedContent, r.Drawing.TxbxContent.Children, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)...)
 			} else if img := drawingImage(r.Drawing, relMap); img != nil {
 				out = append(out, *img)
 			}
@@ -1630,40 +1644,115 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 		}
 	}
 
+	// Process para-level w:ins (w:ins directly under w:p wrapping w:r)
+	for _, ins := range p.ParaIns {
+		for _, ir := range ins.Runs {
+			insRuns, _ := proc(ir)
+			for i := range insRuns {
+				insRuns[i].IsInserted = true
+				insRuns[i].InsAuthor = ins.Author
+				insRuns[i].InsDate = ins.Date
+			}
+			runs = append(runs, insRuns...)
+		}
+	}
+
+	// Process para-level w:del (w:del directly under w:p wrapping w:r)
+	for _, del := range p.ParaDel {
+		for _, dr := range del.Runs {
+			delRuns, _ := proc(dr)
+			for i := range delRuns {
+				delRuns[i].IsDeleted = true
+				delRuns[i].DelAuthor = del.Author
+				delRuns[i].DelDate = del.Date
+			}
+			runs = append(runs, delRuns...)
+		}
+	}
+
 	for _, hl := range p.Hyperlinks {
+		// Resolve hyperlink URL once for all runs in this hyperlink
+		hlURL := ""
+		if hl.RID != "" {
+			if u := relMap[hl.RID]; u != "" {
+				hlURL = u
+			}
+		}
+		if hlURL == "" && hl.Anchor != "" {
+			hlURL = "#" + hl.Anchor
+		}
+		if hlURL == "" && hl.ID != "" {
+			hlURL = hl.ID
+		}
 		for _, r := range hl.Runs {
 			text := ""
 			for _, t := range r.Text {
 				text += t.Text
 			}
-			if text == "" {
+			// Emit tab/break/cr even when there is no text
+			hasCoText := text != ""
+			if !hasCoText && r.Tab == nil && r.Break == nil && r.Cr == nil {
 				continue
 			}
-			tr := TextRun{Text: text, IsHyperlink: true}
-			// Check r:id first (external hyperlinks via relationships)
-			if hl.RID != "" {
-				url := relMap[hl.RID]
-				if url != "" {
-					tr.HyperlinkURL = url
+			applyFormatting := func(tr *TextRun) {
+				tr.IsHyperlink = true
+				tr.HyperlinkURL = hlURL
+				if r.RPr != nil {
+					tr.Bold = r.RPr.B.IsOn()
+					tr.Italic = r.RPr.I.IsOn()
+					if r.RPr.U != nil && r.RPr.U.Val != "none" && r.RPr.U.Val != "" {
+						tr.Underline = r.RPr.U.Val
+					}
+					tr.Strike = r.RPr.Strike.IsOn() || r.RPr.DStrike.IsOn()
 				}
 			}
-			// w:anchor → internal bookmark link #bookmarkName
-			if tr.HyperlinkURL == "" && hl.Anchor != "" {
-				tr.HyperlinkURL = "#" + hl.Anchor
+			// Emit tab if present (before or after text depending on order)
+			if r.Tab != nil && (!hasCoText || r.TabBeforeText) {
+				tabRun := TextRun{IsTab: true}
+				applyFormatting(&tabRun)
+				runs = append(runs, tabRun)
 			}
-			// If no URL from r:id or anchor, check w:id (can be anchor or direct URI)
-			if tr.HyperlinkURL == "" && hl.ID != "" {
-				tr.HyperlinkURL = hl.ID
-			}
-			if r.RPr != nil {
-				tr.Bold = r.RPr.B.IsOn()
-				tr.Italic = r.RPr.I.IsOn()
-				if r.RPr.U != nil && r.RPr.U.Val != "none" && r.RPr.U.Val != "" {
-					tr.Underline = r.RPr.U.Val
+			// Emit break/cr if present before text
+			if r.Break != nil && (!hasCoText || r.BreakBeforeText) {
+				bt := r.Break.Type
+				if bt == "" {
+					bt = "textWrapping"
 				}
-				tr.Strike = r.RPr.Strike.IsOn() || r.RPr.DStrike.IsOn()
+				brRun := TextRun{IsLineBreak: true, BreakType: bt}
+				applyFormatting(&brRun)
+				runs = append(runs, brRun)
 			}
-			runs = append(runs, tr)
+			if r.Cr != nil && (!hasCoText || r.BreakBeforeText) {
+				crRun := TextRun{IsLineBreak: true, BreakType: "textWrapping"}
+				applyFormatting(&crRun)
+				runs = append(runs, crRun)
+			}
+			// Emit text
+			if hasCoText {
+				tr := TextRun{Text: text}
+				applyFormatting(&tr)
+				runs = append(runs, tr)
+			}
+			// Emit tab/break/cr after text
+			if r.Tab != nil && hasCoText && !r.TabBeforeText {
+				tabRun := TextRun{IsTab: true}
+				applyFormatting(&tabRun)
+				runs = append(runs, tabRun)
+			}
+			if r.Break != nil && hasCoText && !r.BreakBeforeText {
+				bt := r.Break.Type
+				if bt == "" {
+					bt = "textWrapping"
+				}
+				brRun := TextRun{IsLineBreak: true, BreakType: bt}
+				applyFormatting(&brRun)
+				runs = append(runs, brRun)
+			}
+			if r.Cr != nil && hasCoText && !r.BreakBeforeText {
+				crRun := TextRun{IsLineBreak: true, BreakType: "textWrapping"}
+				applyFormatting(&crRun)
+				runs = append(runs, crRun)
+			}
 		}
 	}
 
@@ -1850,7 +1939,7 @@ func parseTable(tbl DocTbl, relMap map[string]string, styleMap map[string]StyleD
 					}
 				}
 			}
-			pc.Content = parseContentItems(cell.Paras, cell.Tables, cell.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
+			pc.Content = parseContentItemsOrdered(&cell.DocOrderedContent, cell.Children, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
 			for _, ci := range pc.Content {
 				if ci.Type == "paragraph" && ci.Paragraph != nil {
 					for _, r := range ci.Paragraph.Runs {

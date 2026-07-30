@@ -150,6 +150,11 @@ type DocPara struct {
 	Textboxes  []DocTextbox    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main drawing"`
 	Dir        []DirBdo        `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main dir"`
 	Bdo        []DirBdo        `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main bdo"`
+	// ParaIns captures w:ins elements that are direct children of w:p (wrapping w:r).
+	// This is distinct from run-level w:ins (inside w:r) which is captured by DocRun.Ins.
+	ParaIns    []DocIns        `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main ins"`
+	// ParaDel captures w:del elements that are direct children of w:p (wrapping w:r).
+	ParaDel    []DocDel        `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main del"`
 }
 
 type DirBdo struct {
@@ -432,10 +437,93 @@ type DocTextbox struct {
 	TxbxContent *DocTxbxContent `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main txbxContent"`
 }
 
+// OrderedContentAccessor is implemented by DocBody and DocOrderedContent,
+// allowing parseContentItemsOrdered to work with both.
+type OrderedContentAccessor interface {
+	ParaAt(idx int) *DocPara
+	TableAt(idx int) *DocTbl
+	SdtAt(idx int) *DocSdt
+}
+
+// DocOrderedContent holds paragraph/table/sdt children in document order.
+// It is embedded in DocTxbxContent, DocSdtContent, DocTblCell, DocHeader, DocFooter
+// to preserve the interleaving of paragraphs, tables, and SDTs.
+type DocOrderedContent struct {
+	// Children preserves document order (same index scheme as DocBody.Children).
+	Children []BodyChild
+	Paras    []DocPara
+	Tables   []DocTbl
+	Sdts     []DocSdt
+}
+
+// ParaAt returns a pointer to the DocPara at the given index.
+func (c *DocOrderedContent) ParaAt(idx int) *DocPara { return &c.Paras[idx] }
+
+// TableAt returns a pointer to the DocTbl at the given index.
+func (c *DocOrderedContent) TableAt(idx int) *DocTbl { return &c.Tables[idx] }
+
+// SdtAt returns a pointer to the DocSdt at the given index.
+func (c *DocOrderedContent) SdtAt(idx int) *DocSdt { return &c.Sdts[idx] }
+
+// unmarshalOrderedContent decodes w:p, w:tbl, w:sdt children from d into c,
+// preserving document order in c.Children while also populating typed slices.
+// Other child elements are skipped.
+func unmarshalOrderedContent(c *DocOrderedContent, d *xml.Decoder, start xml.StartElement) error {
+	const wml = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	for {
+		tok, err := d.Token()
+		if err != nil {
+			return err
+		}
+		se, ok := tok.(xml.StartElement)
+		if !ok {
+			if ee, ok2 := tok.(xml.EndElement); ok2 && ee.Name == start.Name {
+				return nil
+			}
+			continue
+		}
+		if se.Name.Space != wml {
+			if err := d.Skip(); err != nil {
+				return err
+			}
+			continue
+		}
+		switch se.Name.Local {
+		case "p":
+			var p DocPara
+			if err := d.DecodeElement(&p, &se); err != nil {
+				return err
+			}
+			c.Children = append(c.Children, BodyChild{Type: BodyChildPara, Idx: len(c.Paras)})
+			c.Paras = append(c.Paras, p)
+		case "tbl":
+			var t DocTbl
+			if err := d.DecodeElement(&t, &se); err != nil {
+				return err
+			}
+			c.Children = append(c.Children, BodyChild{Type: BodyChildTable, Idx: len(c.Tables)})
+			c.Tables = append(c.Tables, t)
+		case "sdt":
+			var s DocSdt
+			if err := d.DecodeElement(&s, &se); err != nil {
+				return err
+			}
+			c.Children = append(c.Children, BodyChild{Type: BodyChildSdt, Idx: len(c.Sdts)})
+			c.Sdts = append(c.Sdts, s)
+		default:
+			if err := d.Skip(); err != nil {
+				return err
+			}
+		}
+	}
+}
+
 type DocTxbxContent struct {
-	Paras  []DocPara `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main p"`
-	Tables []DocTbl  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main tbl"`
-	Sdts   []DocSdt  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main sdt"`
+	DocOrderedContent
+}
+
+func (t *DocTxbxContent) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	return unmarshalOrderedContent(&t.DocOrderedContent, d, start)
 }
 
 type DocDrawing struct {
@@ -537,10 +625,64 @@ type TrPr struct {
 }
 
 type DocTblCell struct {
-	TcPr   *TcPr     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main tcPr"`
-	Paras  []DocPara `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main p"`
-	Tables []DocTbl  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main tbl"`
-	Sdts   []DocSdt  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main sdt"`
+	TcPr *TcPr `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main tcPr"`
+	DocOrderedContent
+}
+
+func (tc *DocTblCell) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	const wml = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	for {
+		tok, err := d.Token()
+		if err != nil {
+			return err
+		}
+		se, ok := tok.(xml.StartElement)
+		if !ok {
+			if ee, ok2 := tok.(xml.EndElement); ok2 && ee.Name == start.Name {
+				return nil
+			}
+			continue
+		}
+		if se.Name.Space != wml {
+			if err := d.Skip(); err != nil {
+				return err
+			}
+			continue
+		}
+		switch se.Name.Local {
+		case "tcPr":
+			var pr TcPr
+			if err := d.DecodeElement(&pr, &se); err != nil {
+				return err
+			}
+			tc.TcPr = &pr
+		case "p":
+			var p DocPara
+			if err := d.DecodeElement(&p, &se); err != nil {
+				return err
+			}
+			tc.Children = append(tc.Children, BodyChild{Type: BodyChildPara, Idx: len(tc.Paras)})
+			tc.Paras = append(tc.Paras, p)
+		case "tbl":
+			var t DocTbl
+			if err := d.DecodeElement(&t, &se); err != nil {
+				return err
+			}
+			tc.Children = append(tc.Children, BodyChild{Type: BodyChildTable, Idx: len(tc.Tables)})
+			tc.Tables = append(tc.Tables, t)
+		case "sdt":
+			var s DocSdt
+			if err := d.DecodeElement(&s, &se); err != nil {
+				return err
+			}
+			tc.Children = append(tc.Children, BodyChild{Type: BodyChildSdt, Idx: len(tc.Sdts)})
+			tc.Sdts = append(tc.Sdts, s)
+		default:
+			if err := d.Skip(); err != nil {
+				return err
+			}
+		}
+	}
 }
 
 type TcPr struct {
@@ -562,9 +704,11 @@ type DocSdt struct {
 }
 
 type DocSdtContent struct {
-	Paras  []DocPara `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main p"`
-	Tables []DocTbl  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main tbl"`
-	Sdts   []DocSdt  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main sdt"`
+	DocOrderedContent
+}
+
+func (s *DocSdtContent) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	return unmarshalOrderedContent(&s.DocOrderedContent, d, start)
 }
 
 type DocNumbering struct {
