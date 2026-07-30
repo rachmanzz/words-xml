@@ -318,9 +318,10 @@ type DocPict struct {
 }
 
 type DocHyperlink struct {
-	ID    string  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main id,attr"`
-	RID   string  `xml:"http://schemas.openxmlformats.org/officeDocument/2006/relationships id,attr"`
-	Runs  []DocRun `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main r"`
+	ID     string   `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main id,attr"`
+	RID    string   `xml:"http://schemas.openxmlformats.org/officeDocument/2006/relationships id,attr"`
+	Anchor string   `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main anchor,attr"`
+	Runs   []DocRun `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main r"`
 }
 
 type DocTextbox struct {

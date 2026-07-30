@@ -1393,13 +1393,21 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 					tr.HyperlinkURL = url
 				}
 			}
-			// If no URL from r:id, check w:id (can be anchor or direct URI)
+			// w:anchor → internal bookmark link #bookmarkName
+			if tr.HyperlinkURL == "" && hl.Anchor != "" {
+				tr.HyperlinkURL = "#" + hl.Anchor
+			}
+			// If no URL from r:id or anchor, check w:id (can be anchor or direct URI)
 			if tr.HyperlinkURL == "" && hl.ID != "" {
 				tr.HyperlinkURL = hl.ID
 			}
 			if r.RPr != nil {
 				tr.Bold = r.RPr.B.IsOn()
 				tr.Italic = r.RPr.I.IsOn()
+				if r.RPr.U != nil && r.RPr.U.Val != "none" && r.RPr.U.Val != "" {
+					tr.Underline = r.RPr.U.Val
+				}
+				tr.Strike = r.RPr.Strike.IsOn() || r.RPr.DStrike.IsOn()
 			}
 			runs = append(runs, tr)
 		}
