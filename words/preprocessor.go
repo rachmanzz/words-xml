@@ -315,7 +315,7 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 		}
 	}
 
-	doc.Content = parseContentItemsOrdered(body.Children, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode, themeFontMap)
+	doc.Content = parseContentItemsOrdered(&body, body.Children, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode, themeFontMap)
 
 	bmOrder, noteRefOrder := buildBodyNoteOrder(docXML)
 	for i := range doc.Notes {
@@ -953,12 +953,12 @@ func buildNumberingMap(numberingXML []byte) (map[string]string, map[int]map[int]
 
 // parseContentItemsOrdered processes body children in document order,
 // preserving the interleaving of paragraphs, tables, and SDTs.
-func parseContentItemsOrdered(children []BodyChild, relMap map[string]string, styleMap map[string]StyleDef, styleNameMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, themeFontMap map[string]string) []ContentItem {
+func parseContentItemsOrdered(body *DocBody, children []BodyChild, relMap map[string]string, styleMap map[string]StyleDef, styleNameMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, themeFontMap map[string]string) []ContentItem {
 	var items []ContentItem
 	for _, child := range children {
 		switch child.Type {
 		case BodyChildPara:
-			p := *child.Para
+			p := *body.ParaAt(child.Idx)
 			if p.PPr != nil && p.PPr.NumPr != nil {
 				numID := p.PPr.NumPr.NumID.Val
 				if numID != 0 {
@@ -1002,10 +1002,11 @@ func parseContentItemsOrdered(children []BodyChild, relMap map[string]string, st
 				items = append(items, tbI...)
 			}
 		case BodyChildTable:
-			t := parseTable(*child.Table, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
+			t := parseTable(*body.TableAt(child.Idx), relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
 			items = append(items, ContentItem{Type: "table", Table: t})
 		case BodyChildSdt:
-			items = append(items, parseContentItems(child.Sdt.Content.Paras, child.Sdt.Content.Tables, child.Sdt.Content.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)...)
+			sdt := body.SdtAt(child.Idx)
+			items = append(items, parseContentItems(sdt.Content.Paras, sdt.Content.Tables, sdt.Content.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)...)
 		}
 	}
 	return items

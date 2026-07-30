@@ -17,25 +17,36 @@ const (
 )
 
 // BodyChild is one top-level child of w:body in document order.
+// It uses slice indices rather than pointers to avoid dangling pointer issues
+// when the underlying slices are reallocated during append.
 type BodyChild struct {
-	Type  BodyChildType
-	Para  *DocPara
-	Table *DocTbl
-	Sdt   *DocSdt
+	Type BodyChildType
+	// Idx is the index into DocBody.Paras, .Tables, or .Sdts depending on Type.
+	Idx int
 }
 
 // DocBody holds body content both as ordered children (for layout) and as
 // typed slices (for backward-compatible access like Paras, Sections, Bookmarks).
 type DocBody struct {
 	// Children preserves the document order of w:p, w:tbl, and w:sdt elements.
+	// Use Para(), Table(), Sdt() methods to dereference safely.
 	Children  []BodyChild
-	// Paras, Tables, Sdts are kept for backward compatibility and for postProcessRunOrder.
+	// Paras, Tables, Sdts are typed slices for indexed access.
 	Paras     []DocPara
 	Tables    []DocTbl
 	Sdts      []DocSdt
 	Sections  []DocSection  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main sectPr"`
 	Bookmarks []DocBookmark `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main bookmarkStart"`
 }
+
+// Para returns a pointer to the DocPara for this child (only valid when Type == BodyChildPara).
+func (b *DocBody) ParaAt(idx int) *DocPara { return &b.Paras[idx] }
+
+// TableAt returns a pointer to the DocTbl for this child (only valid when Type == BodyChildTable).
+func (b *DocBody) TableAt(idx int) *DocTbl { return &b.Tables[idx] }
+
+// SdtAt returns a pointer to the DocSdt for this child (only valid when Type == BodyChildSdt).
+func (b *DocBody) SdtAt(idx int) *DocSdt { return &b.Sdts[idx] }
 
 // UnmarshalXML implements xml.Unmarshaler for DocBody to preserve document order
 // of w:p, w:tbl, and w:sdt elements in the Children slice while also populating
@@ -66,22 +77,22 @@ func (b *DocBody) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 			if err := d.DecodeElement(&p, &se); err != nil {
 				return err
 			}
+			b.Children = append(b.Children, BodyChild{Type: BodyChildPara, Idx: len(b.Paras)})
 			b.Paras = append(b.Paras, p)
-			b.Children = append(b.Children, BodyChild{Type: BodyChildPara, Para: &b.Paras[len(b.Paras)-1]})
 		case "tbl":
 			var t DocTbl
 			if err := d.DecodeElement(&t, &se); err != nil {
 				return err
 			}
+			b.Children = append(b.Children, BodyChild{Type: BodyChildTable, Idx: len(b.Tables)})
 			b.Tables = append(b.Tables, t)
-			b.Children = append(b.Children, BodyChild{Type: BodyChildTable, Table: &b.Tables[len(b.Tables)-1]})
 		case "sdt":
 			var s DocSdt
 			if err := d.DecodeElement(&s, &se); err != nil {
 				return err
 			}
+			b.Children = append(b.Children, BodyChild{Type: BodyChildSdt, Idx: len(b.Sdts)})
 			b.Sdts = append(b.Sdts, s)
-			b.Children = append(b.Children, BodyChild{Type: BodyChildSdt, Sdt: &b.Sdts[len(b.Sdts)-1]})
 		case "sectPr":
 			var sec DocSection
 			if err := d.DecodeElement(&sec, &se); err != nil {
