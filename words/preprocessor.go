@@ -352,6 +352,13 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 		}
 	}
 	assignTableIDs(doc.Content)
+	// Also assign IDs to tables in headers and footers
+	for i := range doc.Headers {
+		assignTableIDs(doc.Headers[i].Content)
+	}
+	for i := range doc.Footers {
+		assignTableIDs(doc.Footers[i].Content)
+	}
 
 	wordsXML := formatForLLM(doc)
 
