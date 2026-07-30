@@ -806,14 +806,15 @@ func buildStyleMap(stylesXML []byte, themeFontMap map[string]string) (map[string
 				sd.Align = s.ParaProps.JC.Val
 			}
 			if s.ParaProps.Spacing != nil {
-				sd.SpacingBefore = float64(s.ParaProps.Spacing.Before) / 20.0
-				sd.SpacingAfter = float64(s.ParaProps.Spacing.After) / 20.0
+				sd.SpacingBefore = float64(s.ParaProps.Spacing.Before) / twipsPerInch
+				sd.SpacingAfter = float64(s.ParaProps.Spacing.After) / twipsPerInch
 				if s.ParaProps.Spacing.Line > 0 {
 					switch s.ParaProps.Spacing.LineRule {
 					case "auto":
 						sd.LineSpacing = float64(s.ParaProps.Spacing.Line) / 240.0
 					default:
-						sd.LineSpacing = float64(s.ParaProps.Spacing.Line) / 20.0
+						// exact/atLeast: twips → inches
+						sd.LineSpacing = float64(s.ParaProps.Spacing.Line) / twipsPerInch
 					}
 					sd.LineRule = s.ParaProps.Spacing.LineRule
 				}
@@ -1110,14 +1111,15 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 			lp.Align = p.PPr.JC.Val
 		}
 		if p.PPr.Spacing != nil {
-			lp.SpacingBefore = float64(p.PPr.Spacing.Before) / 20.0
-			lp.SpacingAfter = float64(p.PPr.Spacing.After) / 20.0
+			lp.SpacingBefore = float64(p.PPr.Spacing.Before) / twipsPerInch
+			lp.SpacingAfter = float64(p.PPr.Spacing.After) / twipsPerInch
 			if p.PPr.Spacing.Line > 0 {
 				switch p.PPr.Spacing.LineRule {
 				case "auto":
 					lp.LineSpacing = float64(p.PPr.Spacing.Line) / 240.0
 				default:
-					lp.LineSpacing = float64(p.PPr.Spacing.Line) / 20.0
+					// exact/atLeast: twips → inches
+					lp.LineSpacing = float64(p.PPr.Spacing.Line) / twipsPerInch
 				}
 				lp.LineRule = p.PPr.Spacing.LineRule
 			}

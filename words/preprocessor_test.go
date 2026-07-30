@@ -2090,11 +2090,12 @@ func TestBuildStyleMapParaProps(t *testing.T) {
 	if sd.Align != "center" {
 		t.Errorf("expected align center, got %q", sd.Align)
 	}
-	if sd.SpacingBefore != 10 {
-		t.Errorf("expected spacingBefore 10, got %v", sd.SpacingBefore)
+	// 200 twips = 200/1440 inches ≈ 0.1389 in; 100 twips = 100/1440 ≈ 0.0694 in
+	if sd.SpacingBefore < 0.138 || sd.SpacingBefore > 0.140 {
+		t.Errorf("expected spacingBefore ~0.1389 in (200 twips), got %v", sd.SpacingBefore)
 	}
-	if sd.SpacingAfter != 5 {
-		t.Errorf("expected spacingAfter 5, got %v", sd.SpacingAfter)
+	if sd.SpacingAfter < 0.068 || sd.SpacingAfter > 0.070 {
+		t.Errorf("expected spacingAfter ~0.0694 in (100 twips), got %v", sd.SpacingAfter)
 	}
 	if sd.LineSpacing != 2 {
 		t.Errorf("expected lineSpacing 2 (480/240), got %v", sd.LineSpacing)
@@ -2132,8 +2133,9 @@ func TestBuildStyleMapLineRuleExact(t *testing.T) {
 	if sd.LineRule != "exact" {
 		t.Errorf("expected lineRule exact, got %q", sd.LineRule)
 	}
-	if sd.LineSpacing != 18 {
-		t.Errorf("expected lineSpacing 18 (360/20), got %v", sd.LineSpacing)
+	// 360 twips = 360/1440 inches = 0.25 in (lineRule=exact → inches not multiplier)
+	if sd.LineSpacing != 0.25 {
+		t.Errorf("expected lineSpacing 0.25 in (360 twips), got %v", sd.LineSpacing)
 	}
 }
 
