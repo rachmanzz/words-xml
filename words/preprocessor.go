@@ -1527,6 +1527,9 @@ func parseTable(tbl DocTbl, relMap map[string]string, styleMap map[string]StyleD
 					pc.TextDir = cell.TcPr.TextDir.Val
 				}
 				pc.NoWrap = cell.TcPr.NoWrap.IsOn()
+			if cell.TcPr.TcW != nil && cell.TcPr.TcW.W > 0 {
+				pc.Width = float64(cell.TcPr.TcW.W) / twipsPerInch
+			}
 				if cell.TcPr.Borders != nil {
 					if cell.TcPr.Borders.Top != nil {
 						pc.BorderTop = &BorderInfo{Val: cell.TcPr.Borders.Top.Val, Sz: cell.TcPr.Borders.Top.Sz, Space: cell.TcPr.Borders.Top.Space, Color: cell.TcPr.Borders.Top.Color}

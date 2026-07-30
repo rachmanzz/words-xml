@@ -447,6 +447,7 @@ type TcPr struct {
 	TextDir  *JCVal      `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main textDirection"`
 	NoWrap   *OnOffVal   `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main noWrap"`
 	Borders  *TblBorders `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main tcBorders"`
+	TcW      *TblWidth   `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main tcW"`
 }
 
 type VMergeVal struct {

@@ -271,6 +271,7 @@ type ParsedTableCell struct {
 	TextDir    string
 	NoWrap     bool
 	Lang       string
+	Width      float64 // per-cell width override from w:tcPr/w:tcW (secondary to tblGrid)
 	Content    []ContentItem
 	BorderTop    *BorderInfo
 	BorderBottom *BorderInfo
