@@ -3051,3 +3051,52 @@ func TestPerParagraphIndentRight(t *testing.T) {
 		t.Errorf("expected indentRight, got: %s", x)
 	}
 }
+
+func TestSoftHyphenWithColocatedText(t *testing.T) {
+	// Bug: w:r containing both <w:t>text</w:t> and <w:softHyphen/> was dropping the text.
+	// The softHyphen early-return path must emit co-located text first.
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:r><w:t xml:space="preserve">persetu</w:t><w:softHyphen/></w:r>
+    <w:r><w:t xml:space="preserve">juan Rapat Umum.</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, "persetu") {
+		t.Errorf("text before softHyphen dropped: %s", x)
+	}
+	if !strings.Contains(x, "juan Rapat Umum.") {
+		t.Errorf("text after softHyphen run missing: %s", x)
+	}
+	// soft hyphen char should appear between them
+	if !strings.Contains(x, "persetu\u00ADjuan") {
+		t.Errorf("expected persetu+SHY+juan, got: %s", x)
+	}
+}
+
+func TestNoBreakHyphenWithColocatedText(t *testing.T) {
+	// Same bug for noBreakHyphen: co-located w:t text was dropped.
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:r><w:t xml:space="preserve">non</w:t><w:noBreakHyphen/></w:r>
+    <w:r><w:t xml:space="preserve">breaking text.</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, "non") {
+		t.Errorf("text before noBreakHyphen dropped: %s", x)
+	}
+	if !strings.Contains(x, "breaking text.") {
+		t.Errorf("text after noBreakHyphen run missing: %s", x)
+	}
+}

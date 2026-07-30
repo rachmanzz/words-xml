@@ -1276,32 +1276,56 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 		}
 
 		if r.NoBreakHyphen != nil {
-			tr.Text = "\u00AC"
-			applyRunProps(r.RPr, &tr, themeFontMap)
-			out = append(out, tr)
+			// Emit any co-located w:t text first, then the hyphen character
+			if text != "" {
+				textRun := tr
+				textRun.Text = text
+				applyRunProps(r.RPr, &textRun, themeFontMap)
+				out = append(out, textRun)
+			}
+			hyphenRun := TextRun{Text: "\u00AC"}
+			applyRunProps(r.RPr, &hyphenRun, themeFontMap)
+			out = append(out, hyphenRun)
 			return out, items
 		}
 
 		if r.SoftHyphen != nil {
-			tr.Text = "\u00AD"
-			applyRunProps(r.RPr, &tr, themeFontMap)
-			out = append(out, tr)
+			// Emit any co-located w:t text first, then the soft hyphen character
+			if text != "" {
+				textRun := tr
+				textRun.Text = text
+				applyRunProps(r.RPr, &textRun, themeFontMap)
+				out = append(out, textRun)
+			}
+			hyphenRun := TextRun{Text: "\u00AD"}
+			applyRunProps(r.RPr, &hyphenRun, themeFontMap)
+			out = append(out, hyphenRun)
 			return out, items
 		}
 
 		if r.FootnoteRef != nil {
-			tr.IsFootnoteRef = true
-			tr.NoteID = r.FootnoteRef.ID
-			tr.NoteType = "footnote"
-			out = append(out, tr)
+			// Emit any co-located w:t text first, then the footnote ref
+			if text != "" {
+				textRun := tr
+				textRun.Text = text
+				applyRunProps(r.RPr, &textRun, themeFontMap)
+				out = append(out, textRun)
+			}
+			refRun := TextRun{IsFootnoteRef: true, NoteID: r.FootnoteRef.ID, NoteType: "footnote"}
+			out = append(out, refRun)
 			return out, items
 		}
 
 		if r.EndnoteRef != nil {
-			tr.IsFootnoteRef = true
-			tr.NoteID = r.EndnoteRef.ID
-			tr.NoteType = "endnote"
-			out = append(out, tr)
+			// Emit any co-located w:t text first, then the endnote ref
+			if text != "" {
+				textRun := tr
+				textRun.Text = text
+				applyRunProps(r.RPr, &textRun, themeFontMap)
+				out = append(out, textRun)
+			}
+			refRun := TextRun{IsFootnoteRef: true, NoteID: r.EndnoteRef.ID, NoteType: "endnote"}
+			out = append(out, refRun)
 			return out, items
 		}
 
