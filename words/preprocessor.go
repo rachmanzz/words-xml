@@ -315,7 +315,7 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 		}
 	}
 
-	doc.Content = parseContentItems(body.Paras, body.Tables, body.Sdts, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode, themeFontMap)
+	doc.Content = parseContentItemsOrdered(body.Children, relMap, doc.StyleMap, doc.StyleNameMap, numFmtMap, numberingStartMap, mode, themeFontMap)
 
 	bmOrder, noteRefOrder := buildBodyNoteOrder(docXML)
 	for i := range doc.Notes {
@@ -414,45 +414,40 @@ var (
 // the relative order of w:tab/w:br/w:cr vs w:t within each w:r element.
 // Go xml.Unmarshal loses child element order, so we need this secondary pass
 // to correctly set TabBeforeText and BreakBeforeText on each DocRun.
+//
+// Only direct-body paragraph runs are indexed (body.Paras[*].Runs[*]).
+// Runs inside w:tbl, w:sdt at body level are skipped during token scan
+// to keep the allRuns index in sync with the collected run pointers.
 func postProcessRunOrder(docXML []byte, body *DocBody) {
 	const wml = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 	dec := xml.NewDecoder(bytes.NewReader(docXML))
 
-	// Build a flat index of all runs in the body: para index → run index → *DocRun
-	// We match by scanning in document order — the token order matches unmarshal order.
-	type runRef struct {
-		paraIdx int
-		runIdx  int
-	}
-
-	// Collect pointers to all runs in body paragraphs (direct body paras only for now)
-	type runPtr struct {
-		r *DocRun
-	}
+	// Collect pointers to all runs in direct-body paragraphs, in document order.
+	type runPtr struct{ r *DocRun }
 	var allRuns []runPtr
-	collectRuns := func(paras []DocPara) {
-		for pi := range paras {
-			for ri := range paras[pi].Runs {
-				allRuns = append(allRuns, runPtr{r: &paras[pi].Runs[ri]})
-			}
+	for pi := range body.Paras {
+		for ri := range body.Paras[pi].Runs {
+			allRuns = append(allRuns, runPtr{r: &body.Paras[pi].Runs[ri]})
 		}
 	}
-	collectRuns(body.Paras)
-
 	if len(allRuns) == 0 {
 		return
 	}
 
-	// Second pass: scan tokens and for each w:r, record order of w:t vs w:tab/w:br/w:cr
+	// Token scan: walk body tokens and for each w:r that belongs to a direct-body
+	// paragraph (not inside w:tbl or w:sdt), detect child element order.
 	inBody := false
-	inRun := false
+	// skipDepth > 0 means we are inside a body-level w:tbl or w:sdt — skip all w:r.
+	skipDepth := 0
+	inPara := false    // inside a direct-body w:p
+	inRun := false     // inside a w:r within a direct-body paragraph
 	runIdx := 0
 	seenText := false
 	seenTab := false
 	seenBr := false
 	tabBeforeText := false
 	brBeforeText := false
-	depth := 0 // depth inside w:r
+	runDepth := 0 // depth inside w:r (to handle self-closing sub-elements)
 
 	for {
 		tok, err := dec.Token()
@@ -464,6 +459,9 @@ func postProcessRunOrder(docXML []byte, body *DocBody) {
 			local := t.Name.Local
 			ns := t.Name.Space
 			if ns != wml {
+				if inRun {
+					runDepth++
+				}
 				break
 			}
 			if local == "body" {
@@ -473,9 +471,24 @@ func postProcessRunOrder(docXML []byte, body *DocBody) {
 			if !inBody {
 				break
 			}
-			if local == "r" && !inRun {
+			// Track body-level elements that contain their own runs (skip them)
+			if !inPara && !inRun && (local == "tbl" || local == "sdt") {
+				skipDepth++
+				break
+			}
+			if skipDepth > 0 {
+				if local == "tbl" || local == "sdt" {
+					skipDepth++
+				}
+				break
+			}
+			if local == "p" && !inPara && !inRun {
+				inPara = true
+				break
+			}
+			if local == "r" && inPara && !inRun {
 				inRun = true
-				depth = 1
+				runDepth = 1
 				seenText = false
 				seenTab = false
 				seenBr = false
@@ -484,7 +497,7 @@ func postProcessRunOrder(docXML []byte, body *DocBody) {
 				break
 			}
 			if inRun {
-				depth++
+				runDepth++
 				switch local {
 				case "t", "delText":
 					seenText = true
@@ -504,13 +517,24 @@ func postProcessRunOrder(docXML []byte, body *DocBody) {
 			if !inBody {
 				break
 			}
-			if t.Name.Space != wml {
+			local := t.Name.Local
+			ns := t.Name.Space
+			if ns != wml {
+				if inRun {
+					runDepth--
+				}
+				break
+			}
+			if skipDepth > 0 {
+				if local == "tbl" || local == "sdt" {
+					skipDepth--
+				}
 				break
 			}
 			if inRun {
-				depth--
-				if depth == 0 {
-					// End of w:r — apply to the matching DocRun
+				runDepth--
+				if runDepth == 0 {
+					// End of w:r — apply order flags to matching DocRun
 					if runIdx < len(allRuns) {
 						if seenTab && seenText {
 							allRuns[runIdx].r.TabBeforeText = tabBeforeText
@@ -522,8 +546,13 @@ func postProcessRunOrder(docXML []byte, body *DocBody) {
 					runIdx++
 					inRun = false
 				}
+				break
 			}
-			if t.Name.Local == "body" {
+			if local == "p" && inPara {
+				inPara = false
+				break
+			}
+			if local == "body" {
 				inBody = false
 			}
 		}
@@ -921,6 +950,66 @@ func buildNumberingMap(numberingXML []byte) (map[string]string, map[int]map[int]
 }
 
 // --- Parser ---
+
+// parseContentItemsOrdered processes body children in document order,
+// preserving the interleaving of paragraphs, tables, and SDTs.
+func parseContentItemsOrdered(children []BodyChild, relMap map[string]string, styleMap map[string]StyleDef, styleNameMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, themeFontMap map[string]string) []ContentItem {
+	var items []ContentItem
+	for _, child := range children {
+		switch child.Type {
+		case BodyChildPara:
+			p := *child.Para
+			if p.PPr != nil && p.PPr.NumPr != nil {
+				numID := p.PPr.NumPr.NumID.Val
+				if numID != 0 {
+					ilvl := 0
+					if p.PPr.NumPr.Ilvl != nil {
+						ilvl = p.PPr.NumPr.Ilvl.Val
+					}
+					lp := &ParsedParagraph{
+						IsList:     true,
+						ListLevel:  ilvl,
+						NumID:      numID,
+						ListFormat: "ul",
+					}
+					nKey := fmt.Sprintf("%d_%d", numID, ilvl)
+					if nf, ok := numFmtMap[nKey]; ok && nf != "bullet" {
+						lp.ListFormat = "ol"
+					}
+					var tbItems []ContentItem
+					lp.Runs, tbItems = extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, false, themeFontMap, nil)
+					items = append(items, tbItems...)
+					items = append(items, ContentItem{Type: "list", Paragraph: lp})
+					// Handle textboxes in list paragraphs
+					for _, tb := range p.Textboxes {
+						if tb.TxbxContent == nil {
+							continue
+						}
+						tbI := parseContentItems(tb.TxbxContent.Paras, tb.TxbxContent.Tables, tb.TxbxContent.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
+						items = append(items, tbI...)
+					}
+					continue
+				}
+			}
+			item, paraTbItems := parseParagraph(p, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
+			items = append(items, item)
+			items = append(items, paraTbItems...)
+			for _, tb := range p.Textboxes {
+				if tb.TxbxContent == nil {
+					continue
+				}
+				tbI := parseContentItems(tb.TxbxContent.Paras, tb.TxbxContent.Tables, tb.TxbxContent.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
+				items = append(items, tbI...)
+			}
+		case BodyChildTable:
+			t := parseTable(*child.Table, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
+			items = append(items, ContentItem{Type: "table", Table: t})
+		case BodyChildSdt:
+			items = append(items, parseContentItems(child.Sdt.Content.Paras, child.Sdt.Content.Tables, child.Sdt.Content.Sdts, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)...)
+		}
+	}
+	return items
+}
 
 func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap map[string]string, styleMap map[string]StyleDef, styleNameMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, themeFontMap map[string]string) []ContentItem {
 	var items []ContentItem
@@ -1586,6 +1675,35 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 			}
 			runs = append(runs, got...)
 			tbItems = append(tbItems, items...)
+			// Also handle w:ins/w:del inside w:dir runs
+			if r.Ins != nil {
+				for _, ir := range r.Ins.Runs {
+					insRuns, _ := proc(ir)
+					for i := range insRuns {
+						insRuns[i].IsInserted = true
+						insRuns[i].InsAuthor = r.Ins.Author
+						insRuns[i].InsDate = r.Ins.Date
+						if isRTL {
+							insRuns[i].IsRTL = true
+						}
+					}
+					runs = append(runs, insRuns...)
+				}
+			}
+			if r.Del != nil {
+				for _, dr := range r.Del.Runs {
+					delRuns, _ := proc(dr)
+					for i := range delRuns {
+						delRuns[i].IsDeleted = true
+						delRuns[i].DelAuthor = r.Del.Author
+						delRuns[i].DelDate = r.Del.Date
+						if isRTL {
+							delRuns[i].IsRTL = true
+						}
+					}
+					runs = append(runs, delRuns...)
+				}
+			}
 		}
 	}
 	for _, d := range p.Bdo {
@@ -1599,6 +1717,35 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 			}
 			runs = append(runs, got...)
 			tbItems = append(tbItems, items...)
+			// Also handle w:ins/w:del inside w:bdo runs
+			if r.Ins != nil {
+				for _, ir := range r.Ins.Runs {
+					insRuns, _ := proc(ir)
+					for i := range insRuns {
+						insRuns[i].IsInserted = true
+						insRuns[i].InsAuthor = r.Ins.Author
+						insRuns[i].InsDate = r.Ins.Date
+						if isRTL {
+							insRuns[i].IsRTL = true
+						}
+					}
+					runs = append(runs, insRuns...)
+				}
+			}
+			if r.Del != nil {
+				for _, dr := range r.Del.Runs {
+					delRuns, _ := proc(dr)
+					for i := range delRuns {
+						delRuns[i].IsDeleted = true
+						delRuns[i].DelAuthor = r.Del.Author
+						delRuns[i].DelDate = r.Del.Date
+						if isRTL {
+							delRuns[i].IsRTL = true
+						}
+					}
+					runs = append(runs, delRuns...)
+				}
+			}
 		}
 	}
 
@@ -2683,6 +2830,10 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 			if !hasSameNumIDAhead(doc.Content, idx, numID, startAbstractID) {
 				break
 			}
+			// Emit table/paragraph items that appear between list items
+			if item.Type == "table" {
+				writeTableIndent(b, item.Table, doc, strings.TrimRight(indent, " "))
+			}
 			idx++
 			continue
 		}
@@ -2766,10 +2917,12 @@ func hasSameNumIDAhead(items []ContentItem, from int, numID int, abstractID int)
 		if item.Type == "list" && item.Paragraph.NumID == numID {
 			return true
 		}
+		// Stop looking if we encounter a different list (not a gap paragraph/table)
 		if item.Type == "list" && item.Paragraph.NumID != numID {
 			return false
 		}
-		if i-from > 20 {
+		// Allow up to 50 gap items (paragraphs, tables) between list items
+		if i-from > 50 {
 			return false
 		}
 	}

@@ -7,12 +7,99 @@ type DocDocument struct {
 	Body    DocBody  `xml:"body"`
 }
 
+// BodyChildType identifies the kind of top-level body element.
+type BodyChildType int
+
+const (
+	BodyChildPara     BodyChildType = iota // w:p
+	BodyChildTable                         // w:tbl
+	BodyChildSdt                           // w:sdt
+)
+
+// BodyChild is one top-level child of w:body in document order.
+type BodyChild struct {
+	Type  BodyChildType
+	Para  *DocPara
+	Table *DocTbl
+	Sdt   *DocSdt
+}
+
+// DocBody holds body content both as ordered children (for layout) and as
+// typed slices (for backward-compatible access like Paras, Sections, Bookmarks).
 type DocBody struct {
-	Paras     []DocPara     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main p"`
-	Tables    []DocTbl      `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main tbl"`
-	Sdts      []DocSdt      `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main sdt"`
+	// Children preserves the document order of w:p, w:tbl, and w:sdt elements.
+	Children  []BodyChild
+	// Paras, Tables, Sdts are kept for backward compatibility and for postProcessRunOrder.
+	Paras     []DocPara
+	Tables    []DocTbl
+	Sdts      []DocSdt
 	Sections  []DocSection  `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main sectPr"`
 	Bookmarks []DocBookmark `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main bookmarkStart"`
+}
+
+// UnmarshalXML implements xml.Unmarshaler for DocBody to preserve document order
+// of w:p, w:tbl, and w:sdt elements in the Children slice while also populating
+// the typed Paras/Tables/Sdts slices and the tag-based Sections/Bookmarks.
+func (b *DocBody) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
+	const wml = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	for {
+		tok, err := d.Token()
+		if err != nil {
+			return err
+		}
+		se, ok := tok.(xml.StartElement)
+		if !ok {
+			if ee, ok2 := tok.(xml.EndElement); ok2 && ee.Name == start.Name {
+				return nil
+			}
+			continue
+		}
+		if se.Name.Space != wml {
+			if err := d.Skip(); err != nil {
+				return err
+			}
+			continue
+		}
+		switch se.Name.Local {
+		case "p":
+			var p DocPara
+			if err := d.DecodeElement(&p, &se); err != nil {
+				return err
+			}
+			b.Paras = append(b.Paras, p)
+			b.Children = append(b.Children, BodyChild{Type: BodyChildPara, Para: &b.Paras[len(b.Paras)-1]})
+		case "tbl":
+			var t DocTbl
+			if err := d.DecodeElement(&t, &se); err != nil {
+				return err
+			}
+			b.Tables = append(b.Tables, t)
+			b.Children = append(b.Children, BodyChild{Type: BodyChildTable, Table: &b.Tables[len(b.Tables)-1]})
+		case "sdt":
+			var s DocSdt
+			if err := d.DecodeElement(&s, &se); err != nil {
+				return err
+			}
+			b.Sdts = append(b.Sdts, s)
+			b.Children = append(b.Children, BodyChild{Type: BodyChildSdt, Sdt: &b.Sdts[len(b.Sdts)-1]})
+		case "sectPr":
+			var sec DocSection
+			if err := d.DecodeElement(&sec, &se); err != nil {
+				return err
+			}
+			b.Sections = append(b.Sections, sec)
+		case "bookmarkStart":
+			var bm DocBookmark
+			if err := d.DecodeElement(&bm, &se); err != nil {
+				return err
+			}
+			b.Bookmarks = append(b.Bookmarks, bm)
+		default:
+			if err := d.Skip(); err != nil {
+				return err
+			}
+		}
+	}
 }
 
 type DocSection struct {
