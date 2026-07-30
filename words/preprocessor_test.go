@@ -3100,3 +3100,61 @@ func TestNoBreakHyphenWithColocatedText(t *testing.T) {
 		t.Errorf("text after noBreakHyphen run missing: %s", x)
 	}
 }
+
+func TestTabAfterText(t *testing.T) {
+	// Bug: w:r dengan <w:t>text</w:t><w:tab/> — text harus muncul sebelum tab
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:r><w:t xml:space="preserve">1.</w:t><w:tab/></w:r>
+    <w:r><w:t xml:space="preserve">content after tab.</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, "1.") {
+		t.Errorf("text before tab dropped: %s", x)
+	}
+	if !strings.Contains(x, "<tab/>") {
+		t.Errorf("tab missing: %s", x)
+	}
+	if !strings.Contains(x, "content after tab.") {
+		t.Errorf("text after tab run missing: %s", x)
+	}
+	// Urutan: text dulu baru tab
+	textPos := strings.Index(x, "1.")
+	tabPos := strings.Index(x, "<tab/>")
+	if textPos > tabPos {
+		t.Errorf("tab emitted before text: tab at %d, text at %d\n%s", tabPos, textPos, x)
+	}
+}
+
+func TestTabBeforeText(t *testing.T) {
+	// w:r dengan <w:tab/><w:t>text</w:t> — tab harus muncul sebelum text
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:r><w:tab/><w:t xml:space="preserve">text after tab</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, "<tab/>") {
+		t.Errorf("tab missing: %s", x)
+	}
+	if !strings.Contains(x, "text after tab") {
+		t.Errorf("text missing: %s", x)
+	}
+	// Urutan: tab dulu baru text
+	tabPos := strings.Index(x, "<tab/>")
+	textPos := strings.Index(x, "text after tab")
+	if tabPos > textPos {
+		t.Errorf("text emitted before tab: text at %d, tab at %d\n%s", textPos, tabPos, x)
+	}
+}

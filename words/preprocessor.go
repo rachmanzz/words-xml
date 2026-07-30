@@ -209,6 +209,9 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 		return nil, fmt.Errorf("failed to parse document.xml: %w", err)
 	}
 
+	// Post-process runs to track child element order (tab/br before/after text)
+	postProcessRunOrder(docXML, &document.Body)
+
 	body := document.Body
 	if len(body.Sections) > 0 {
 		doc.PageSections = make([]PageLayout, 0, len(body.Sections))
@@ -406,6 +409,126 @@ var (
 	insTag     = wmlNS + " ins"
 	delTag     = wmlNS + " del"
 )
+
+// postProcessRunOrder scans the raw document XML with a token decoder to detect
+// the relative order of w:tab/w:br/w:cr vs w:t within each w:r element.
+// Go xml.Unmarshal loses child element order, so we need this secondary pass
+// to correctly set TabBeforeText and BreakBeforeText on each DocRun.
+func postProcessRunOrder(docXML []byte, body *DocBody) {
+	const wml = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	dec := xml.NewDecoder(bytes.NewReader(docXML))
+
+	// Build a flat index of all runs in the body: para index → run index → *DocRun
+	// We match by scanning in document order — the token order matches unmarshal order.
+	type runRef struct {
+		paraIdx int
+		runIdx  int
+	}
+
+	// Collect pointers to all runs in body paragraphs (direct body paras only for now)
+	type runPtr struct {
+		r *DocRun
+	}
+	var allRuns []runPtr
+	collectRuns := func(paras []DocPara) {
+		for pi := range paras {
+			for ri := range paras[pi].Runs {
+				allRuns = append(allRuns, runPtr{r: &paras[pi].Runs[ri]})
+			}
+		}
+	}
+	collectRuns(body.Paras)
+
+	if len(allRuns) == 0 {
+		return
+	}
+
+	// Second pass: scan tokens and for each w:r, record order of w:t vs w:tab/w:br/w:cr
+	inBody := false
+	inRun := false
+	runIdx := 0
+	seenText := false
+	seenTab := false
+	seenBr := false
+	tabBeforeText := false
+	brBeforeText := false
+	depth := 0 // depth inside w:r
+
+	for {
+		tok, err := dec.Token()
+		if err != nil {
+			break
+		}
+		switch t := tok.(type) {
+		case xml.StartElement:
+			local := t.Name.Local
+			ns := t.Name.Space
+			if ns != wml {
+				break
+			}
+			if local == "body" {
+				inBody = true
+				break
+			}
+			if !inBody {
+				break
+			}
+			if local == "r" && !inRun {
+				inRun = true
+				depth = 1
+				seenText = false
+				seenTab = false
+				seenBr = false
+				tabBeforeText = false
+				brBeforeText = false
+				break
+			}
+			if inRun {
+				depth++
+				switch local {
+				case "t", "delText":
+					seenText = true
+				case "tab":
+					seenTab = true
+					if !seenText {
+						tabBeforeText = true
+					}
+				case "br", "cr":
+					seenBr = true
+					if !seenText {
+						brBeforeText = true
+					}
+				}
+			}
+		case xml.EndElement:
+			if !inBody {
+				break
+			}
+			if t.Name.Space != wml {
+				break
+			}
+			if inRun {
+				depth--
+				if depth == 0 {
+					// End of w:r — apply to the matching DocRun
+					if runIdx < len(allRuns) {
+						if seenTab && seenText {
+							allRuns[runIdx].r.TabBeforeText = tabBeforeText
+						}
+						if seenBr && seenText {
+							allRuns[runIdx].r.BreakBeforeText = brBeforeText
+						}
+					}
+					runIdx++
+					inRun = false
+				}
+			}
+			if t.Name.Local == "body" {
+				inBody = false
+			}
+		}
+	}
+}
 
 func buildBodyNoteOrder(docXML []byte) (bmOrder map[int]int, noteRefOrder map[string]int) {
 	bmOrder = make(map[int]int)
@@ -1268,24 +1391,32 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 			tr = *paraDefaults
 		}
 
-		if r.Tab != nil {
-			tr.IsTab = true
-			out = append(out, tr)
+		// Determine if this run has co-located text
+		hasCoText := len(r.Text) > 0 || len(r.DelText) > 0
+
+		// Tab: if no co-located text, emit immediately (run is tab-only).
+		// If co-located text exists, emit tab before or after text per TabBeforeText.
+		if r.Tab != nil && (!hasCoText || r.TabBeforeText) {
+			tabRun := tr
+			tabRun.IsTab = true
+			out = append(out, tabRun)
 			tr = TextRun{}
 		}
 
-		if r.Break != nil {
-			tr.IsLineBreak = true
-			tr.BreakType = r.Break.Type
-			if tr.BreakType == "" {
-				tr.BreakType = "textWrapping"
+		// Break: same logic as tab above
+		if r.Break != nil && (!hasCoText || r.BreakBeforeText) {
+			brRun := tr
+			brRun.IsLineBreak = true
+			brRun.BreakType = r.Break.Type
+			if brRun.BreakType == "" {
+				brRun.BreakType = "textWrapping"
 			}
-			out = append(out, tr)
+			out = append(out, brRun)
 			tr = TextRun{}
 		}
 
-		// w:cr is a carriage return — equivalent to a textWrapping line break
-		if r.Cr != nil {
+		// Cr: same logic
+		if r.Cr != nil && (!hasCoText || r.BreakBeforeText) {
 			out = append(out, TextRun{IsLineBreak: true, BreakType: "textWrapping"})
 		}
 
@@ -1354,6 +1485,23 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 		}
 		applyRunProps(r.RPr, &tr, themeFontMap)
 		out = append(out, tr)
+
+		// Emit tab/break that appears AFTER text in source XML
+		if r.Tab != nil && !r.TabBeforeText {
+			tabRun := TextRun{IsTab: true}
+			applyRunProps(r.RPr, &tabRun, themeFontMap)
+			out = append(out, tabRun)
+		}
+		if r.Break != nil && !r.BreakBeforeText {
+			brRun := TextRun{IsLineBreak: true, BreakType: r.Break.Type}
+			if brRun.BreakType == "" {
+				brRun.BreakType = "textWrapping"
+			}
+			out = append(out, brRun)
+		}
+		if r.Cr != nil && !r.BreakBeforeText {
+			out = append(out, TextRun{IsLineBreak: true, BreakType: "textWrapping"})
+		}
 		return out, items
 	}
 

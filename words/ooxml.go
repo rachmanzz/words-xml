@@ -209,6 +209,11 @@ type DocRun struct {
 	SoftHyphen    *struct{}       `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main softHyphen"`
 	Ins           *DocIns         `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main ins"`
 	Del           *DocDel         `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main del"`
+	// TabBeforeText is true when w:tab appears before the first w:t in source XML.
+	// Set by a secondary token scan in postProcessRunOrder.
+	TabBeforeText bool
+	// BreakBeforeText is true when w:br or w:cr appears before the first w:t.
+	BreakBeforeText bool
 }
 
 type RunProps struct {
