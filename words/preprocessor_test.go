@@ -694,6 +694,99 @@ func TestNestedList(t *testing.T) {
 	}
 }
 
+func TestListItemIndentAttrs(t *testing.T) {
+	numbering := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+ <w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+   <w:abstractNum w:abstractNumId="0">
+     <w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/></w:lvl>
+   </w:abstractNum>
+   <w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>
+ </w:numbering>`
+	body := xmlHeader + `<w:body>
+  <w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr><w:ind w:left="907" w:hanging="453"/></w:pPr><w:r><w:t>Item A</w:t></w:r></w:p>
+  <w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr><w:ind w:hanging="786"/></w:pPr><w:r><w:t>Item B</w:t></w:r></w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", numbering, "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `<li indentLeft="0.63" indentHanging="0.31">Item A`) {
+		t.Errorf("expected <li> with indentLeft/indentHanging from w:ind, got: %s", x)
+	}
+	if !strings.Contains(x, `<li indentHanging="0.55">Item B`) {
+		t.Errorf("expected <li> with indentHanging from w:hanging=786, got: %s", x)
+	}
+	if strings.Contains(x, `<li>Item`) {
+		t.Errorf("expected no bare <li> for indented list items: %s", x)
+	}
+}
+
+func TestListItemContinuationNoInteriorWhitespace(t *testing.T) {
+	numbering := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+ <w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+   <w:abstractNum w:abstractNumId="0">
+     <w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/></w:lvl>
+   </w:abstractNum>
+   <w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>
+ </w:numbering>`
+	body := xmlHeader + `<w:body>
+  <w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr><w:ind w:hanging="786"/></w:pPr><w:r><w:t>First</w:t></w:r></w:p>
+  <w:p><w:r><w:t>   Continuation</w:t></w:r></w:p>
+  <w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr><w:r><w:t>Second</w:t></w:r></w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", numbering, "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `<li indentHanging="0.55">First<br type="textWrapping"/> Continuation</li>`) {
+		t.Errorf("expected contiguous <li> with no interior pretty-print whitespace (semantic collapses source spaces to one), got: %s", x)
+	}
+	if strings.Contains(x, `<li indentHanging="0.55">First\n<br type="textWrapping"/>      Continuation`) {
+		t.Errorf("expected no newline/indent between li content and <br/> continuation: %s", x)
+	}
+}
+
+func TestListItemSpacingAttrs(t *testing.T) {
+	numbering := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  <w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+    <w:abstractNum w:abstractNumId="0">
+      <w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/></w:lvl>
+    </w:abstractNum>
+    <w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>
+  </w:numbering>`
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr>
+      <w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr>
+      <w:spacing w:before="120" w:after="240" w:line="480" w:lineRule="exact"/>
+    </w:pPr>
+    <w:r><w:t>Item with spacing</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", numbering, "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `spacingBefore="0.08"`) {
+		t.Errorf("expected spacingBefore on <li>, got: %s", x)
+	}
+	if !strings.Contains(x, `spacingAfter="0.17"`) {
+		t.Errorf("expected spacingAfter on <li>, got: %s", x)
+	}
+	if !strings.Contains(x, `lineSpacing="0.33"`) {
+		t.Errorf("expected lineSpacing on <li>, got: %s", x)
+	}
+	if !strings.Contains(x, `lineRule="exact"`) {
+		t.Errorf("expected lineRule on <li>, got: %s", x)
+	}
+}
+
 func TestTable(t *testing.T) {
 	body := xmlHeader + `<w:body>
   <w:tbl>

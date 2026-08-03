@@ -44,6 +44,7 @@ type ParsedDocument struct {
 	NumStartMap   map[int]map[int]int
 	NumToAbstract map[int]int
 	NumFmtMap     map[string]string
+	NumLvlTextMap map[string]string
 	Cols          int
 	ColsSpace     float64
 }

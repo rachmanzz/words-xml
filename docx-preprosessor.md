@@ -154,6 +154,8 @@ A flat, semantic, versioned XML:
         </ol>
       </li>
     </ol>
+    # <li> MAY carry paragraph indent attributes (indentLeft/Right/First/Hanging)
+    # from the list item's own w:ind — see "Block Element Attributes"
     <pre>...</pre>        # code / monospace block (whitespace preserved verbatim)
     <table id="n" at="..." c=".." width=".." align="left|center|right" indent=".." cellSpacing=".." caption=".." summary="..">  # table
       <tr><th colspan="n" rowspan="n" lang=".." valign="top|center|bottom" textDir=".." noWrap="true">..</th></tr>
@@ -572,7 +574,7 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 | `w:pPr/w:pStyle` | style | `c="..."` attr (only when style name ≠ element name) + `<s:custom>` in `<style>` | keep style name + custom style definition |
 | `w:pPr/w:numPr` | list | drives `<ul>`/`<ol>` | list structure |
 | `w:pPr/w:spacing` | layout | `<s:gap before/after>` + `<s:line>` | vertical rhythm + line spacing |
-| `w:pPr/w:ind` | layout | `<s:indent>` (in `<style>`) | indentation preserved (MOD-5) |
+| `w:pPr/w:ind` | layout | `indentLeft/Right/First/Hanging` on `<p>`/`<li>` (per-paragraph); style-level indent → `<s:indent>` in `<style>` | indentation preserved (MOD-5) |
 | `w:pPr/w:jc` | layout | `<s:align>` in `<style>` | justification preserved as LOSSLESS_METADATA |
 | `w:pPr/w:textAlignment` | keep | `valign="top|center|baseline"` on `<p>` | vertical text alignment |
 | `w:bidi` (p), `w:rPr/w:rtl` (r), `w:dir`/`w:bdo` | direction | `dir="rtl"` attribute on element | RTL/bidi support (MOD-7) |

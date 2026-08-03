@@ -184,10 +184,11 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 	}
 
 	var numFmtMap map[string]string
+	var numLvlTextMap map[string]string
 	var numberingStartMap map[int]map[int]int
 	var numToAbstract map[int]int
 	if numberingXML != nil {
-		numFmtMap, numberingStartMap, numToAbstract = buildNumberingMap(numberingXML)
+		numFmtMap, numLvlTextMap, numberingStartMap, numToAbstract = buildNumberingMap(numberingXML)
 	}
 
 	relMap := make(map[string]string)
@@ -280,6 +281,7 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 	doc.NumStartMap = numberingStartMap
 	doc.NumToAbstract = numToAbstract
 	doc.NumFmtMap = numFmtMap
+	doc.NumLvlTextMap = numLvlTextMap
 
 	if footnotesXML != nil {
 		var fndoc DocFootnotes
@@ -919,24 +921,31 @@ func resolveHeadingLevel(styleID, styleName string, styleMap map[string]StyleDef
 
 // --- Numbering Resolver ---
 
-func buildNumberingMap(numberingXML []byte) (map[string]string, map[int]map[int]int, map[int]int) {
+func buildNumberingMap(numberingXML []byte) (map[string]string, map[string]string, map[int]map[int]int, map[int]int) {
 	var numbering DocNumbering
 	if err := xml.Unmarshal(numberingXML, &numbering); err != nil {
-		return nil, nil, nil
+		return nil, nil, nil, nil
 	}
 
 	abstractFmt := make(map[int]map[int]string)
+	abstractLvlText := make(map[int]map[int]string)
 	for _, an := range numbering.AbstractNums {
 		levels := make(map[int]string)
+		lvlTexts := make(map[int]string)
 		for _, lvl := range an.Levels {
 			if lvl.NumFmt != nil {
 				levels[lvl.Ilvl] = lvl.NumFmt.Val
 			}
+			if lvl.LvlText != nil {
+				lvlTexts[lvl.Ilvl] = lvl.LvlText.Val
+			}
 		}
 		abstractFmt[an.ID] = levels
+		abstractLvlText[an.ID] = lvlTexts
 	}
 
 	numFmtMap := make(map[string]string)
+	numLvlTextMap := make(map[string]string)
 	numStartMap := make(map[int]map[int]int)
 	numToAbstract := make(map[int]int)
 	for _, num := range numbering.Nums {
@@ -951,6 +960,12 @@ func buildNumberingMap(numberingXML []byte) (map[string]string, map[int]map[int]
 				numFmtMap[key] = nf
 			}
 		}
+		if lt, ok := abstractLvlText[aid]; ok {
+			for ilvl, txt := range lt {
+				key := fmt.Sprintf("%d_%d", num.NumID, ilvl)
+				numLvlTextMap[key] = txt
+			}
+		}
 		for _, ov := range num.LvlOverrides {
 			if ov.StartOverride != nil {
 				if _, ok := numStartMap[num.NumID]; !ok {
@@ -961,7 +976,7 @@ func buildNumberingMap(numberingXML []byte) (map[string]string, map[int]map[int]
 		}
 	}
 
-	return numFmtMap, numStartMap, numToAbstract
+	return numFmtMap, numLvlTextMap, numStartMap, numToAbstract
 }
 
 // --- Parser ---
@@ -990,6 +1005,25 @@ func parseContentItemsOrdered(content OrderedContentAccessor, children []BodyChi
 					nKey := fmt.Sprintf("%d_%d", numID, ilvl)
 					if nf, ok := numFmtMap[nKey]; ok && nf != "bullet" {
 						lp.ListFormat = "ol"
+					}
+					if p.PPr.Ind != nil {
+						lp.IndentLeft = float64(p.PPr.Ind.Left) / twipsPerInch
+						lp.IndentRight = float64(p.PPr.Ind.Right) / twipsPerInch
+						lp.IndentFirst = float64(p.PPr.Ind.FirstLine) / twipsPerInch
+						lp.IndentHanging = float64(p.PPr.Ind.Hanging) / twipsPerInch
+					}
+					if p.PPr.Spacing != nil {
+						lp.SpacingBefore = float64(p.PPr.Spacing.Before) / twipsPerInch
+						lp.SpacingAfter = float64(p.PPr.Spacing.After) / twipsPerInch
+						if p.PPr.Spacing.Line > 0 {
+							switch p.PPr.Spacing.LineRule {
+							case "auto":
+								lp.LineSpacing = float64(p.PPr.Spacing.Line) / 240.0
+							default:
+								lp.LineSpacing = float64(p.PPr.Spacing.Line) / twipsPerInch
+							}
+							lp.LineRule = p.PPr.Spacing.LineRule
+						}
 					}
 					var tbItems []ContentItem
 					lp.Runs, tbItems = extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, false, themeFontMap, nil)
@@ -1056,6 +1090,25 @@ func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap m
 			if nf, ok := numFmtMap[nKey]; ok {
 				if nf != "bullet" {
 					lp.ListFormat = "ol"
+				}
+			}
+			if p.PPr.Ind != nil {
+				lp.IndentLeft = float64(p.PPr.Ind.Left) / twipsPerInch
+				lp.IndentRight = float64(p.PPr.Ind.Right) / twipsPerInch
+				lp.IndentFirst = float64(p.PPr.Ind.FirstLine) / twipsPerInch
+				lp.IndentHanging = float64(p.PPr.Ind.Hanging) / twipsPerInch
+			}
+			if p.PPr.Spacing != nil {
+				lp.SpacingBefore = float64(p.PPr.Spacing.Before) / twipsPerInch
+				lp.SpacingAfter = float64(p.PPr.Spacing.After) / twipsPerInch
+				if p.PPr.Spacing.Line > 0 {
+					switch p.PPr.Spacing.LineRule {
+					case "auto":
+						lp.LineSpacing = float64(p.PPr.Spacing.Line) / 240.0
+					default:
+						lp.LineSpacing = float64(p.PPr.Spacing.Line) / twipsPerInch
+					}
+					lp.LineRule = p.PPr.Spacing.LineRule
 				}
 			}
 
@@ -2929,6 +2982,8 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 			// Emit table/paragraph items that appear between list items
 			if item.Type == "table" {
 				writeTableIndent(b, item.Table, doc, strings.TrimRight(indent, " "))
+			} else if item.Type == "paragraph" {
+				formatParagraphIndent(b, item.Paragraph, doc, strings.TrimRight(indent, " "))
 			}
 			idx++
 			continue
@@ -2952,7 +3007,9 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 				}
 			}
 			content := buildInlineText(item.Paragraph.Runs, doc.DefaultFont, doc.Mode)
-			fmt.Fprintf(b, "%s<li>%s\n", indent, content)
+			fmt.Fprintf(b, "%s<li", indent)
+			writeListIndentAttrs(b, item.Paragraph)
+			fmt.Fprintf(b, ">%s", content)
 			idx++
 			for idx < len(doc.Content) {
 				next := doc.Content[idx]
@@ -2970,7 +3027,7 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 						break
 					}
 					nestedTag, nestedTypeAttr := listTagAndType(next.Paragraph, doc)
-					fmt.Fprintf(b, "%s  <%s type=\"%s\"", indent, nestedTag, nestedTypeAttr)
+					fmt.Fprintf(b, "<%s type=\"%s\"", nestedTag, nestedTypeAttr)
 					if nestedTag == "ol" {
 						if st := listStart(next.Paragraph, doc); st > 1 {
 							fmt.Fprintf(b, " start=\"%d\"", st)
@@ -2978,13 +3035,16 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 					}
 					b.WriteString(">\n")
 					idx = emitListItems(b, idx, numID, nl, indent+"    ", doc)
-					fmt.Fprintf(b, "%s  </%s>\n", indent, nestedTag)
+					fmt.Fprintf(b, "</%s>", nestedTag)
 					continue
 				}
 				if next.Type == "paragraph" && hasSameNumIDAhead(doc.Content, idx, numID, startAbstractID) {
+					if next.Paragraph.IndentLeft > 0.35 {
+						break
+					}
 					continueContent := buildInlineText(next.Paragraph.Runs, doc.DefaultFont, doc.Mode)
 					if continueContent != "" {
-						fmt.Fprintf(b, "<br type=\"textWrapping\"/>%s%s\n", indent, continueContent)
+						fmt.Fprintf(b, "<br type=\"textWrapping\"/>%s", continueContent)
 					}
 					idx++
 					continue
@@ -2992,7 +3052,7 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 
 				break
 			}
-			fmt.Fprintf(b, "%s</li>\n", indent)
+			fmt.Fprintf(b, "</li>\n")
 			continue
 		}
 		break
@@ -3052,6 +3112,12 @@ func listTagAndType(p *ParsedParagraph, doc *ParsedDocument) (string, string) {
 		}
 	}
 	if numFmt == "bullet" {
+		if doc.NumLvlTextMap != nil {
+			key := fmt.Sprintf("%d_%d", p.NumID, p.ListLevel)
+			if lt, ok := doc.NumLvlTextMap[key]; ok && lt != "" {
+				return "ul", lt
+			}
+		}
 		return "ul", "bullet"
 	}
 	if numFmt == "" {
@@ -3079,7 +3145,9 @@ func emitContentItem(b *strings.Builder, item ContentItem, doc *ParsedDocument, 
 		tag, typeAttr := listTagAndType(item.Paragraph, doc)
 		content := buildInlineText(item.Paragraph.Runs, doc.DefaultFont, doc.Mode)
 		fmt.Fprintf(b, "%s<%s type=\"%s\">\n", indent, tag, typeAttr)
-		fmt.Fprintf(b, "%s  <li>%s</li>\n", indent, content)
+		fmt.Fprintf(b, "%s  <li", indent)
+		writeListIndentAttrs(b, item.Paragraph)
+		fmt.Fprintf(b, ">%s</li>\n", content)
 		fmt.Fprintf(b, "%s</%s>\n", indent, tag)
 	case "table":
 		writeTableIndent(b, item.Table, doc, indent)
@@ -3146,6 +3214,33 @@ func customStyleName(p *ParsedParagraph) string {
 		return ""
 	}
 	return p.StyleName
+}
+
+func writeListIndentAttrs(b *strings.Builder, p *ParsedParagraph) {
+	if p.IndentLeft > 0 {
+		fmt.Fprintf(b, " indentLeft=\"%.2f\"", p.IndentLeft)
+	}
+	if p.IndentRight > 0 {
+		fmt.Fprintf(b, " indentRight=\"%.2f\"", p.IndentRight)
+	}
+	if p.IndentFirst > 0 {
+		fmt.Fprintf(b, " indentFirst=\"%.2f\"", p.IndentFirst)
+	}
+	if p.IndentHanging > 0 {
+		fmt.Fprintf(b, " indentHanging=\"%.2f\"", p.IndentHanging)
+	}
+	if p.SpacingBefore > 0 {
+		fmt.Fprintf(b, " spacingBefore=\"%.2f\"", p.SpacingBefore)
+	}
+	if p.SpacingAfter > 0 {
+		fmt.Fprintf(b, " spacingAfter=\"%.2f\"", p.SpacingAfter)
+	}
+	if p.LineSpacing > 0 {
+		fmt.Fprintf(b, " lineSpacing=\"%.2f\"", p.LineSpacing)
+	}
+	if p.LineRule != "" && p.LineRule != "auto" {
+		fmt.Fprintf(b, " lineRule=\"%s\"", p.LineRule)
+	}
 }
 
 func writeParagraphAttrs(b *strings.Builder, p *ParsedParagraph) {
@@ -3532,7 +3627,9 @@ func writeTableIndent(b *strings.Builder, t *ParsedTable, doc *ParsedDocument, i
 				case "list":
 					tag, typeAttr := listTagAndType(ci.Paragraph, doc)
 					content := buildInlineText(ci.Paragraph.Runs, doc.DefaultFont, doc.Mode)
-					fmt.Fprintf(b, "<%s type=\"%s\"><li>%s</li></%s>", tag, typeAttr, content, tag)
+					fmt.Fprintf(b, "<%s type=\"%s\"><li", tag, typeAttr)
+					writeListIndentAttrs(b, ci.Paragraph)
+					fmt.Fprintf(b, ">%s</li></%s>", content, tag)
 				case "table":
 					writeTableIndent(b, ci.Table, doc, indent+"    ")
 				}

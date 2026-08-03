@@ -67,7 +67,7 @@ preprocessor can emit: whether it is converted to the declared unit, and why.
 |--------------------------------------------------------|-------------------------------------|-----------------------------------------|-----|
 | `<s:page>` `w h mt mb ml mr mh mf` (page + margins)    | `w:pgSz` / `w:pgMar` (twips)        | ✅ yes — twips ÷ 1440                    | physical length |
 | `s:cols space` (column spacing)                        | `w:cols/@w:space` (twips)           | ✅ yes — twips ÷ 1440                    | physical length |
-| `indentLeft/Right/First/Hanging` (`<p>`, `<s:custom>`, `<s:indent>`) | `w:pPr/w:ind` (twips) | ✅ yes — twips ÷ 1440                    | physical length |
+| `indentLeft/Right/First/Hanging` (`<p>`, `<li>`, `<s:custom>`, `<s:indent>`) | `w:pPr/w:ind` (twips) | ✅ yes — twips ÷ 1440                    | physical length |
 | `spacingBefore/After` (`<p>`, `<s:custom>`, `<s:gap>`) | `w:pPr/w:spacing` (twips)           | ✅ yes — twips ÷ 1440                    | physical length |
 | `lineSpacing` + `lineRule="exact\|atLeast"`            | `w:pPr/w:spacing/@w:line` (twips)   | ✅ yes — twips ÷ 1440                    | physical length |
 | `<s:tab pos>`                                          | `w:pPr/w:tabs/@w:pos` (twips)       | ✅ yes — twips ÷ 1440                    | physical length |
