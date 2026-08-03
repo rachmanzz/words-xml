@@ -64,8 +64,33 @@ func TestParaLevelInsDel(t *testing.T) {
 	if !strings.Contains(x, "inserted") {
 		t.Errorf("para-level w:ins text 'inserted' missing: %s", x)
 	}
+	if strings.Contains(x, "deleted") {
+		t.Errorf("para-level w:del text 'deleted' should be dropped in semantic mode: %s", x)
+	}
+}
+
+// TestParaLevelInsDelLossless verifies that w:del text is kept (wrapped in <del>)
+// when the document is processed in lossless mode.
+func TestParaLevelInsDelLossless(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:r><w:t xml:space="preserve">normal </w:t></w:r>
+    <w:del w:id="2" w:author="Bob" w:date="2024-01-02T00:00:00Z">
+      <w:r><w:delText xml:space="preserve">deleted</w:delText></w:r>
+    </w:del>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytesMode(data, "lossless")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, "<del") {
+		t.Errorf("expected <del> in lossless mode, got: %s", x)
+	}
 	if !strings.Contains(x, "deleted") {
-		t.Errorf("para-level w:del text 'deleted' missing: %s", x)
+		t.Errorf("para-level w:del text 'deleted' missing in lossless mode: %s", x)
 	}
 }
 

@@ -222,9 +222,28 @@ func verifyStyle(tokens []xml.Token, start xml.StartElement, idx *int, r *Verify
 		if !validStyle[local] {
 			r.addWarn("unknown element <%s> inside <style>", local)
 		}
+		if local == "custom" {
+			for _, a := range start.Attr {
+				switch a.Name.Local {
+				case "size", "sizeCS":
+					if !isPtSuffixValid(a.Value) {
+						r.addError("<s:custom> %s must be a number followed by pt (e.g., 11pt), got %q", a.Name.Local, a.Value)
+					}
+				}
+			}
+		}
 	}
 
 	*idx = endIdx
+}
+
+func isPtSuffixValid(v string) bool {
+	pt := strings.TrimSuffix(v, "pt")
+	if pt == v {
+		return false
+	}
+	_, err := strconv.ParseFloat(pt, 64)
+	return err == nil
 }
 
 func verifyWrite(tokens []xml.Token, idx *int, r *VerifyResult) {
@@ -562,6 +581,10 @@ func verifyInlineAttrs(start xml.StartElement, elemType string, r *VerifyResult)
 		case "spacingBefore", "spacingAfter", "lineSpacing":
 			if _, err := strconv.ParseFloat(a.Value, 64); err != nil {
 				r.addError("<%s> %s must be number, got %q", elemType, a.Name.Local, a.Value)
+			}
+		case "size", "sizeCS":
+			if !isPtSuffixValid(a.Value) {
+				r.addError("<%s> %s must be a number followed by pt (e.g., 11pt), got %q", elemType, a.Name.Local, a.Value)
 			}
 		case "lineRule":
 			valid := map[string]bool{"auto": true, "exact": true, "atLeast": true}

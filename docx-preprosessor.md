@@ -17,7 +17,7 @@ The preprocessor operates in one of two modes:
 - `mode="semantic"` (default): stripped-down representation for **AI training** and **downstream consumption**.
 - `mode="lossless"`: preserves additional metadata for **round‑tripping** or **document‑reconstruction**. Differences from semantic mode:
   - Whitespace is NOT normalized (original spacing preserved).
-  - Tracked changes (`w:ins`/`w:del`): text included as plain text in semantic mode; `<ins>`/`<del>` wrapped in lossless mode.
+  - Tracked changes (`w:ins`/`w:del`): `w:ins` content kept as plain text, `w:del`/`w:delText` dropped in semantic mode (no delete traces); `<ins>`/`<del>` wrapped in lossless mode.
   - All other transformation rules remain the same.
 
 ### 1.1 Problem (semantic mode)
@@ -77,7 +77,8 @@ A flat, semantic, versioned XML:
     <keywords>...</keywords>     # cp:keywords
   </meta>
   <style unit="in">             # layout config (required, before <write>)
-                                # unit = default unit for all numeric layout values
+                                # unit = default unit for all numeric layout values;
+                                #   font sizes always in pt with explicit "pt" suffix
     <s:page size="A4"           # named preset (A3/A4/A5/Letter/Legal/Tabloid/B5/
                                 #   A6/Executive/Statement/Folio); resolves w/h
             w=".." h=".."       # OR explicit page size (overrides size)
@@ -96,7 +97,7 @@ A flat, semantic, versioned XML:
     <s:tab el="p|h1" pos="1.0" align="left|center|right|decimal" leader="none|dot|dash|underscore|bar"/>  # tab stop definition (deduplicated — identical stops emitted once)
     <s:theme font=".." fontEA=".." fontCS=".." bg=".." fg=".."/>  # optional global defaults (font + color tokens)
     <s:custom name=".." basedOn=".." type="paragraph|character|table"
-              font=".." fontEA=".." fontCS=".." size=".." sizeCS=".."
+              font=".." fontEA=".." fontCS=".." size="..pt" sizeCS="..pt"
               color=".." bold="true" italic="true" underline=".."
               strikethrough="true" smallCaps="true" uppercase="true"
               alignment=".." spacingBefore=".." spacingAfter=".."
@@ -131,7 +132,7 @@ A flat, semantic, versioned XML:
     <sup>...</sup>          # superscript (inline)
     <bcs>...</bcs>          # Complex Script bold (inline) — P16
     <ics>...</ics>          # Complex Script italic (inline) — P17
-    <span font=".." size=".." color=".." highlight=".." lang=".." hidden="true" fontEA=".." fontCS=".." sizeCS="..">...</span>  # font/style span (inline)
+    <span font=".." size="..pt" color=".." highlight=".." lang=".." hidden="true" fontEA=".." fontCS=".." sizeCS="..pt">...</span>  # font/style span (inline)
     <a href="...">...</a>   # hyperlink (r:id or instrText HYPERLINK) — MOD-3
     <br type="textWrapping|page|column|clear"/> # line break — MIN-1
     <tab/>                  # tab character (moves to next tab stop)
@@ -272,15 +273,46 @@ with page size and margins.
 All numeric layout values use the **`unit`** declared on `<style>` (default `in`).
 Allowed units: `in` (inch, default), `pt` (point), `px` (pixel), `cm`, `mm`.
 
-- A bare number (`mt="54"`) is interpreted in the declared `unit`.
-- A value may override the default inline by suffixing its own unit
-  (e.g., `ml="2cm"` even when `unit="pt"`).
+The **recommended** unit is `in`. OOXML itself does not declare a unit — it stores
+measurements in twips (`1pt = 20 twips`). This preprocessor converts twips to the
+declared unit, so `in` is the natural default. The declared unit may be overridden.
+
+Unit rules (summary):
+
+1. A bare number (`mt="54"`) is interpreted in the declared `unit`.
+2. A value may override the default inline by suffixing its own unit
+   (e.g., `ml="2cm"` even when `unit="pt"`).
+3. Only **physical lengths** are converted to the declared unit. Anything that is
+   genuinely point-based — font sizes — must NOT be converted.
+4. **Font sizes always use `pt`.** The `size` and `sizeCS` attributes on `<span>` and
+   `<s:custom>` are point values and MUST carry an explicit `pt` suffix
+   (e.g., `size="11pt"`), never a bare number in the declared unit.
+
+Convertible vs non-convertible:
+
+- **Converted to the declared unit** (physical lengths, twips ÷ 1440): page geometry
+  and margins, column spacing, indents, spacing before/after, line spacing with
+  `rule="exact"`/`atLeast`, tab positions, table/cell widths, frame
+  `width`/`height`/`vSpace`/`hSpace`/`x`/`y`, and border widths (eighths of a point ÷ 576).
+- **NOT converted** (see `unit-declaration.md` for full rationale): font sizes
+  (`size`/`sizeCS` — always `pt`-suffixed), auto line-spacing multiplier (`rule="auto"`),
+  counts/identifiers, enumerations, and character-relative indents (`w:*Chars`).
+
+> **Authoritative unit policy**: the complete, authoritative rules — the exhaustive
+> per-value decision of what is converted and what is not, all conversion factors, and
+> the verifier behavior — are defined in **`unit-declaration.md`**. This section only
+> summarizes the policy; whenever this section and `unit-declaration.md` disagree,
+> `unit-declaration.md` wins.
+
 - Word OOXML stores sizes in **twips** (`1pt = 20 twips`); the preprocessor MUST convert
-  twips → the declared unit before emitting.
+  twips → the declared unit before emitting (physical lengths only — see rule 3).
+- Font sizes (OOXML `w:sz`/`w:szCs`, half-points: `1pt = 2` half-points) are kept in
+  points and emitted as `size="..pt"` / `sizeCS="..pt"` (see rule 4).
 - `<s:gap>` — spacing rules keyed by element (`el`) and optional style (`c`):
   `before`/`after` gaps in the declared unit. Lets downstream renderers reproduce vertical rhythm.
 - `<s:line>` — line spacing keyed by element (`el`) and optional style (`c`):
-  `value` = line spacing multiplier (e.g., `1.5` for 1.5 line spacing, `2` for double);
+  `value` = line spacing multiplier for `rule="auto"` (e.g., `1.5` for 1.5 line spacing,
+  `2` for double), or a **physical length in the declared unit** for `rule="exact"`/`atLeast`;
   `rule` = `auto` (proportional), `exact` (fixed), `atLeast` (minimum). From `w:spacing/@w:line`
   and `@w:lineRule`. Example: `<s:line el="p" value="1.5" rule="auto"/>`.
 - `<s:col>` — column/grid widths (from `w:tblGrid` / `w:gridCol`). Each `<s:col>` carries a
@@ -296,6 +328,7 @@ Allowed units: `in` (inch, default), `pt` (point), `px` (pixel), `cm`, `mm`.
   `name` = style name (REQUIRED); `basedOn` = parent style name (optional);
   `type` = paragraph|character|table (optional); formatting properties as attributes
   (font, size, color, bold, italic, alignment, spacing, indentation, borders, etc.).
+  `size`/`sizeCS` are point values and MUST carry a `pt` suffix (e.g., `size="11pt"`).
   Only emitted for custom styles — excluded builtin IDs:
   `Normal`, `DefaultParagraphFont`, `Heading1`–`Heading9`, `Title`, `Subtitle`,
   `Quote`, `IntenseQuote`, `BlockText`, `ListParagraph`, `ListBullet`, `ListNumber`,
@@ -315,6 +348,8 @@ in the document:
 - **Font family**: `w:rFonts/@w:ascii` (Latin), `@w:eastAsia` (East Asian), `@w:cs` (Complex Script).
 - **Font size**: `w:sz/@w:val` (half-points → converted to pt: `val ÷ 2`).
 - **Font size CS**: `w:szCs/@w:val` (Complex Script size, same conversion).
+  Font sizes are kept in points and emitted with an explicit `pt` suffix (e.g.,
+  `size="11pt"`), never converted to the declared `unit`.
 - **Color**: `w:color/@w:val` (hex).
 
 If `w:docDefaults` is absent or `styles.xml` cannot be parsed, the preprocessor falls
@@ -422,7 +457,7 @@ All block elements (`<p>`, `<h1>`-`<h9>`, `<li>`, `<blockquote>`, `<pre>`) can c
 
 The `frame` attribute is a compound attribute containing frame/drop-cap properties. Format:
 ```
-frame="dropCap='drop' lines='3' width='1440' wrap='around'"
+frame="dropCap='drop' lines='3' width='1.00' wrap='around'"
 ```
 
 Sub-attributes:
@@ -576,7 +611,7 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 | `w:rPr/w:caps` | fmt | `<uppercase>` | all caps (MOD-4) |
 | `w:rPr/w:vertAlign` (sup/sub) | fmt | `<sup>`/`<sub>` | semantics |
 | `w:rPr/w:rFonts` | fmt | `<span font="..">` | font family (KEEP) |
-| `w:rPr/w:sz` | fmt | `<span size="..">` | font size in pt (KEEP) |
+| `w:rPr/w:sz` | fmt | `<span size="..pt">` | font size in pt, always with `pt` suffix (KEEP) |
 | `w:rPr/w:color` | fmt | `<span color="..">` | text color hex (KEEP) |
 | `w:rPr/w:highlight` | fmt | `<span highlight="..">` | highlight color (KEEP) |
 | `w:rPr/w:spacing` | present | DROP | character spacing noise |
@@ -586,7 +621,7 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 | `w:rPr/w:rFonts/@w:cs` | keep | `fontCS="..."` on `<span>` — P15 | Complex Script font family |
 | `w:rPr/w:bCs` | keep | `<bcs>...</bcs>` — P16 | Complex Script bold |
 | `w:rPr/w:iCs` | keep | `<ics>...</ics>` — P17 | Complex Script italic |
-| `w:rPr/w:szCs` | keep | `sizeCS="..."` on `<span>` — P18 | Complex Script font size |
+| `w:rPr/w:szCs` | keep | `sizeCS="..pt"` on `<span>` — P18 | Complex Script font size (pt suffix) |
 | `w:br`,`w:cr` | break | `<br type="textWrapping|page|column|clear"/>` | explicit break w/ kind (MIN-1) |
 | `w:tab` | break | `<tab/>` | tab character preserved |
 | `w:noBreakHyphen` | text | rendered as `\u00AC` (not-breaking hyphen) | literal character |
@@ -598,7 +633,7 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 | `w:bookmarkStart/End` | anchor | KEEP in `<notes>` as `<bm id="name"/>` | bookmark position preserved |
 | `w:commentRange*`,`w:commentReference` | comment | KEEP in `<notes>` as `<comment>` | comment text preserved |
 | `w:proofError` | proof | DROP | spelling/grammar noise |
-| `w:ins`,`w:del` (track changes) | change | text included as plain text (semantic); `<ins>`/`<del>` wrapped (lossless) | change content preserved; markup stripped in semantic mode |
+| `w:ins`,`w:del` (track changes) | change | `w:ins` as plain text, `w:del`/`w:delText` dropped (semantic); `<ins>`/`<del>` wrapped (lossless) | final document content preserved; deleted content excluded as revision noise |
 | `w:sdt`,`w:smartTag`,`w:customXml` | wrapper | unwrap children | tag wrappers |
 | `w:sectPr` | section | feed `<s:page>` in `<style>` | page layout |
 | `w:sectPr/w:cols` | keep | `<s:cols n=".." space=".."/>` in `<style>` — P19 | multi-column layout |
@@ -731,7 +766,7 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 - `w:rPr` with `w:smallCaps` → wrap run in `<smallcaps>`; `w:caps` → `<uppercase>` (MOD-4).
 - `w:rPr` with `w:vertAlign w:val="superscript"` → `<sup>`; `"subscript"` → `<sub>`.
 - `w:rPr` with `w:rFonts` → wrap run in `<span font="..">` (font family name from `@w:ascii` or `@w:hAnsi`).
-- `w:rPr` with `w:sz` → wrap run in `<span size="..">` (font size in half-points, converted to pt: `w:val ÷ 2`).
+- `w:rPr` with `w:sz` → wrap run in `<span size="..pt">` (font size in half-points, converted to pt: `w:val ÷ 2`); point values always carry a `pt` suffix.
 - `w:rPr` with `w:color` → wrap run in `<span color="..">` (hex color from `@w:val`, e.g., `"FF0000"`).
 - `w:rPr` with `w:highlight` → wrap run in `<span highlight="..">` (highlight color name from `@w:val`).
   Highlight value `"none"` is **suppressed** (not emitted).
@@ -772,11 +807,12 @@ Every OOXML construct the preprocessor encounters is classified into one of four
   processed through normal paragraph/run rules, and placed in the `<notes>` block as
   `<fn id="n" type="footnote|endnote">...</fn>` (see §2.7).
 - **Tracked changes (LOSSLESS_METADATA)**: `w:ins` → `<ins>...</ins>`,
-  `w:del` → `<del>...</del>` (deleted text included for context).
+  `w:del` → `<del>...</del>`.
   In `mode="lossless"`, ins/del runs are wrapped in `<ins>`/`<del>` elements with
-  `author` and `date` metadata. In `mode="semantic"` (default), ins/del content is
-  included as **plain text** (no wrapper tags) — the text is preserved, only the
-  change-tracking markup is stripped.
+  `author` and `date` metadata. In `mode="semantic"` (default), `w:ins` content is
+  included as **plain text** (no wrapper tags) — inserted text is preserved, only the
+  change-tracking markup is stripped — while `w:del`/`w:delText` content is **dropped**
+  because deleted text is not part of the final document.
 
 ### 3.3 Lists
 
@@ -976,7 +1012,7 @@ Every OOXML construct the preprocessor encounters is classified into one of four
       <li>Cold aisle containment</li>
     </ul>
     <p><a href="https://example.com/guide">See official guide</a></p>
-    <p>Note: <span font="Arial" size="12" color="FF0000">red text in Arial 12pt</span>. This is an inline drawing with a textbox (see output note below).</p>
+    <p>Note: <span font="Arial" size="12pt" color="FF0000">red text in Arial 12pt</span>. This is an inline drawing with a textbox (see output note below).</p>
     <p shd="FFFF00" keepNext="true" spacingBefore="0.17" spacingAfter="0.08">Important note with yellow background.</p>
     <p>Textbox content extracted: Use C13 category bolt.</p>
   </write>

@@ -361,8 +361,8 @@ func TestFontSpan(t *testing.T) {
 	if !strings.Contains(x, `font="Arial"`) {
 		t.Error("expected font=Arial")
 	}
-	if !strings.Contains(x, `size="12"`) {
-		t.Error("expected size=12 (24 half-points)")
+	if !strings.Contains(x, `size="12pt"`) {
+		t.Error("expected size=12pt (24 half-points)")
 	}
 	if !strings.Contains(x, `color="FF0000"`) {
 		t.Error("expected color=FF0000")
@@ -2644,6 +2644,69 @@ func TestTrackedChangesSemantic(t *testing.T) {
 	}
 }
 
+func TestTrackedChangesDeletedDroppedSemantic(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:r><w:t>normal text</w:t></w:r>
+    <w:del w:id="2" w:author="Bob" w:date="2024-01-02T00:00:00Z">
+      <w:r><w:delText xml:space="preserve">deleted text</w:delText></w:r>
+    </w:del>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+
+	doc, err := ProcessDOCXBytesMode(data, "semantic")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if strings.Contains(doc.WordsXML, "deleted text") {
+		t.Errorf("expected w:del text dropped in semantic mode, got: %s", doc.WordsXML)
+	}
+	if !strings.Contains(doc.WordsXML, "normal text") {
+		t.Errorf("expected normal text kept in semantic mode, got: %s", doc.WordsXML)
+	}
+
+	doc, err = ProcessDOCXBytesMode(data, "lossless")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, "<del") {
+		t.Errorf("expected <del> in lossless mode, got: %s", doc.WordsXML)
+	}
+	if !strings.Contains(doc.WordsXML, "deleted text") {
+		t.Errorf("expected deleted text kept in lossless mode, got: %s", doc.WordsXML)
+	}
+}
+
+func TestTrackedChangesMixedSemantic(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:r><w:t>before </w:t></w:r>
+    <w:ins w:id="1" w:author="Author" w:date="2024-01-01T00:00:00Z">
+      <w:r><w:t>inserted </w:t></w:r>
+    </w:ins>
+    <w:del w:id="2" w:author="Bob" w:date="2024-01-02T00:00:00Z">
+      <w:r><w:delText xml:space="preserve">deleted </w:delText></w:r>
+    </w:del>
+    <w:r><w:t>after</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytesMode(data, "semantic")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if strings.Contains(doc.WordsXML, "deleted") {
+		t.Errorf("expected w:del text dropped in semantic mode, got: %s", doc.WordsXML)
+	}
+	if !strings.Contains(doc.WordsXML, "inserted") {
+		t.Errorf("expected w:ins text kept in semantic mode, got: %s", doc.WordsXML)
+	}
+	if !strings.Contains(doc.WordsXML, "after") {
+		t.Errorf("expected trailing normal text kept in semantic mode, got: %s", doc.WordsXML)
+	}
+}
+
 func TestTrackedChangesLossless2(t *testing.T) {
 	body := xmlHeader + `<w:body>
   <w:p>
@@ -2936,11 +2999,71 @@ func TestSizeOnRun(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !strings.Contains(doc.WordsXML, `size="12"`) {
+	if !strings.Contains(doc.WordsXML, `size="12pt"`) {
 		t.Errorf("expected size, got: %s", doc.WordsXML)
 	}
-	if !strings.Contains(doc.WordsXML, `sizeCS="14"`) {
+	if !strings.Contains(doc.WordsXML, `sizeCS="14pt"`) {
 		t.Errorf("expected sizeCS, got: %s", doc.WordsXML)
+	}
+}
+
+func TestSizeHalfPointPreserved(t *testing.T) {
+	body := xmlHeader + `<w:body><w:p><w:r><w:rPr><w:sz w:val="23"/></w:rPr><w:t>half</w:t></w:r></w:p></w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	// 23 half-points = 11.5pt — must NOT round to 12pt
+	if !strings.Contains(doc.WordsXML, `size="11.5pt"`) {
+		t.Errorf("expected size=11.5pt, got: %s", doc.WordsXML)
+	}
+	if strings.Contains(doc.WordsXML, `size="12pt"`) {
+		t.Errorf("expected no rounded size, got: %s", doc.WordsXML)
+	}
+}
+
+func TestCustomStyleSizePtSuffix(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="CustomSized">
+    <w:name w:val="CustomSized"/>
+    <w:rPr><w:sz w:val="23"/></w:rPr>
+  </w:style>
+</w:styles>`
+	body := xmlHeader + `<w:body><w:p><w:pPr><w:pStyle w:val="CustomSized"/></w:pPr><w:r><w:t>styled</w:t></w:r></w:p></w:body></w:document>`
+	data := makeDocxWithParts(body, styles, "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `<s:custom name="CustomSized" type="paragraph" size="11.5pt"/>`) {
+		t.Errorf("expected s:custom size=11.5pt, got: %s", x)
+	}
+}
+
+func TestFrameTwipsConverted(t *testing.T) {
+	body := xmlHeader + `<w:body><w:p><w:pPr><w:framePr w:dropCap="drop" w:lines="3" w:w="1440" w:h="720" w:vSpace="240" w:hSpace="120" w:x="360" w:y="180"/></w:pPr><w:r><w:t>F</w:t></w:r></w:p></w:body></w:document>`
+	data := makeMinimalDocx(body)
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	// 1440 twips = 1.00 in; 720 twips = 0.50 in; 240 = 0.17; 120 = 0.08; 360 = 0.25; 180 = 0.125 ≈ 0.12
+	for _, want := range []string{
+		`width='1.00'`, `height='0.50'`, `vSpace='0.17'`, `hSpace='0.08'`, `x='0.25'`, `y='0.12'`,
+	} {
+		if !strings.Contains(x, want) {
+			t.Errorf("expected frame %s, got: %s", want, x)
+		}
+	}
+	// counts and enums are not converted
+	for _, want := range []string{`lines='3'`, `dropCap='drop'`} {
+		if !strings.Contains(x, want) {
+			t.Errorf("expected frame %s, got: %s", want, x)
+		}
 	}
 }
 

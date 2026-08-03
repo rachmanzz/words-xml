@@ -925,10 +925,40 @@ func TestVerifyWriteFnRef(t *testing.T) {
 
 func TestVerifyWriteSpan(t *testing.T) {
 	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
-		`<style unit="in"></style><write><p><span font="Arial" size="12">text</span></p></write></words>`
+		`<style unit="in"></style><write><p><span font="Arial" size="12pt">text</span></p></write></words>`
 	r := Verify(input)
 	if !r.Valid {
 		t.Errorf("expected valid, got errors: %v", r.Errors)
+	}
+}
+
+func TestVerifySpanSizeRequiresPt(t *testing.T) {
+	for _, v := range []string{`size="12"`, `size="11.5"`, `size="xpt"`, `size="pt"`} {
+		input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+			`<style unit="in"></style><write><p><span ` + v + `>text</span></p></write></words>`
+		r := Verify(input)
+		if r.Valid {
+			t.Errorf("expected error for span %s, got valid", v)
+		}
+	}
+	// sizeCS shares the same rule
+	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+		`<style unit="in"></style><write><p><span sizeCS="10">text</span></p></write></words>`
+	if r := Verify(input); r.Valid {
+		t.Error("expected error for span sizeCS without pt suffix, got valid")
+	}
+}
+
+func TestVerifyCustomSizeRequiresPt(t *testing.T) {
+	valid := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+		`<style unit="in"><s:custom name="My" size="11.5pt" sizeCS="10pt"/></style><write><p>text</p></write></words>`
+	if r := Verify(valid); !r.Valid {
+		t.Errorf("expected valid s:custom sizes, got errors: %v", r.Errors)
+	}
+	invalid := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+		`<style unit="in"><s:custom name="My" size="11"/></style><write><p>text</p></write></words>`
+	if r := Verify(invalid); r.Valid {
+		t.Error("expected error for s:custom size without pt suffix, got valid")
 	}
 }
 

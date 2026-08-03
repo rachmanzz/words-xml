@@ -2360,6 +2360,10 @@ func applyParaRunDefaults(rPr *RunProps, tr *TextRun, themeFontMap map[string]st
 	tr.IsRTL = rPr.Rtl.IsOn()
 }
 
+func formatPt(v float64) string {
+	return strings.TrimSuffix(fmt.Sprintf("%.1f", v), ".0")
+}
+
 func formatBorderStyle(val string) string {
 	switch val {
 	case "single":
@@ -2759,10 +2763,10 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 			fmt.Fprintf(b, " fontCS=\"%s\"", xmlEscape(sd.FontCS))
 		}
 		if sd.SizePt > 0 {
-			fmt.Fprintf(b, " size=\"%.0f\"", sd.SizePt)
+			fmt.Fprintf(b, " size=\"%spt\"", formatPt(sd.SizePt))
 		}
 		if sd.SizeCS > 0 {
-			fmt.Fprintf(b, " sizeCS=\"%.0f\"", sd.SizeCS)
+			fmt.Fprintf(b, " sizeCS=\"%spt\"", formatPt(sd.SizeCS))
 		}
 		if sd.Color != "" {
 			fmt.Fprintf(b, " color=\"%s\"", strings.TrimPrefix(sd.Color, "#"))
@@ -3251,16 +3255,16 @@ func writeParagraphAttrs(b *strings.Builder, p *ParsedParagraph) {
 			frameAttrs += fmt.Sprintf(" lines='%d'", fp.Lines)
 		}
 		if fp.Width > 0 {
-			frameAttrs += fmt.Sprintf(" width='%d'", fp.Width)
+			frameAttrs += fmt.Sprintf(" width='%.2f'", float64(fp.Width)/twipsPerInch)
 		}
 		if fp.Height > 0 {
-			frameAttrs += fmt.Sprintf(" height='%d'", fp.Height)
+			frameAttrs += fmt.Sprintf(" height='%.2f'", float64(fp.Height)/twipsPerInch)
 		}
 		if fp.VSpace > 0 {
-			frameAttrs += fmt.Sprintf(" vSpace='%d'", fp.VSpace)
+			frameAttrs += fmt.Sprintf(" vSpace='%.2f'", float64(fp.VSpace)/twipsPerInch)
 		}
 		if fp.HSpace > 0 {
-			frameAttrs += fmt.Sprintf(" hSpace='%d'", fp.HSpace)
+			frameAttrs += fmt.Sprintf(" hSpace='%.2f'", float64(fp.HSpace)/twipsPerInch)
 		}
 		if fp.Wrap != "" {
 			frameAttrs += fmt.Sprintf(" wrap='%s'", fp.Wrap)
@@ -3272,13 +3276,13 @@ func writeParagraphAttrs(b *strings.Builder, p *ParsedParagraph) {
 			frameAttrs += fmt.Sprintf(" vAnchor='%s'", fp.VAnchor)
 		}
 		if fp.X > 0 {
-			frameAttrs += fmt.Sprintf(" x='%d'", fp.X)
+			frameAttrs += fmt.Sprintf(" x='%.2f'", float64(fp.X)/twipsPerInch)
 		}
 		if fp.XAlign != "" {
 			frameAttrs += fmt.Sprintf(" xAlign='%s'", fp.XAlign)
 		}
 		if fp.Y > 0 {
-			frameAttrs += fmt.Sprintf(" y='%d'", fp.Y)
+			frameAttrs += fmt.Sprintf(" y='%.2f'", float64(fp.Y)/twipsPerInch)
 		}
 		if fp.YAlign != "" {
 			frameAttrs += fmt.Sprintf(" yAlign='%s'", fp.YAlign)
@@ -3303,6 +3307,9 @@ func buildInlineText(runs []TextRun, defaultFont StyleDef, mode string, isCode .
 	codeMode := len(isCode) > 0 && isCode[0]
 	var b strings.Builder
 	for _, r := range runs {
+		if r.IsDeleted && mode != "lossless" {
+			continue
+		}
 		var core string
 		switch {
 		case r.IsTab:
@@ -3365,10 +3372,10 @@ func buildInlineText(runs []TextRun, defaultFont StyleDef, mode string, isCode .
 					spanAttrs += fmt.Sprintf(" fontCS=\"%s\"", r.FontCS)
 				}
 				if r.FontSizePt > 0 && r.FontSizePt != defaultFont.SizePt {
-					spanAttrs += fmt.Sprintf(" size=\"%.0f\"", r.FontSizePt)
+					spanAttrs += fmt.Sprintf(" size=\"%spt\"", formatPt(r.FontSizePt))
 				}
 				if r.FontSizeCS > 0 && r.FontSizeCS != defaultFont.SizeCS {
-					spanAttrs += fmt.Sprintf(" sizeCS=\"%.0f\"", r.FontSizeCS)
+					spanAttrs += fmt.Sprintf(" sizeCS=\"%spt\"", formatPt(r.FontSizeCS))
 				}
 				if r.FontColor != "" && r.FontColor != defaultFont.Color {
 					spanAttrs += fmt.Sprintf(" color=\"%s\"", strings.TrimPrefix(r.FontColor, "#"))
