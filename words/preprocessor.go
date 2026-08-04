@@ -1026,7 +1026,7 @@ func parseContentItemsOrdered(content OrderedContentAccessor, children []BodyChi
 						}
 					}
 					var tbItems []ContentItem
-					lp.Runs, tbItems = extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, false, themeFontMap, nil)
+					lp.Runs, tbItems = extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, false, themeFontMap, styleFontDefaults(p, styleMap, themeFontMap), nil)
 					items = append(items, tbItems...)
 					items = append(items, ContentItem{Type: "list", Paragraph: lp})
 					// Handle textboxes in list paragraphs
@@ -1113,7 +1113,7 @@ func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap m
 			}
 
 			var tbItems []ContentItem
-			lp.Runs, tbItems = extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, false, themeFontMap, nil)
+			lp.Runs, tbItems = extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, false, themeFontMap, styleFontDefaults(p, styleMap, themeFontMap), nil)
 			items = append(items, tbItems...)
 			items = append(items, ContentItem{Type: "list", Paragraph: lp})
 			i++
@@ -1267,6 +1267,9 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 					}
 					if sd.FontCS != "" {
 						defaults.FontCS = sd.FontCS
+					}
+					if sd.Family != "" {
+						defaults.FontFamily = sd.Family
 					}
 					if sd.SizePt > 0 {
 						defaults.FontSizePt = sd.SizePt
@@ -1438,7 +1441,7 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 	isCode = isKnownCode || (hasCodeWord && allMonospace)
 	lp.IsCode = isCode
 
-	runs, tbItems := extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, isCode, themeFontMap, lp.ParaDefaults)
+	runs, tbItems := extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, isCode, themeFontMap, styleFontDefaults(p, styleMap, themeFontMap), lp.ParaDefaults)
 	lp.Runs = runs
 
 	// First-run lang fallback: if paragraph has no explicit lang, use the first run's lang
@@ -1464,7 +1467,28 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 	return ContentItem{Type: "paragraph", Paragraph: lp}, tbItems
 }
 
-func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[string]string, relMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, isCode bool, themeFontMap map[string]string, paraDefaults *TextRun) ([]TextRun, []ContentItem) {
+// styleFontDefaults returns the merged font defaults for a paragraph:
+// the paragraph style's ascii/hAnsi/eastAsia/cs fonts overridden by the
+// paragraph-level rPr. It is used to seed font attributes onto runs whose
+// own rPr does not fully specify the fonts (style -> paragraph rPr -> run rPr).
+func styleFontDefaults(p DocPara, styleMap map[string]StyleDef, themeFontMap map[string]string) *TextRun {
+	var fd TextRun
+	if p.PPr != nil {
+		if p.PPr.PStyle != nil {
+			if sd, ok := styleMap[p.PPr.PStyle.Val]; ok {
+				fd.FontFamily = sd.Family
+				fd.FontEA = sd.FontEA
+				fd.FontCS = sd.FontCS
+			}
+		}
+		if p.PPr.RPr != nil {
+			applyParaRunDefaults(p.PPr.RPr, &fd, themeFontMap)
+		}
+	}
+	return &fd
+}
+
+func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[string]string, relMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, isCode bool, themeFontMap map[string]string, fontDefaults *TextRun, paraDefaults *TextRun) ([]TextRun, []ContentItem) {
 	var runs []TextRun
 	var tbItems []ContentItem
 
@@ -1546,6 +1570,15 @@ func extractRuns(p DocPara, styleMap map[string]StyleDef, styleNameMap map[strin
 		}
 
 		tr := TextRun{}
+		// Seed the ascii/hAnsi/eastAsia/cs fonts inherited from the paragraph
+		// style (and paragraph-level rPr) so that runs with a partial rPr still
+		// carry the correct font. applyRunProps below only overrides the fields
+		// the run's own rPr actually specifies.
+		if fontDefaults != nil {
+			tr.FontFamily = fontDefaults.FontFamily
+			tr.FontEA = fontDefaults.FontEA
+			tr.FontCS = fontDefaults.FontCS
+		}
 		if paraDefaults != nil && r.RPr == nil {
 			tr = *paraDefaults
 		}
@@ -2979,11 +3012,9 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 			if !hasSameNumIDAhead(doc.Content, idx, numID, startAbstractID) {
 				break
 			}
-			// Emit table/paragraph items that appear between list items
+			// Emit table items that appear between list items
 			if item.Type == "table" {
 				writeTableIndent(b, item.Table, doc, strings.TrimRight(indent, " "))
-			} else if item.Type == "paragraph" {
-				formatParagraphIndent(b, item.Paragraph, doc, strings.TrimRight(indent, " "))
 			}
 			idx++
 			continue
@@ -3007,57 +3038,107 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 				}
 			}
 			content := buildInlineText(item.Paragraph.Runs, doc.DefaultFont, doc.Mode)
-			fmt.Fprintf(b, "%s<li", indent)
-			writeListIndentAttrs(b, item.Paragraph)
-			fmt.Fprintf(b, ">%s", content)
 			idx++
-			for idx < len(doc.Content) {
-				next := doc.Content[idx]
-				if next.Type == "list" && next.Paragraph.NumID == numID {
-					if doc.NumToAbstract != nil && startAbstractID >= 0 {
-						if doc.NumToAbstract[next.Paragraph.NumID] != startAbstractID {
-							break
-						}
-					}
-					nl := next.Paragraph.ListLevel
-					if nl < level {
-						break
-					}
-					if nl == level {
-						break
-					}
-					nestedTag, nestedTypeAttr := listTagAndType(next.Paragraph, doc)
-					fmt.Fprintf(b, "<%s type=\"%s\"", nestedTag, nestedTypeAttr)
-					if nestedTag == "ol" {
-						if st := listStart(next.Paragraph, doc); st > 1 {
-							fmt.Fprintf(b, " start=\"%d\"", st)
-						}
-					}
-					b.WriteString(">\n")
-					idx = emitListItems(b, idx, numID, nl, indent+"    ", doc)
-					fmt.Fprintf(b, "</%s>", nestedTag)
-					continue
-				}
-				if next.Type == "paragraph" && hasSameNumIDAhead(doc.Content, idx, numID, startAbstractID) {
-					if next.Paragraph.IndentLeft > 0.35 {
-						break
-					}
-					continueContent := buildInlineText(next.Paragraph.Runs, doc.DefaultFont, doc.Mode)
-					if continueContent != "" {
-						fmt.Fprintf(b, "<br type=\"textWrapping\"/>%s", continueContent)
-					}
-					idx++
-					continue
-				}
-
-				break
+			conts := collectListContinuations(doc, idx, numID, startAbstractID)
+			bodyIndent := itemBodyIndent(item.Paragraph)
+			fmt.Fprintf(b, "%s<li>\n", indent)
+			writeListParagraph(b, item.Paragraph, content, indent+"  ", bodyIndent)
+			for _, ci := range conts {
+				cc := buildInlineText(doc.Content[ci].Paragraph.Runs, doc.DefaultFont, doc.Mode)
+				writeListParagraph(b, doc.Content[ci].Paragraph, cc, indent+"  ", bodyIndent)
 			}
-			fmt.Fprintf(b, "</li>\n")
+			idx += len(conts)
+			idx = emitListNested(b, idx, numID, level, startAbstractID, indent, doc)
+			fmt.Fprintf(b, "%s</li>\n", indent)
 			continue
 		}
 		break
 	}
 	return idx
+}
+
+// collectListContinuations returns the content indices of consecutive paragraphs
+// that continue the current list item (no numPr of their own, but followed by a
+// sibling list item). Such paragraphs are emitted as <p> children of the <li>.
+func collectListContinuations(doc *ParsedDocument, from int, numID int, abstractID int) []int {
+	var conts []int
+	for i := from; i < len(doc.Content); i++ {
+		it := doc.Content[i]
+		if it.Type != "paragraph" || it.Paragraph == nil {
+			break
+		}
+		if isSectionBreak(it.Paragraph) {
+			break
+		}
+		if !hasSameNumIDAhead(doc.Content, i, numID, abstractID) {
+			break
+		}
+		conts = append(conts, i)
+	}
+	return conts
+}
+
+// emitListNested emits nested sub-lists that belong to the current <li> and
+// returns the index past the nested list items.
+func emitListNested(b *strings.Builder, idx, numID, level int, abstractID int, indent string, doc *ParsedDocument) int {
+	for idx < len(doc.Content) {
+		next := doc.Content[idx]
+		if next.Type != "list" || next.Paragraph.NumID != numID {
+			break
+		}
+		if abstractID >= 0 && doc.NumToAbstract != nil {
+			if doc.NumToAbstract[next.Paragraph.NumID] != abstractID {
+				break
+			}
+		}
+		nl := next.Paragraph.ListLevel
+		if nl <= level {
+			break
+		}
+		nestedTag, nestedTypeAttr := listTagAndType(next.Paragraph, doc)
+		fmt.Fprintf(b, "<%s type=\"%s\"", nestedTag, nestedTypeAttr)
+		if nestedTag == "ol" {
+			if st := listStart(next.Paragraph, doc); st > 1 {
+				fmt.Fprintf(b, " start=\"%d\"", st)
+			}
+		}
+		b.WriteString(">\n")
+		idx = emitListItems(b, idx, numID, nl, indent+"    ", doc)
+		fmt.Fprintf(b, "</%s>", nestedTag)
+	}
+	return idx
+}
+
+// writeListParagraph writes a <p> child inside a <li>.
+func writeListParagraph(b *strings.Builder, p *ParsedParagraph, content string, indent string, bodyIndent float64) {
+	fmt.Fprintf(b, "%s<p", indent)
+	writeListPAttrs(b, p, bodyIndent)
+	b.WriteString(">")
+	b.WriteString(content)
+	b.WriteString("</p>\n")
+}
+
+// writeListPAttrs writes the paragraph attributes for a <p> child of a <li>.
+// bodyIndent is the item body indent; paragraphs without an indentLeft of their
+// own inherit it so continuation text aligns with the item body.
+func writeListPAttrs(b *strings.Builder, p *ParsedParagraph, bodyIndent float64) {
+	if bodyIndent > 0 && p.IndentLeft <= 0 {
+		fmt.Fprintf(b, " indentLeft=\"%.2f\"", bodyIndent)
+	}
+	writeParagraphAttrs(b, p)
+}
+
+// itemBodyIndent returns the body text indent of a list item. Word uses the
+// left indent as the body indent; when only a hanging indent is present, the
+// hanging value is used as the body indent.
+func itemBodyIndent(p *ParsedParagraph) float64 {
+	if p == nil {
+		return 0
+	}
+	if p.IndentLeft > 0 {
+		return p.IndentLeft
+	}
+	return p.IndentHanging
 }
 
 func hasSameNumIDAhead(items []ContentItem, from int, numID int, abstractID int) bool {
@@ -3145,9 +3226,9 @@ func emitContentItem(b *strings.Builder, item ContentItem, doc *ParsedDocument, 
 		tag, typeAttr := listTagAndType(item.Paragraph, doc)
 		content := buildInlineText(item.Paragraph.Runs, doc.DefaultFont, doc.Mode)
 		fmt.Fprintf(b, "%s<%s type=\"%s\">\n", indent, tag, typeAttr)
-		fmt.Fprintf(b, "%s  <li", indent)
-		writeListIndentAttrs(b, item.Paragraph)
-		fmt.Fprintf(b, ">%s</li>\n", content)
+		fmt.Fprintf(b, "%s  <li>\n", indent)
+		writeListParagraph(b, item.Paragraph, content, indent+"    ", itemBodyIndent(item.Paragraph))
+		fmt.Fprintf(b, "%s  </li>\n", indent)
 		fmt.Fprintf(b, "%s</%s>\n", indent, tag)
 	case "table":
 		writeTableIndent(b, item.Table, doc, indent)
@@ -3214,33 +3295,6 @@ func customStyleName(p *ParsedParagraph) string {
 		return ""
 	}
 	return p.StyleName
-}
-
-func writeListIndentAttrs(b *strings.Builder, p *ParsedParagraph) {
-	if p.IndentLeft > 0 {
-		fmt.Fprintf(b, " indentLeft=\"%.2f\"", p.IndentLeft)
-	}
-	if p.IndentRight > 0 {
-		fmt.Fprintf(b, " indentRight=\"%.2f\"", p.IndentRight)
-	}
-	if p.IndentFirst > 0 {
-		fmt.Fprintf(b, " indentFirst=\"%.2f\"", p.IndentFirst)
-	}
-	if p.IndentHanging > 0 {
-		fmt.Fprintf(b, " indentHanging=\"%.2f\"", p.IndentHanging)
-	}
-	if p.SpacingBefore > 0 {
-		fmt.Fprintf(b, " spacingBefore=\"%.2f\"", p.SpacingBefore)
-	}
-	if p.SpacingAfter > 0 {
-		fmt.Fprintf(b, " spacingAfter=\"%.2f\"", p.SpacingAfter)
-	}
-	if p.LineSpacing > 0 {
-		fmt.Fprintf(b, " lineSpacing=\"%.2f\"", p.LineSpacing)
-	}
-	if p.LineRule != "" && p.LineRule != "auto" {
-		fmt.Fprintf(b, " lineRule=\"%s\"", p.LineRule)
-	}
 }
 
 func writeParagraphAttrs(b *strings.Builder, p *ParsedParagraph) {
@@ -3627,9 +3681,9 @@ func writeTableIndent(b *strings.Builder, t *ParsedTable, doc *ParsedDocument, i
 				case "list":
 					tag, typeAttr := listTagAndType(ci.Paragraph, doc)
 					content := buildInlineText(ci.Paragraph.Runs, doc.DefaultFont, doc.Mode)
-					fmt.Fprintf(b, "<%s type=\"%s\"><li", tag, typeAttr)
-					writeListIndentAttrs(b, ci.Paragraph)
-					fmt.Fprintf(b, ">%s</li></%s>", content, tag)
+					fmt.Fprintf(b, "<%s type=\"%s\"><li><p", tag, typeAttr)
+					writeListPAttrs(b, ci.Paragraph, itemBodyIndent(ci.Paragraph))
+					fmt.Fprintf(b, ">%s</p></li></%s>", content, tag)
 				case "table":
 					writeTableIndent(b, ci.Table, doc, indent+"    ")
 				}

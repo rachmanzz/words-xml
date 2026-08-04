@@ -492,6 +492,12 @@ func verifyLiAttrs(start xml.StartElement, r *VerifyResult) {
 			// ok, freeform
 		case "type":
 			// MOD-2: any numFmt value is valid (raw preservation)
+		case "indentLeft", "indentRight", "indentFirst", "indentHanging",
+			"spacingBefore", "spacingAfter", "lineSpacing", "lineRule",
+			"align", "keepNext", "keepLines", "widowControl", "shd", "at":
+			// Model 2: <li> is a clean container; block geometry belongs on the
+			// item's first <p> child.
+			r.addWarn("<li> must not carry block attribute %s: put it on the first <p> child", a.Name.Local)
 		}
 	}
 }

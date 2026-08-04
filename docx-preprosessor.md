@@ -139,23 +139,33 @@ A flat, semantic, versioned XML:
     <fn-ref id="n" type="footnote|endnote"/>  # marker with type attribute
     <ins>...</ins> / <del>...</del> # tracked change (optional, LOSSLESS_METADATA)
     <ul type="bullet|...">    # unordered list (type from numFmt)
-      <li>                    # list item; nesting via child <ul>/<ol>
-        ...                     # text + inline elements
+      <li>                    # clean container: never carries block geometry
+        <p>...</p>            # first paragraph = the item; carries the item block attrs
+        <p>...</p>            # continuation paragraph(s) absorbed into the item
         <ul type="...">       # nested sub-list (one level deeper)
-          <li>...</li>
+          <li>
+            <p>...</p>
+          </li>
         </ul>
       </li>
     </ul>
     <ol type="decimal|lowerLetter|..." start="n">  # ordered list (type from numFmt)
       <li>
-        ...
+        <p>...</p>            # first paragraph = the item; carries the item block attrs
+        <p>...</p>            # continuation paragraph(s) absorbed into the item
         <ol type="...">       # nested ordered sub-list
-          <li>...</li>
+          <li>
+            <p>...</p>
+          </li>
         </ol>
       </li>
     </ol>
-    # <li> MAY carry paragraph indent attributes (indentLeft/Right/First/Hanging)
-    # from the list item's own w:ind — see "Block Element Attributes"
+    # <li> is a clean container. All item geometry (indentLeft/Right/First/Hanging,
+    # spacingBefore/After, lineSpacing/lineRule) lives on the first <p> child.
+    # Continuation <p>s inherit the item body indent (indentLeft) from the item.
+    # When only a hanging indent is present on the source item, Word uses the
+    # hanging value as the body indent, so the first <p> carries both indentLeft
+    # and indentHanging — see "Block Element Attributes".
     <pre>...</pre>        # code / monospace block (whitespace preserved verbatim)
     <table id="n" at="..." c=".." width=".." align="left|center|right" indent=".." cellSpacing=".." caption=".." summary="..">  # table
       <tr><th colspan="n" rowspan="n" lang=".." valign="top|center|bottom" textDir=".." noWrap="true">..</th></tr>
@@ -389,6 +399,16 @@ Complex Script font (`fontCS`):
 2. `w:rFonts/@w:cstheme` → resolve through the theme font map.
 3. Fall back to DocDefaults CS if none present.
 
+### Style to Run Font Inheritance
+
+Fonts follow the OOXML inheritance chain **DocDefaults → paragraph style →
+paragraph-level `pPr/rPr` → run `rPr`**. The resolution orders above describe the
+run's own `rPr`; when a run's `rPr` only partially specifies fonts (e.g. only
+`w:cs`), the missing ascii/hAnsi/eastAsia fonts are seeded from the paragraph
+style (via `pPr/pStyle`) overridden by the paragraph-level `pPr/rPr`. Only the
+fields the run's own `rPr` actually sets are applied on top. Runs with no `rPr`
+at all inherit the paragraph run defaults in full.
+
 ### Default Font Baseline Suppression
 
 To reduce token count, `<span>` attributes are **suppressed** when they match the
@@ -416,7 +436,7 @@ The `c` attribute preserves the original style name from DOCX for round-tripping
 
 ### Block Element Attributes
 
-All block elements (`<p>`, `<h1>`-`<h9>`, `<li>`, `<blockquote>`, `<pre>`) can carry the following attributes:
+All block elements (`<p>`, `<h1>`-`<h9>`, `<blockquote>`, `<pre>`) can carry the following attributes. `<li>` is a clean container: it never carries these attributes — the list item's block attributes live on the item's first `<p>` child (see the list grammar in §2.1).
 
 | Attribute | Type | Source | Description |
 |-----------|------|--------|-------------|
@@ -574,7 +594,7 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 | `w:pPr/w:pStyle` | style | `c="..."` attr (only when style name ≠ element name) + `<s:custom>` in `<style>` | keep style name + custom style definition |
 | `w:pPr/w:numPr` | list | drives `<ul>`/`<ol>` | list structure |
 | `w:pPr/w:spacing` | layout | `<s:gap before/after>` + `<s:line>` | vertical rhythm + line spacing |
-| `w:pPr/w:ind` | layout | `indentLeft/Right/First/Hanging` on `<p>`/`<li>` (per-paragraph); style-level indent → `<s:indent>` in `<style>` | indentation preserved (MOD-5) |
+| `w:pPr/w:ind` | layout | `indentLeft/Right/First/Hanging` on `<p>` (per-paragraph); list item geometry on the item's first `<p>` child; style-level indent → `<s:indent>` in `<style>` | indentation preserved (MOD-5) |
 | `w:pPr/w:jc` | layout | `<s:align>` in `<style>` | justification preserved as LOSSLESS_METADATA |
 | `w:pPr/w:textAlignment` | keep | `valign="top|center|baseline"` on `<p>` | vertical text alignment |
 | `w:bidi` (p), `w:rPr/w:rtl` (r), `w:dir`/`w:bdo` | direction | `dir="rtl"` attribute on element | RTL/bidi support (MOD-7) |
@@ -859,18 +879,34 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 
 - **List continuation (GAP-02)**: when a non-list paragraph appears between list items
   sharing the same `w:numId`, it is treated as **continuation content** of the preceding
-  `<li>`. The continuation text is appended with a `<br type="textWrapping"/>` separator.
-  The implementation looks ahead up to 20 items to detect same-`numId` continuations.
-  Additionally, **any** non-list paragraph that is not a section break (see below) is
-  treated as continuation content when it appears immediately after a list item.
-  Example: if "Item 1" is followed by a non-list paragraph "continuation text" followed
-  by "Item 2", the output is:
+  `<li>` and emitted as a `<p>` child of that `<li>`. This keeps every list item fully
+  self-contained — no `<p>` is ever emitted as a sibling of `<li>` inside `<ul>`/`<ol>`.
+  The implementation looks ahead (up to 50 gap items) to detect same-`numId`
+  continuations. Additionally, **any** non-list paragraph that is not a section break
+  (see below) is treated as continuation content when it appears immediately after a
+  list item.
+  A list item is always emitted as `<li>` whose text lives in a first `<p>` child; the
+  `<li>` itself is a clean container. Continuation paragraphs are emitted as additional
+  `<p>` children:
   ```xml
-  <ul type="bullet">
-    <li>Item 1<br type="textWrapping"/>continuation text</li>
-    <li>Item 2</li>
-  </ul>
+  <ol type="decimal">
+    <li>
+      <p>Item 1, first paragraph</p>
+      <p>continuation text</p>
+    </li>
+    <li>
+      <p>Item 2</p>
+    </li>
+  </ol>
   ```
+  Every `<p>` child is a real paragraph element and may carry block attributes from its
+  own source paragraph (indent, spacing, alignment, etc.). The **first** `<p>` child is
+  the geometry owner: it carries the item's marker geometry (`indentLeft`/`indentHanging`)
+  and the item's spacing/line settings, so the consumer can position the marker once per
+  `<li>` using the first `<p>`. Continuation `<p>`s that have no `indentLeft` of their own
+  inherit the item's body indent (`indentLeft`) so continuation text aligns with the item
+  body. When the source item has only a hanging indent, Word uses the hanging value as the
+  body indent, so the first `<p>` carries both `indentLeft` and `indentHanging`.
 
 - **Section break for list continuation**: a paragraph is treated as a "section break"
   that terminates list continuation if any of:
