@@ -15,7 +15,7 @@
   "13": "Plan: Paragraph Feature Coverage",
   "14": "DocPara",
   "15": "4. Milestones",
-  "16": "ProcessDOCXBytesMode",
+  "16": "IntVal",
   "17": "bash",
   "18": "unmarshalOrderedContent",
   "19": "extractTheme",
@@ -31,7 +31,7 @@
   "29": "TestBrInListItem",
   "30": "graphify.js",
   "31": "github.com/rachmanzz/words-xml",
-  "32": "AThemeElements",
+  "32": "TcPr",
   "33": "hard_audit_test.go",
   "34": "TestDocumentOrderNotes",
   "35": "TestMetdata"

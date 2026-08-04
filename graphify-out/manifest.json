@@ -40,18 +40,18 @@
     "semantic_hash": ""
   },
   "words/ooxml.go": {
-    "mtime": 1785819220.6278899,
-    "ast_hash": "3df70834ea1f0b1be4acf710e42cbca8",
+    "mtime": 1785825575.3994265,
+    "ast_hash": "d2c2ab2bf15b42bb9f42c47900027849",
     "semantic_hash": ""
   },
   "words/preprocessor.go": {
-    "mtime": 1785824995.0882385,
-    "ast_hash": "0d138db94c42b99a8f8fc91a86bb5c24",
+    "mtime": 1785830284.7210922,
+    "ast_hash": "73bd2c4006734215ce3aa048101daadd",
     "semantic_hash": ""
   },
   "words/preprocessor_test.go": {
-    "mtime": 1785825090.1123898,
-    "ast_hash": "39cfdb705835936f9678e1f46b9647c0",
+    "mtime": 1785825904.57194,
+    "ast_hash": "dce8a71d39cff37471e0d280ebeb891e",
     "semantic_hash": ""
   },
   "words/remain_bugs_test.go": {
@@ -60,8 +60,8 @@
     "semantic_hash": ""
   },
   "words/types.go": {
-    "mtime": 1785819226.2490048,
-    "ast_hash": "23c9ca53676bbc306c790c08bd5145c8",
+    "mtime": 1785829859.6399398,
+    "ast_hash": "ff8790036be546debc5b3994b6f89c69",
     "semantic_hash": ""
   },
   "words/verify.go": {
@@ -120,8 +120,8 @@
     "semantic_hash": ""
   },
   "docx-preprosessor.md": {
-    "mtime": 1785825143.6086028,
-    "ast_hash": "b8f87c020616777c78b5bad16d7ef8a7",
+    "mtime": 1785825990.5517027,
+    "ast_hash": "b7a2200fde21dc19d63a0340d297e630",
     "semantic_hash": ""
   },
   "docx-words-gap.md": {
