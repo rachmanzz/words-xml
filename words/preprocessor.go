@@ -186,10 +186,11 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 	var numFmtMap map[string]string
 	var numLvlTextMap map[string]string
 	var numberingStartMap map[int]map[int]int
+	var numberingStartOverrideMap map[int]map[int]bool
 	var numToAbstract map[int]int
 	var numLvlIndMap map[string]NumLvlInd
 	if numberingXML != nil {
-		numFmtMap, numLvlTextMap, numberingStartMap, numToAbstract, numLvlIndMap = buildNumberingMap(numberingXML)
+		numFmtMap, numLvlTextMap, numberingStartMap, numberingStartOverrideMap, numToAbstract, numLvlIndMap = buildNumberingMap(numberingXML)
 	}
 
 	relMap := make(map[string]string)
@@ -280,6 +281,7 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 		doc.Footers = append(doc.Footers, HeaderFooter{ID: len(doc.Footers) + 1, Content: footerContent[path]})
 	}
 	doc.NumStartMap = numberingStartMap
+	doc.NumStartOverrideMap = numberingStartOverrideMap
 	doc.NumToAbstract = numToAbstract
 	doc.NumFmtMap = numFmtMap
 	doc.NumLvlTextMap = numLvlTextMap
@@ -923,10 +925,10 @@ func resolveHeadingLevel(styleID, styleName string, styleMap map[string]StyleDef
 
 // --- Numbering Resolver ---
 
-func buildNumberingMap(numberingXML []byte) (map[string]string, map[string]string, map[int]map[int]int, map[int]int, map[string]NumLvlInd) {
+func buildNumberingMap(numberingXML []byte) (map[string]string, map[string]string, map[int]map[int]int, map[int]map[int]bool, map[int]int, map[string]NumLvlInd) {
 	var numbering DocNumbering
 	if err := xml.Unmarshal(numberingXML, &numbering); err != nil {
-		return nil, nil, nil, nil, nil
+		return nil, nil, nil, nil, nil, nil
 	}
 
 	abstractFmt := make(map[int]map[int]string)
@@ -966,6 +968,7 @@ func buildNumberingMap(numberingXML []byte) (map[string]string, map[string]strin
 	numLvlTextMap := make(map[string]string)
 	numLvlIndMap := make(map[string]NumLvlInd)
 	numStartMap := make(map[int]map[int]int)
+	numStartOverrideMap := make(map[int]map[int]bool)
 	numToAbstract := make(map[int]int)
 	for _, num := range numbering.Nums {
 		aid := -1
@@ -1008,11 +1011,15 @@ func buildNumberingMap(numberingXML []byte) (map[string]string, map[string]strin
 					numStartMap[num.NumID] = make(map[int]int)
 				}
 				numStartMap[num.NumID][ov.Ilvl] = ov.StartOverride.Val
+				if _, ok := numStartOverrideMap[num.NumID]; !ok {
+					numStartOverrideMap[num.NumID] = make(map[int]bool)
+				}
+				numStartOverrideMap[num.NumID][ov.Ilvl] = true
 			}
 		}
 	}
 
-	return numFmtMap, numLvlTextMap, numStartMap, numToAbstract, numLvlIndMap
+	return numFmtMap, numLvlTextMap, numStartMap, numStartOverrideMap, numToAbstract, numLvlIndMap
 }
 
 // --- Parser ---
@@ -3181,8 +3188,8 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 			break
 		}
 		if ilvl == level {
-			if doc.NumStartMap != nil {
-				if levels, ok := doc.NumStartMap[numID]; ok {
+			if doc.NumStartOverrideMap != nil {
+				if levels, ok := doc.NumStartOverrideMap[numID]; ok {
 					if _, hasOverride := levels[ilvl]; hasOverride && idx != startIdx {
 						break
 					}

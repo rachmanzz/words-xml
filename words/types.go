@@ -41,11 +41,12 @@ type ParsedDocument struct {
 	DefaultFont   StyleDef
 	Mode          string
 	AllTables     []*ParsedTable
-	NumStartMap   map[int]map[int]int
-	NumToAbstract map[int]int
-	NumFmtMap     map[string]string
-	NumLvlTextMap map[string]string
-	NumLvlIndMap  map[string]NumLvlInd
+	NumStartMap        map[int]map[int]int
+	NumStartOverrideMap map[int]map[int]bool
+	NumToAbstract      map[int]int
+	NumFmtMap          map[string]string
+	NumLvlTextMap      map[string]string
+	NumLvlIndMap       map[string]NumLvlInd
 	Cols          int
 	ColsSpace     float64
 }
