@@ -162,7 +162,10 @@ A flat, semantic, versioned XML:
     </ol>
     # <li> is a clean container. All item geometry (indentLeft/Right/First/Hanging,
     # spacingBefore/After, lineSpacing/lineRule, tabs) lives on the first <p> child.
-    # Continuation <p>s inherit the item body indent (indentLeft) from the item.
+    # Continuation <p>s emit only their own geometry (resolved from w:ind/w:spacing
+    # direct or style chain); they never inherit a fabricated indent from the item —
+    # Word shows a continuation without w:ind at the margin, aligning via its own
+    # typed leading spaces.
     # When only a hanging indent is present on the source item, Word uses the
     # hanging value as the body indent, so the first <p> carries both indentLeft
     # and indentHanging — see "Block Element Attributes".
@@ -867,11 +870,12 @@ Every OOXML construct the preprocessor encounters is classified into one of four
   - A change in `w:abstractNumId` (different numbering scheme) also forces a split.
 - Paragraphs with the same `w:numId` but different `w:ilvl` are parent/child within the
   same list structure (see nesting rules below).
-- **Numbering restart**: detect `w:lvlOverride` in `numbering.xml` (under the matching
-  `w:num` definition). When a `w:lvlOverride/w:startOverride/@w:val` resets numbering to 1
-  (or another value), the preprocessor MUST split the list into a new `<ol>` element at
-  the restart point. The new `<ol>` carries `start="n"` where `n` is the restart value
-  (default `1`). Absent `w:lvlOverride`, no `start` attribute is emitted.
+- **Numbering restart**: the `<ol>` `start` attribute is seeded from the abstract level's
+  base `w:start` (so items numbering from "2." keep their value); a `w:lvlOverride/
+  w:startOverride` in `numbering.xml` (under the matching `w:num` definition) wins over the
+  base value. When a start override resets numbering to 1 (or another value), the
+  preprocessor MUST split the list into a new `<ol>` element at the restart point. The new
+  `<ol>` carries `start="n"` where `n` is the resolved start value (default `1`).
 - **List type**: resolve `w:numId` → `w:abstractNumId` → `w:numFmt` in `numbering.xml`:
   - `bullet` → `<ul type="bullet">`
   - `decimal` → `<ol type="decimal">`
@@ -927,9 +931,10 @@ Every OOXML construct the preprocessor encounters is classified into one of four
   marker geometry is resolved from the numbering level's `w:pPr/w:ind` (`w:left` →
   `indentLeft`, `w:hanging` → `indentHanging`, in inches); this is what keeps the marker
   and body positions correct even when items omit explicit indents. Continuation `<p>`s
-  that have no `indentLeft` of their own
-  inherit the item's body indent (`indentLeft`) so continuation text aligns with the item
-  body. When the source item has only a hanging indent, Word uses the hanging value as the
+  emit only their own geometry: a continuation with no `w:ind` of its own carries no
+  `indentLeft` — Word shows it at the margin, aligning visually via its own typed leading
+  spaces — while a continuation with its own `w:ind` keeps exactly that indent. When the
+  source item has only a hanging indent, Word uses the hanging value as the
   body indent, so the first `<p>` carries both `indentLeft` and `indentHanging`.
 
 - **Section break for list continuation**: a paragraph is treated as a "section break"

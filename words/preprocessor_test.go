@@ -716,7 +716,7 @@ func TestListItemIndentAttrs(t *testing.T) {
 		t.Errorf("expected first <p> with indentLeft/indentHanging from w:ind, got: %s", x)
 	}
 	if !strings.Contains(x, `<p indentLeft="0.55" indentHanging="0.55">Item B`) {
-		t.Errorf("expected first <p> with indentLeft=indentHanging from w:hanging=786, got: %s", x)
+		t.Errorf("expected item first <p> to mirror hanging-only w:ind as indentLeft=indentHanging, got: %s", x)
 	}
 	if strings.Contains(x, `<li indent`) {
 		t.Errorf("expected <li> to be a clean container without indent attrs, got: %s", x)
@@ -742,8 +742,8 @@ func TestListItemContinuationNoInteriorWhitespace(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	x := doc.WordsXML
-	if !strings.Contains(x, `<p indentLeft="0.55" indentHanging="0.55">First</p>`) || !strings.Contains(x, `<p indentLeft="0.55"> Continuation</p>`) {
-		t.Errorf("expected continuation paragraph nested inside <li> as <p> inheriting the item body indent, got: %s", x)
+	if !strings.Contains(x, `<p indentLeft="0.55" indentHanging="0.55">First</p>`) || !strings.Contains(x, `<p> Continuation</p>`) {
+		t.Errorf("expected continuation paragraph to keep only its own geometry (no fabricated indent), got: %s", x)
 	}
 	if strings.Contains(x, `First<br type="textWrapping"/>`) {
 		t.Errorf("expected no <br/> absorption for a separate continuation paragraph: %s", x)
@@ -804,6 +804,36 @@ func TestListItemContinuationAfterLastItem(t *testing.T) {
 	}
 	if !(iLast < iTrail && iTrail < iSec && iSec < iClose && iClose < iOlist) {
 		t.Errorf("expected trailing continuation paragraphs nested inside the last <li> before </ol>, got: %s", x)
+	}
+}
+
+func TestListItemContinuationOwnGeometry(t *testing.T) {
+	numbering := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  <w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+    <w:abstractNum w:abstractNumId="0">
+      <w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/></w:lvl>
+    </w:abstractNum>
+    <w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>
+  </w:numbering>`
+	body := xmlHeader + `<w:body>
+  <w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr><w:ind w:hanging="786"/></w:pPr><w:r><w:t>Item</w:t></w:r></w:p>
+  <w:p><w:pPr><w:ind w:left="792"/></w:pPr><w:r><w:t>Continuation with own indent</w:t></w:r></w:p>
+  <w:p><w:r><w:t>Continuation without indent</w:t></w:r></w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", numbering, "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `<p indentLeft="0.55" indentHanging="0.55">Item</p>`) {
+		t.Errorf("expected item first <p> to mirror hanging-only as indentLeft=indentHanging, got: %s", x)
+	}
+	if !strings.Contains(x, `<p indentLeft="0.55">Continuation with own indent</p>`) {
+		t.Errorf("expected continuation to keep its own w:ind, got: %s", x)
+	}
+	if !strings.Contains(x, `<p>Continuation without indent</p>`) {
+		t.Errorf("expected continuation without w:ind to emit no fabricated indent, got: %s", x)
 	}
 }
 
@@ -2861,6 +2891,35 @@ func TestListStartOverride(t *testing.T) {
 	}
 	if !strings.Contains(doc.WordsXML, `start="5"`) {
 		t.Errorf("expected start=\"5\", got: %s", doc.WordsXML)
+	}
+}
+
+func TestListStartFromBaseLevel(t *testing.T) {
+	numbering := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:abstractNum w:abstractNumId="0">
+    <w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/><w:start w:val="2"/></w:lvl>
+  </w:abstractNum>
+  <w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>
+  <w:num w:numId="2">
+    <w:abstractNumId w:val="0"/>
+    <w:lvlOverride w:ilvl="0"><w:startOverride w:val="3"/></w:lvlOverride>
+  </w:num>
+</w:numbering>`
+	body := xmlHeader + `<w:body>
+  <w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr><w:r><w:t>Base start 2</w:t></w:r></w:p>
+  <w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="2"/></w:numPr></w:pPr><w:r><w:t>Override start 3</w:t></w:r></w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", numbering, "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !strings.Contains(doc.WordsXML, `start="2"`) {
+		t.Errorf("expected start=\"2\" from base level w:start, got: %s", doc.WordsXML)
+	}
+	if !strings.Contains(doc.WordsXML, `start="3"`) {
+		t.Errorf("expected start=\"3\" from startOverride winning over base, got: %s", doc.WordsXML)
 	}
 }
 

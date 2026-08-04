@@ -932,16 +932,21 @@ func buildNumberingMap(numberingXML []byte) (map[string]string, map[string]strin
 	abstractFmt := make(map[int]map[int]string)
 	abstractLvlText := make(map[int]map[int]string)
 	abstractLvlInd := make(map[int]map[int]NumLvlInd)
+	abstractLvlStart := make(map[int]map[int]int)
 	for _, an := range numbering.AbstractNums {
 		levels := make(map[int]string)
 		lvlTexts := make(map[int]string)
 		lvlInds := make(map[int]NumLvlInd)
+		lvlStarts := make(map[int]int)
 		for _, lvl := range an.Levels {
 			if lvl.NumFmt != nil {
 				levels[lvl.Ilvl] = lvl.NumFmt.Val
 			}
 			if lvl.LvlText != nil {
 				lvlTexts[lvl.Ilvl] = lvl.LvlText.Val
+			}
+			if lvl.Start != nil {
+				lvlStarts[lvl.Ilvl] = lvl.Start.Val
 			}
 			if lvl.PPr != nil && lvl.PPr.Ind != nil {
 				lvlInds[lvl.Ilvl] = NumLvlInd{
@@ -954,6 +959,7 @@ func buildNumberingMap(numberingXML []byte) (map[string]string, map[string]strin
 		abstractFmt[an.ID] = levels
 		abstractLvlText[an.ID] = lvlTexts
 		abstractLvlInd[an.ID] = lvlInds
+		abstractLvlStart[an.ID] = lvlStarts
 	}
 
 	numFmtMap := make(map[string]string)
@@ -983,6 +989,17 @@ func buildNumberingMap(numberingXML []byte) (map[string]string, map[string]strin
 			for ilvl, ind := range li {
 				key := fmt.Sprintf("%d_%d", num.NumID, ilvl)
 				numLvlIndMap[key] = ind
+			}
+		}
+		// Seed the start value from the abstract level's base w:start so the
+		// emitted list reflects Word's actual numbering; a num-level
+		// startOverride wins over the base value.
+		if ls, ok := abstractLvlStart[aid]; ok {
+			for ilvl, st := range ls {
+				if _, ok := numStartMap[num.NumID]; !ok {
+					numStartMap[num.NumID] = make(map[int]int)
+				}
+				numStartMap[num.NumID][ilvl] = st
 			}
 		}
 		for _, ov := range num.LvlOverrides {
@@ -3174,14 +3191,13 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 			content := buildInlineText(item.Paragraph.Runs, doc.DefaultFont, doc.Mode)
 			idx++
 			conts := collectListContinuations(doc, idx, numID, startAbstractID)
-			bodyIndent := itemBodyIndent(item.Paragraph, doc)
 			fmt.Fprintf(b, "%s<li>\n", indent)
 			// The first <p> is the geometry owner: resolve marker geometry from
 			// the numbering level when the item paragraph has no w:ind of its own.
-			writeListFirstParagraph(b, item.Paragraph, content, indent+"  ", bodyIndent, doc)
+			writeListFirstParagraph(b, item.Paragraph, content, indent+"  ", doc)
 			for _, ci := range conts {
 				cc := buildInlineText(doc.Content[ci].Paragraph.Runs, doc.DefaultFont, doc.Mode)
-				writeListParagraph(b, doc.Content[ci].Paragraph, cc, indent+"  ", bodyIndent)
+				writeListParagraph(b, doc.Content[ci].Paragraph, cc, indent+"  ")
 			}
 			idx += len(conts)
 			idx = emitListNested(b, idx, numID, level, startAbstractID, indent, doc)
@@ -3246,8 +3262,11 @@ func emitListNested(b *strings.Builder, idx, numID, level int, abstractID int, i
 
 // writeListFirstParagraph writes the geometry-owner <p> of a list item, resolving
 // the marker geometry (indentLeft/indentHanging) from the numbering level when
-// the item paragraph itself carries no w:ind.
-func writeListFirstParagraph(b *strings.Builder, p *ParsedParagraph, content string, indent string, bodyIndent float64, doc *ParsedDocument) {
+// the item paragraph itself carries no w:ind. Word renders a numbered item with
+// a hanging-only w:ind as if left==hanging, so the left indent mirrors the
+// hanging value. Continuation paragraphs are NOT passed through here: they emit
+// only their own geometry.
+func writeListFirstParagraph(b *strings.Builder, p *ParsedParagraph, content string, indent string, doc *ParsedDocument) {
 	firstP := *p
 	if firstP.IndentLeft <= 0 && firstP.IndentHanging <= 0 {
 		if lvlLeft, lvlHanging := resolveLevelInd(p, doc); lvlLeft > 0 || lvlHanging > 0 {
@@ -3255,26 +3274,19 @@ func writeListFirstParagraph(b *strings.Builder, p *ParsedParagraph, content str
 			firstP.IndentHanging = lvlHanging
 		}
 	}
-	writeListParagraph(b, &firstP, content, indent, bodyIndent)
+	if firstP.IndentLeft <= 0 && firstP.IndentHanging > 0 {
+		firstP.IndentLeft = firstP.IndentHanging
+	}
+	writeListParagraph(b, &firstP, content, indent)
 }
 
 // writeListParagraph writes a <p> child inside a <li>.
-func writeListParagraph(b *strings.Builder, p *ParsedParagraph, content string, indent string, bodyIndent float64) {
+func writeListParagraph(b *strings.Builder, p *ParsedParagraph, content string, indent string) {
 	fmt.Fprintf(b, "%s<p", indent)
-	writeListPAttrs(b, p, bodyIndent)
+	writeParagraphAttrs(b, p)
 	b.WriteString(">")
 	b.WriteString(content)
 	b.WriteString("</p>\n")
-}
-
-// writeListPAttrs writes the paragraph attributes for a <p> child of a <li>.
-// bodyIndent is the item body indent; paragraphs without an indentLeft of their
-// own inherit it so continuation text aligns with the item body.
-func writeListPAttrs(b *strings.Builder, p *ParsedParagraph, bodyIndent float64) {
-	if bodyIndent > 0 && p.IndentLeft <= 0 {
-		fmt.Fprintf(b, " indentLeft=\"%.2f\"", bodyIndent)
-	}
-	writeParagraphAttrs(b, p)
 }
 
 // resolveLevelInd returns the numbering level's indentation (in inches) for a
@@ -3288,27 +3300,6 @@ func resolveLevelInd(p *ParsedParagraph, doc *ParsedDocument) (float64, float64)
 		return ind.Left, ind.Hanging
 	}
 	return 0, 0
-}
-
-// itemBodyIndent returns the body text indent of a list item. Word uses the
-// left indent as the body indent; when only a hanging indent is present, the
-// hanging value is used as the body indent. The paragraph's explicit w:ind
-// wins over the numbering level's indentation.
-func itemBodyIndent(p *ParsedParagraph, doc *ParsedDocument) float64 {
-	if p == nil {
-		return 0
-	}
-	if p.IndentLeft > 0 {
-		return p.IndentLeft
-	}
-	if p.IndentHanging > 0 {
-		return p.IndentHanging
-	}
-	left, hanging := resolveLevelInd(p, doc)
-	if left > 0 {
-		return left
-	}
-	return hanging
 }
 
 func hasSameNumIDAhead(items []ContentItem, from int, numID int, abstractID int) bool {
@@ -3397,7 +3388,7 @@ func emitContentItem(b *strings.Builder, item ContentItem, doc *ParsedDocument, 
 		content := buildInlineText(item.Paragraph.Runs, doc.DefaultFont, doc.Mode)
 		fmt.Fprintf(b, "%s<%s type=\"%s\">\n", indent, tag, typeAttr)
 		fmt.Fprintf(b, "%s  <li>\n", indent)
-		writeListFirstParagraph(b, item.Paragraph, content, indent+"    ", itemBodyIndent(item.Paragraph, doc), doc)
+		writeListFirstParagraph(b, item.Paragraph, content, indent+"    ", doc)
 		fmt.Fprintf(b, "%s  </li>\n", indent)
 		fmt.Fprintf(b, "%s</%s>\n", indent, tag)
 	case "table":
@@ -3877,8 +3868,11 @@ func writeTableIndent(b *strings.Builder, t *ParsedTable, doc *ParsedDocument, i
 							firstP.IndentHanging = lvlHanging
 						}
 					}
+					if firstP.IndentLeft <= 0 && firstP.IndentHanging > 0 {
+						firstP.IndentLeft = firstP.IndentHanging
+					}
 					fmt.Fprintf(b, "<%s type=\"%s\"><li><p", tag, typeAttr)
-					writeListPAttrs(b, &firstP, itemBodyIndent(ci.Paragraph, doc))
+					writeParagraphAttrs(b, &firstP)
 					fmt.Fprintf(b, ">%s</p></li></%s>", content, tag)
 				case "table":
 					writeTableIndent(b, ci.Table, doc, indent+"    ")
