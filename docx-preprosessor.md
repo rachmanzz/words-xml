@@ -120,7 +120,7 @@ A flat, semantic, versioned XML:
     <h3 lang="..">...</h3>
     <p lang=".." valign="top|center|baseline">...</p>
     <p at="bb 12 s1 #000000" lang=".." valign="top|center|baseline">...</p>  # paragraph with border
-    <p shd="..." keepNext="true" keepLines="true" widowControl="true" spacingBefore=".." spacingAfter=".." lineSpacing=".." lineRule="auto|exact|atLeast" indentLeft=".." indentHanging=".." indentRight=".." indentFirst=".." sectionBreak="nextPage|continuous|evenPage|oddPage" revisionAuthor=".." revisionDate="..">...</p>  # paragraph with extended attributes
+    <p shd="..." keepNext="true" keepLines="true" widowControl="true" spacingBefore=".." spacingAfter=".." lineSpacing=".." lineRule="auto|exact|atLeast" indentLeft=".." indentHanging=".." indentRight=".." indentFirst=".." tabs=".." sectionBreak="nextPage|continuous|evenPage|oddPage" revisionAuthor=".." revisionDate="..">...</p>  # paragraph with extended attributes
     <blockquote lang="..">...</blockquote>
     <b>...</b>              # bold (inline)
     <i>...</i>              # italic (inline)
@@ -161,11 +161,13 @@ A flat, semantic, versioned XML:
       </li>
     </ol>
     # <li> is a clean container. All item geometry (indentLeft/Right/First/Hanging,
-    # spacingBefore/After, lineSpacing/lineRule) lives on the first <p> child.
+    # spacingBefore/After, lineSpacing/lineRule, tabs) lives on the first <p> child.
     # Continuation <p>s inherit the item body indent (indentLeft) from the item.
     # When only a hanging indent is present on the source item, Word uses the
     # hanging value as the body indent, so the first <p> carries both indentLeft
     # and indentHanging — see "Block Element Attributes".
+    # A custom pStyle on the source item is preserved as c="..." on the first <p>,
+    # exactly as for non-list paragraphs (see the `c` Attribute section).
     <pre>...</pre>        # code / monospace block (whitespace preserved verbatim)
     <table id="n" at="..." c=".." width=".." align="left|center|right" indent=".." cellSpacing=".." caption=".." summary="..">  # table
       <tr><th colspan="n" rowspan="n" lang=".." valign="top|center|bottom" textDir=".." noWrap="true">..</th></tr>
@@ -335,6 +337,19 @@ Convertible vs non-convertible:
   first, then style-derived tabs (from `w:style` entries). Tabs are deduplicated by the
   key `{element, position, alignment, leader}` — only unique combinations are emitted.
   Content tabs take priority over style tabs for the same dedup key.
+  The global `<s:tab>` list is an **aggregate** — it cannot express which stop belongs to
+  which paragraph. Each `<p>` therefore ALSO carries a `tabs=".."` attribute listing the
+  paragraph's **effective** stops: the paragraph's own `w:tabs` merged over the stops
+  inherited from its style chain (`w:style` → `w:basedOn` → …), so the nearest style that
+  defines `w:tabs` wins. A paragraph-direct stop overrides an inherited stop at the same
+  position, and a paragraph-direct `w:val="clear"` removes the inherited stop at that
+  position. The result is sorted by position. Each stop is a position in inches, optionally
+  followed by `@<align>` and `:<leader>` when they differ from the defaults (`left`/`none`),
+  e.g. `tabs="0.32 0.63 0.95 1.26"`, `tabs="6.25@right:dot"`. Resolved output never
+  contains `@clear` — a clear stop is applied during resolution and dropped. Consumers MUST
+  use the per-paragraph `tabs` attribute when present to resolve `<tab/>` within that
+  paragraph (falling back to the `<s:tab>` list only for paragraphs without a `tabs`
+  attribute).
 - `<s:theme>` — optional global defaults (font, fontEA, fontCS, bg, fg) from theme part + docDefaults.
 - `<s:custom>` — custom style definition (from `w:style` in `styles.xml`):
   `name` = style name (REQUIRED); `basedOn` = parent style name (optional);
@@ -429,9 +444,12 @@ before interpreting per-run `<span>` attributes.
 ### `c` Attribute — Original Style Name
 
 The `c` attribute preserves the original style name from DOCX for round-tripping.
-- **Standard styles** (Heading1-9, Normal, Title, Quote, ListParagraph, etc.): `c` is NOT emitted
+- **Standard styles** (Heading1-9, Title, Subtitle, Normal, Quote, Intense Quote,
+  Block Text, List Paragraph, Default Paragraph Font): `c` is NOT emitted
   (redundant — element name already implies the style).
-- **Custom styles**: `c` IS emitted to preserve the original style name.
+- **Custom styles** (including Body Text, which carries its own paragraph
+  properties such as line spacing/alignment/font): `c` IS emitted to preserve the
+  original style name, so consumers can resolve the style's properties.
 - Example: `<h1 c="MyCustomHeading">` for custom style, `<h1>` for standard Heading1.
 
 ### Block Element Attributes
@@ -455,6 +473,7 @@ All block elements (`<p>`, `<h1>`-`<h9>`, `<blockquote>`, `<pre>`) can carry the
 | `indentRight` | float | `w:pPr/w:ind/@w:right` | Right indent (in declared unit) |
 | `indentFirst` | float | `w:pPr/w:ind/@w:firstLine` | First-line indent (in declared unit) |
 | `indentHanging` | float | `w:pPr/w:ind/@w:hanging` | Hanging indent (in declared unit) |
+| `tabs` | string | `w:pPr/w:tabs` + style chain | This paragraph's **effective** tab stops, space-separated; each stop is `pos` in inches with optional `@<align>[:<leader>]` when not the default `left`/`none` (e.g. `tabs="0.32 0.63 0.95 1.26"`, `tabs="6.25@right:dot"`). Direct stops merge over style-inherited stops (nearest style in the `basedOn` chain that defines `w:tabs` wins); a direct stop replaces an inherited stop at the same position, and `w:val="clear"` removes it. Present when the effective set is non-empty. Resolves `<tab/>` within this paragraph — see §`<s:tab>` |
 | `keepNext` | bool | `w:pPr/w:keepNext` | Keep paragraph with next paragraph |
 | `keepLines` | bool | `w:pPr/w:keepLines` | Keep all lines of paragraph together |
 | `widowControl` | bool | `w:pPr/w:widowControl` | Allow widow/orphan lines |
@@ -621,7 +640,7 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 | `w:pPr/w:cnfStyle` | layout | `cnfStyle="..."` on `<p>` | conditional table style |
 | `w:pPr/w:framePr` | layout | `frame="..."` on `<p>` | frame/drop-cap properties |
 | `w:pPr/w:pBdr` | present | `at="bb ..."` on `<p>` | paragraph borders preserved compact |
-| `w:pPr/w:tabs` | tab stops | `<s:tab el=".." pos=".." align=".." leader=".."/>` in `<style>` | tab stop definition preserved |
+| `w:pPr/w:tabs` | tab stops | `<s:tab el=".." pos=".." align=".." leader=".."/>` in `<style>` AND `tabs=".."` on the owning `<p>` | tab stop definition preserved; per-paragraph stops on the `<p>` are the **effective** set (direct merged over style-chain stops, `clear` applied) |
 | `w:tab` | break | `<tab/>` | tab character preserved |
 | `w:r` | run | text content | — |
 | `w:t` | text | element text | — |
@@ -881,10 +900,11 @@ Every OOXML construct the preprocessor encounters is classified into one of four
   sharing the same `w:numId`, it is treated as **continuation content** of the preceding
   `<li>` and emitted as a `<p>` child of that `<li>`. This keeps every list item fully
   self-contained — no `<p>` is ever emitted as a sibling of `<li>` inside `<ul>`/`<ol>`.
-  The implementation looks ahead (up to 50 gap items) to detect same-`numId`
-  continuations. Additionally, **any** non-list paragraph that is not a section break
-  (see below) is treated as continuation content when it appears immediately after a
-  list item.
+  Additionally, **any** non-list paragraph that is not a section break (see below) is
+  treated as continuation content when it appears immediately after a list item — including
+  after the **last** item of a list. The implementation walks forward from the item and
+  absorbs every consecutive paragraph that carries no `numPr` of its own (stopping only at
+  a section break), so trailing continuation paragraphs stay inside the final `<li>`.
   A list item is always emitted as `<li>` whose text lives in a first `<p>` child; the
   `<li>` itself is a clean container. Continuation paragraphs are emitted as additional
   `<p>` children:
@@ -903,7 +923,11 @@ Every OOXML construct the preprocessor encounters is classified into one of four
   own source paragraph (indent, spacing, alignment, etc.). The **first** `<p>` child is
   the geometry owner: it carries the item's marker geometry (`indentLeft`/`indentHanging`)
   and the item's spacing/line settings, so the consumer can position the marker once per
-  `<li>` using the first `<p>`. Continuation `<p>`s that have no `indentLeft` of their own
+  `<li>` using the first `<p>`. When the item paragraph has no `w:ind` of its own, the
+  marker geometry is resolved from the numbering level's `w:pPr/w:ind` (`w:left` →
+  `indentLeft`, `w:hanging` → `indentHanging`, in inches); this is what keeps the marker
+  and body positions correct even when items omit explicit indents. Continuation `<p>`s
+  that have no `indentLeft` of their own
   inherit the item's body indent (`indentLeft`) so continuation text aligns with the item
   body. When the source item has only a hanging indent, Word uses the hanging value as the
   body indent, so the first `<p>` carries both `indentLeft` and `indentHanging`.

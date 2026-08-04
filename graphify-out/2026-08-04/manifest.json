@@ -40,18 +40,18 @@
     "semantic_hash": ""
   },
   "words/ooxml.go": {
-    "mtime": 1785747860.3920805,
-    "ast_hash": "2c4b3074849370d607059c10022122a8",
+    "mtime": 1785819220.6278899,
+    "ast_hash": "3df70834ea1f0b1be4acf710e42cbca8",
     "semantic_hash": ""
   },
   "words/preprocessor.go": {
-    "mtime": 1785811135.7693717,
-    "ast_hash": "a44d3549c94508ba31a176b2486348fc",
+    "mtime": 1785822521.371001,
+    "ast_hash": "23068afc42dd31ca9e05506e4a0337ea",
     "semantic_hash": ""
   },
   "words/preprocessor_test.go": {
-    "mtime": 1785811191.644736,
-    "ast_hash": "e2393a7ea80d5a70e14aa2c967a56419",
+    "mtime": 1785822540.3908017,
+    "ast_hash": "21b081b9e6b4c4c2dc325920772b538c",
     "semantic_hash": ""
   },
   "words/remain_bugs_test.go": {
@@ -60,18 +60,18 @@
     "semantic_hash": ""
   },
   "words/types.go": {
-    "mtime": 1785748101.6500134,
-    "ast_hash": "8d5009e0efb00b70f0079bed5e419273",
+    "mtime": 1785819226.2490048,
+    "ast_hash": "23c9ca53676bbc306c790c08bd5145c8",
     "semantic_hash": ""
   },
   "words/verify.go": {
-    "mtime": 1785811494.5505297,
-    "ast_hash": "35f3b276b65d8b88cbb8e35bf327f83c",
+    "mtime": 1785822526.5992224,
+    "ast_hash": "70a1d23d4b9aa7be108dec155a8abd67",
     "semantic_hash": ""
   },
   "words/verify_test.go": {
-    "mtime": 1785725408.980529,
-    "ast_hash": "f0591974adabaa56b491ccc26fe501df",
+    "mtime": 1785822609.1555917,
+    "ast_hash": "3d4bd6db416466a70939c67d9e3f3e41",
     "semantic_hash": ""
   },
   ".opencode/plans/paragraph.md": {
@@ -115,13 +115,13 @@
     "semantic_hash": ""
   },
   "docx-preprosessor-limitation.md": {
-    "mtime": 1785128730.5613453,
-    "ast_hash": "4f748fbac27205aba9e8fbb4816b90d2",
+    "mtime": 1785821196.5420763,
+    "ast_hash": "1d2e8419eebb7771a17b40164745dfbe",
     "semantic_hash": ""
   },
   "docx-preprosessor.md": {
-    "mtime": 1785811398.1644623,
-    "ast_hash": "9d2fa03abc99455f7e20f5b5cef58951",
+    "mtime": 1785822577.2983189,
+    "ast_hash": "9290a774ae29254942d3e3a0110d5789",
     "semantic_hash": ""
   },
   "docx-words-gap.md": {
@@ -135,8 +135,8 @@
     "semantic_hash": ""
   },
   "unit-declaration.md": {
-    "mtime": 1785740351.8136957,
-    "ast_hash": "5dfe87f38cb5a828a7b5d7722f333503",
+    "mtime": 1785821187.4769676,
+    "ast_hash": "65a01bff7a0c95374f3963a62260a94c",
     "semantic_hash": ""
   }
 }

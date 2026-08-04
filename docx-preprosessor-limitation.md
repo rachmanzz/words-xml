@@ -47,7 +47,7 @@ Removed on purpose to keep the semantic body clean. They do **not** appear in `w
   Note: `w:pBdr` (borders) is **preserved** via compact `at` attribute on `<p>`/`<h1>`-`<h9>`.
   Note: `w:pPr/w:spacing/@w:line` is **preserved** as `<s:line>` in `<style>` (P1, LOSSLESS_METADATA).
   Note: `w:pPr/w:textAlignment` is **preserved** as `<p valign="...">` (P8, LOSSLESS_METADATA).
-  Note: `w:pPr/w:tabs` is **preserved** as `<s:tab>` in `<style>` (LOSSLESS_METADATA).
+  Note: `w:pPr/w:tabs` is **preserved** as `<s:tab>` in `<style>` AND as a `tabs=".."` attribute on the owning `<p>` listing its **effective** stops (direct `w:tabs` merged over the stops inherited from the style chain via `basedOn`, with `clear` applied) (LOSSLESS_METADATA).
   Note: `w:tab` is **preserved** as `<tab/>` inline element (LOSSLESS_METADATA).
   Note: `w:pPr/w:shd` is **preserved** as `<p shd="...">` (see §2a).
   Note: `w:pPr/w:framePr` is **preserved** as `<p frame="...">` (see §2a).

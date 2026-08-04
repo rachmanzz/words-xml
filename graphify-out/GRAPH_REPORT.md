@@ -1,16 +1,16 @@
 # Graph Report - words-xml  (2026-08-04)
 
 ## Corpus Check
-- 28 files · ~59,186 words
+- 28 files · ~61,538 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 767 nodes · 1835 edges · 35 communities (33 shown, 2 thin omitted)
-- Extraction: 86% EXTRACTED · 14% INFERRED · 0% AMBIGUOUS · INFERRED: 252 edges (avg confidence: 0.8)
+- 782 nodes · 1900 edges · 31 communities (29 shown, 2 thin omitted)
+- Extraction: 86% EXTRACTED · 14% INFERRED · 0% AMBIGUOUS · INFERRED: 260 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `47d579d9`
+- Built from commit: `ac102dd0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -22,46 +22,42 @@
 - verify.go
 - 2. Target Format: `words` (semantic mode)
 - GAP Analysis: words-xml v1.1.0
-- ooxml.go
+- ParaProps
 - preprocessor_test.go
 - DOCX → Words: Gap Analysis
 - ROUND 2 — MEDIUM IMPACT
 - Planned
 - Problem: LLM Understanding of `words` Format
 - Plan: Paragraph Feature Coverage
-- IntVal
+- DocPara
 - 4. Milestones
-- hard_audit_test.go
 - bash
 - unmarshalOrderedContent
-- ParaProps
 - Decisions
 - DocOrderedContent
-- RunProps
+- TcPr
 - words-xml
 - DocDrawing
-- TcPr
 - DOCX Preprocessor — Limitations
 - Unit Declaration (words-xml)
 - AGENTS.md
 - TestBrInListItem
 - graphify.js
 - github.com/rachmanzz/words-xml
-- AThemeElements
-- SectPrProps
-- extractTheme
+- ooxml.go
+- hard_audit_test.go
 
 ## God Nodes (most connected - your core abstractions)
-1. `ProcessDOCXBytes()` - 118 edges
-2. `Verify()` - 89 edges
+1. `ProcessDOCXBytes()` - 125 edges
+2. `Verify()` - 90 edges
 3. `makeMinimalDocx()` - 86 edges
-4. `makeDocxWithParts()` - 32 edges
+4. `makeDocxWithParts()` - 39 edges
 5. `VerifyResult` - 32 edges
 6. `GAP Analysis: words-xml v1.1.0` - 29 edges
-7. `ProcessDOCXBytesMode()` - 24 edges
-8. `ParsedDocument` - 22 edges
-9. `verifyBlockContent()` - 21 edges
-10. `ParaProps` - 20 edges
+7. `ParsedDocument` - 26 edges
+8. `ProcessDOCXBytesMode()` - 24 edges
+9. `ParaProps` - 22 edges
+10. `verifyBlockContent()` - 21 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `main()` --calls--> `ProcessDOCXFile()`  [INFERRED]
@@ -78,23 +74,23 @@
 ## Import Cycles
 - None detected.
 
-## Communities (35 total, 2 thin omitted)
+## Communities (31 total, 2 thin omitted)
 
 ### Community 0 - "Verify"
 Cohesion: 0.07
-Nodes (85): T, TestVerifyBadAlign(), TestVerifyBadBreakType(), TestVerifyBadColspan(), TestVerifyBadColSpec(), TestVerifyBadDir(), TestVerifyBadLiType(), TestVerifyBadMode() (+77 more)
+Nodes (86): T, TestVerifyBadAlign(), TestVerifyBadBreakType(), TestVerifyBadColspan(), TestVerifyBadColSpec(), TestVerifyBadDir(), TestVerifyBadLiType(), TestVerifyBadMode() (+78 more)
 
 ### Community 1 - "preprocessor.go"
-Cohesion: 0.08
-Nodes (77): Builder, main(), main(), File, BorderInfo, ContentItem, DocFooter, DocHeader (+69 more)
+Cohesion: 0.07
+Nodes (85): Builder, main(), main(), File, BorderInfo, ContentItem, DocFooter, DocHeader (+77 more)
 
 ### Community 2 - "T"
 Cohesion: 0.06
-Nodes (40): buildStyleMap(), T, TestBoldCSItalicCSSuppressedWhenSameFont(), TestBuildBodyNoteOrder(), TestBuildBodyNoteOrderWithFootnoteRef(), TestBuildStyleMapBasedOn(), TestBuildStyleMapHAnsiFallback(), TestBuildStyleMapInvalidXML() (+32 more)
+Nodes (41): buildStyleMap(), T, TestBuildBodyNoteOrder(), TestBuildBodyNoteOrderWithFootnoteRef(), TestBuildStyleMapBasedOn(), TestBuildStyleMapHAnsiFallback(), TestBuildStyleMapInvalidXML(), TestBuildStyleMapLineRuleExact() (+33 more)
 
 ### Community 3 - "ProcessDOCXBytes"
-Cohesion: 0.06
-Nodes (66): ProcessDOCXBytes(), makeMinimalDocx(), TestAllCaps(), TestBoldCSItalicCS(), TestBoldExplicitOff(), TestBoldExplicitOffOverridesParaDefault(), TestBookmark(), TestBreakTypes() (+58 more)
+Cohesion: 0.05
+Nodes (68): ProcessDOCXBytes(), makeMinimalDocx(), TestAllCaps(), TestBoldCSItalicCS(), TestBoldCSItalicCSSuppressedWhenSameFont(), TestBoldExplicitOff(), TestBoldExplicitOffOverridesParaDefault(), TestBookmark() (+60 more)
 
 ### Community 4 - "verify.go"
 Cohesion: 0.30
@@ -108,13 +104,13 @@ Nodes (31): 1.1 Problem (semantic mode), 1.2 Goal (semantic mode), 1. Scope and 
 Cohesion: 0.07
 Nodes (29): GAP-01: Per-Paragraph Indent/Hanging Attributes, GAP-02: List Continuation Across Non-List Paragraphs, GAP-03: `<s:indent>` Not Emitted for Normal/Heading Styles, GAP-04: Per-Paragraph Align Only for Direct `jc` Values, GAP-05: `<h1>`-`<h9>`, `<li>`, `<blockquote>` Missing Indent, GAP-06: Tab Before Text in Same Run Discards Text, GAP-07: Centering Lost for Mixed-Alignment Documents, GAP-08: Per-Paragraph Spacing Not Emitted (+21 more)
 
-### Community 7 - "ooxml.go"
-Cohesion: 0.15
-Nodes (26): BrVal, CoreProps, DirBdo, DocCols, DocComment, DocComments, DocDel, DocEndnotes (+18 more)
+### Community 7 - "ParaProps"
+Cohesion: 0.12
+Nodes (19): AbstractLvl, AbstractNum, CnfStyleVal, DocNumbering, FmtVal, FramePrVal, IndVal, IntVal (+11 more)
 
 ### Community 8 - "preprocessor_test.go"
-Cohesion: 0.10
-Nodes (36): makeDocxWithComments(), makeDocxWithFootnotes(), makeDocxWithParts(), makeFullDocx(), TestBulletList(), TestCodeBlockDetection(), TestComment(), TestCustomStyleSizePtSuffix() (+28 more)
+Cohesion: 0.09
+Nodes (43): makeDocxWithComments(), makeDocxWithFootnotes(), makeDocxWithParts(), makeFullDocx(), TestBulletList(), TestCodeBlockDetection(), TestComment(), TestCustomStyleSizePtSuffix() (+35 more)
 
 ### Community 9 - "DOCX → Words: Gap Analysis"
 Cohesion: 0.07
@@ -136,17 +132,13 @@ Nodes (21): 1.1 HTML-like Format, 1.2 What LLM Already Knows vs What It Must Lea
 Cohesion: 0.10
 Nodes (19): Current State, Files Modified (Phase 2), Files Modified (Phase 3), Files Modified (Phase 4), Files Modified (Phase 5), Files Modified (Phase 6), Fully Covered (tested), Gap Analysis (+11 more)
 
-### Community 14 - "IntVal"
-Cohesion: 0.29
-Nodes (8): AbstractLvl, AbstractNum, DocNumbering, FmtVal, IntVal, LvlOverride, NumDef, NumPr
+### Community 14 - "DocPara"
+Cohesion: 0.15
+Nodes (17): Name, BrVal, DirBdo, DocComment, DocComments, DocDel, DocDocument, DocHyperlink (+9 more)
 
 ### Community 15 - "4. Milestones"
 Cohesion: 0.11
 Nodes (17): 1. Summary, 2. Goals, 3. Pipeline Architecture, 4. Milestones, 5. Package Layout, 6. Core Libraries, 7. References, Milestone 1 — Foundation (+9 more)
-
-### Community 16 - "hard_audit_test.go"
-Cohesion: 0.20
-Nodes (15): T, makeMinimalDocxWithNumbering(), TestDocumentOrderParaAfterTable(), TestDocumentOrderSdtBeforePara(), TestDocumentOrderTableBeforePara(), TestHasSameNumIDAheadLimit(), TestPostProcessRunOrderWithTableBefore(), makeDocxWithExtras() (+7 more)
 
 ### Community 17 - "bash"
 Cohesion: 0.12
@@ -156,33 +148,25 @@ Nodes (15): git add *, git commit *, git push *, git tag *, AGENTS.md, docx-prep
 Cohesion: 0.30
 Nodes (5): Decoder, StartElement, unmarshalOrderedContent(), Decoder, StartElement
 
-### Community 19 - "ParaProps"
-Cohesion: 0.18
-Nodes (11): CnfStyleVal, FramePrVal, IndVal, ParaProps, PPrChange, ShdVal, SpacingVal, StyleRef (+3 more)
-
 ### Community 20 - "Decisions"
 Cohesion: 0.15
 Nodes (12): `[DECISION] CLI tool with stdout output`, `[DECISION] Custom XML serialization, not Marshal`, `[DECISION] Idempotent output — same .docx → same words`, `[DECISION] In-memory processing, not streaming`, Decision Logs, `[DECISION] Manual XML output via strings.Builder, not encoding/xml encoder`, `[DECISION] No external dependencies for parsing`, `[DECISION] OOXML structs with namespace-qualified XML tags` (+4 more)
 
 ### Community 21 - "DocOrderedContent"
-Cohesion: 0.13
-Nodes (15): Name, BodyChild, BodyChildType, DocBody, DocBookmark, DocDocument, DocOrderedContent, DocSdt (+7 more)
+Cohesion: 0.18
+Nodes (10): BodyChild, BodyChildType, DocBody, DocBookmark, DocOrderedContent, DocSdt, DocSdtContent, DocTbl (+2 more)
 
-### Community 22 - "RunProps"
-Cohesion: 0.15
-Nodes (12): ColorVal, DocDefaults, DocStyles, HighlightVal, LangVal, OnOffVal, RFontsVal, RunProps (+4 more)
+### Community 22 - "TcPr"
+Cohesion: 0.17
+Nodes (14): BorderVal, DocStyleDef, DocTblCell, DocTblRow, JCVal, OnOffVal, PBdrProps, StringVal (+6 more)
 
 ### Community 23 - "words-xml"
 Cohesion: 0.17
 Nodes (11): CLI, Features, Install, Library, License, Output Example, Scripts, Testing (+3 more)
 
 ### Community 24 - "DocDrawing"
-Cohesion: 0.24
-Nodes (11): AGraphic, AGraphicData, DocDrawing, DocTxbxContent, PicBlip, PicBlipFill, PicPic, WpAnchor (+3 more)
-
-### Community 25 - "TcPr"
-Cohesion: 0.27
-Nodes (10): BorderVal, DocStyleDef, JCVal, PBdrProps, StringVal, TblBorders, TblPr, TblWidth (+2 more)
+Cohesion: 0.21
+Nodes (12): AGraphic, AGraphicData, DocDrawing, DocTextbox, DocTxbxContent, PicBlip, PicBlipFill, PicPic (+4 more)
 
 ### Community 26 - "DOCX Preprocessor — Limitations"
 Cohesion: 0.20
@@ -200,17 +184,13 @@ Nodes (3): Knowledge Graph (graphify), Reference Projects, Versioning Rule
 Cohesion: 0.60
 Nodes (4): T, TestBrInListItem(), TestBrSameRunAsText(), TestBrSeparateRuns()
 
-### Community 32 - "AThemeElements"
-Cohesion: 0.25
-Nodes (8): AClrScheme, AClrSchemeEntry, AFontScheme, AFontSchemeFace, ASrgbClr, ATheme, AThemeElements, ATypeface
+### Community 32 - "ooxml.go"
+Cohesion: 0.10
+Nodes (34): AClrScheme, AClrSchemeEntry, AFontScheme, AFontSchemeFace, ASrgbClr, ATheme, AThemeElements, ATypeface (+26 more)
 
-### Community 33 - "SectPrProps"
-Cohesion: 0.40
-Nodes (5): CTRel, PgMarVal, PgSzVal, SectPrProps, SectType
-
-### Community 34 - "extractTheme"
-Cohesion: 0.50
-Nodes (4): extractTheme(), TestExtractThemeEmptyFont(), TestExtractThemeInvalid(), TestExtractThemeValid()
+### Community 33 - "hard_audit_test.go"
+Cohesion: 0.20
+Nodes (15): T, makeMinimalDocxWithNumbering(), TestDocumentOrderParaAfterTable(), TestDocumentOrderSdtBeforePara(), TestDocumentOrderTableBeforePara(), TestHasSameNumIDAheadLimit(), TestPostProcessRunOrderWithTableBefore(), makeDocxWithExtras() (+7 more)
 
 ## Knowledge Gaps
 - **209 isolated node(s):** `github.com/rachmanzz/words-xml`, `$schema`, `AGENTS.md`, `docx-preprosessor.md`, `AGENTS.md` (+204 more)
@@ -220,16 +200,16 @@ Nodes (4): extractTheme(), TestExtractThemeEmptyFont(), TestExtractThemeInvalid(
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `ProcessDOCXBytes()` connect `ProcessDOCXBytes` to `preprocessor.go`, `T`, `preprocessor_test.go`, `hard_audit_test.go`, `TestBrInListItem`?**
-  _High betweenness centrality (0.095) - this node is a cross-community bridge._
-- **Why does `DocPara` connect `ooxml.go` to `preprocessor.go`, `ParaProps`, `DocOrderedContent`?**
-  _High betweenness centrality (0.027) - this node is a cross-community bridge._
-- **Why does `ProcessDOCXBytesMode()` connect `preprocessor.go` to `T`, `ProcessDOCXBytes`, `extractTheme`, `hard_audit_test.go`, `DocOrderedContent`?**
-  _High betweenness centrality (0.026) - this node is a cross-community bridge._
-- **Are the 115 inferred relationships involving `ProcessDOCXBytes()` (e.g. with `TestBrInListItem()` and `TestBrSameRunAsText()`) actually correct?**
-  _`ProcessDOCXBytes()` has 115 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 83 inferred relationships involving `Verify()` (e.g. with `TestVerifyBadAlign()` and `TestVerifyBadBreakType()`) actually correct?**
-  _`Verify()` has 83 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `ProcessDOCXBytes()` connect `ProcessDOCXBytes` to `hard_audit_test.go`, `T`, `preprocessor.go`, `preprocessor_test.go`, `TestBrInListItem`?**
+  _High betweenness centrality (0.100) - this node is a cross-community bridge._
+- **Why does `ProcessDOCXBytesMode()` connect `preprocessor.go` to `hard_audit_test.go`, `T`, `ProcessDOCXBytes`?**
+  _High betweenness centrality (0.024) - this node is a cross-community bridge._
+- **Why does `DocPara` connect `DocPara` to `ooxml.go`, `preprocessor.go`, `ParaProps`, `DocOrderedContent`, `DocDrawing`?**
+  _High betweenness centrality (0.021) - this node is a cross-community bridge._
+- **Are the 122 inferred relationships involving `ProcessDOCXBytes()` (e.g. with `TestBrInListItem()` and `TestBrSameRunAsText()`) actually correct?**
+  _`ProcessDOCXBytes()` has 122 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 84 inferred relationships involving `Verify()` (e.g. with `TestVerifyBadAlign()` and `TestVerifyBadBreakType()`) actually correct?**
+  _`Verify()` has 84 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 10 inferred relationships involving `makeMinimalDocx()` (e.g. with `TestBrSameRunAsText()` and `TestBrSeparateRuns()`) actually correct?**
   _`makeMinimalDocx()` has 10 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `github.com/rachmanzz/words-xml`, `$schema`, `AGENTS.md` to the rest of the system?**

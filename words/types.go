@@ -45,8 +45,18 @@ type ParsedDocument struct {
 	NumToAbstract map[int]int
 	NumFmtMap     map[string]string
 	NumLvlTextMap map[string]string
+	NumLvlIndMap  map[string]NumLvlInd
 	Cols          int
 	ColsSpace     float64
+}
+
+// NumLvlInd holds a numbering level's indentation (in inches, twips/1440),
+// used to resolve a list item's marker geometry when the item paragraph itself
+// carries no w:ind.
+type NumLvlInd struct {
+	Left      float64
+	Hanging   float64
+	FirstLine float64
 }
 
 type HeaderFooter struct {

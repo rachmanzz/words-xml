@@ -70,7 +70,7 @@ preprocessor can emit: whether it is converted to the declared unit, and why.
 | `indentLeft/Right/First/Hanging` (`<p>`, `<li>`, `<s:custom>`, `<s:indent>`) | `w:pPr/w:ind` (twips) | ✅ yes — twips ÷ 1440                    | physical length |
 | `spacingBefore/After` (`<p>`, `<s:custom>`, `<s:gap>`) | `w:pPr/w:spacing` (twips)           | ✅ yes — twips ÷ 1440                    | physical length |
 | `lineSpacing` + `lineRule="exact\|atLeast"`            | `w:pPr/w:spacing/@w:line` (twips)   | ✅ yes — twips ÷ 1440                    | physical length |
-| `<s:tab pos>`                                          | `w:pPr/w:tabs/@w:pos` (twips)       | ✅ yes — twips ÷ 1440                    | physical length |
+| `<s:tab pos>` / `<p tabs>`                             | `w:pPr/w:tabs/@w:pos` (twips)       | ✅ yes — twips ÷ 1440                    | physical length |
 | table `width` / `indent` / `cellSpacing`, `<s:col>` grid `w` | `w:tblPr`, `w:gridCol` (twips) | ✅ yes — twips ÷ 1440                | physical length |
 | frame `width` / `height` / `vSpace` / `hSpace` / `x` / `y` | `w:pPr/w:framePr` (twips)       | ✅ yes — twips ÷ 1440                    | physical length |
 | `at` border `width`, `borderWidth`                     | `w:sz` (eighths of a point)         | ✅ yes — ÷ 576                           | physical length |
@@ -97,7 +97,7 @@ The preprocessor converts OOXML twips-based *physical lengths* to the declared u
 | `w:pPr/w:spacing/@w:after`          | twips ÷ 1440 (→ in) | `spacingAfter`                              |
 | `w:pPr/w:spacing/@w:line` (exact/atLeast) | twips ÷ 1440 (→ in) | `lineSpacing` + `lineRule="exact|atLeast"`  |
 | `w:pPr/w:spacing/@w:line` (auto)    | twips ÷ 240 (multiplier, dimensionless) | `lineSpacing` (bare multiplier; `lineRule="auto"` is suppressed on `<p>`, only shown in `<s:line rule="auto">`) |
-| `w:pPr/w:tabs/@w:pos`               | twips ÷ 1440 (→ in) | `<s:tab pos>`                               |
+| `w:pPr/w:tabs/@w:pos`               | twips ÷ 1440 (→ in) | `<s:tab pos>` / `<p tabs>`                 |
 | `w:pPr/w:framePr` `w`/`h`/`vSpace`/`hSpace`/`x`/`y` | twips ÷ 1440 (→ in) | `frame` `width`/`height`/`vSpace`/`hSpace`/`x`/`y` |
 | `w:tblPr` widths / `w:gridCol` / `w:tcW` | twips ÷ 1440 (→ in) | table `width`, `indent`, `cellSpacing`, cell `width` |
 | border width (`w:sz`, eighths of a point) | ÷ 576 (→ in) | `at`, `borderWidth`                         |

@@ -722,9 +722,10 @@ type AbstractNum struct {
 }
 
 type AbstractLvl struct {
-	Ilvl    int     `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main ilvl,attr"`
-	NumFmt  *FmtVal `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main numFmt"`
-	LvlText *FmtVal `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main lvlText"`
+	Ilvl    int        `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main ilvl,attr"`
+	NumFmt  *FmtVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main numFmt"`
+	LvlText *FmtVal    `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main lvlText"`
+	PPr     *ParaProps `xml:"http://schemas.openxmlformats.org/wordprocessingml/2006/main pPr"`
 }
 
 type FmtVal struct {

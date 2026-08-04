@@ -750,6 +750,63 @@ func TestListItemContinuationNoInteriorWhitespace(t *testing.T) {
 	}
 }
 
+func TestListItemIndentFromNumberingLevel(t *testing.T) {
+	numbering := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  <w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+    <w:abstractNum w:abstractNumId="0">
+      <w:lvl w:ilvl="0">
+        <w:numFmt w:val="decimal"/>
+        <w:pPr><w:ind w:left="792" w:hanging="432"/></w:pPr>
+      </w:lvl>
+    </w:abstractNum>
+    <w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>
+  </w:numbering>`
+	body := xmlHeader + `<w:body>
+  <w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr><w:r><w:t>Item</w:t></w:r></w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", numbering, "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `<p indentLeft="0.55" indentHanging="0.30">Item</p>`) {
+		t.Errorf("expected first <p> to resolve indentLeft/indentHanging from numbering level w:ind, got: %s", x)
+	}
+}
+
+func TestListItemContinuationAfterLastItem(t *testing.T) {
+	numbering := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  <w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+    <w:abstractNum w:abstractNumId="0">
+      <w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/></w:lvl>
+    </w:abstractNum>
+    <w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>
+  </w:numbering>`
+	body := xmlHeader + `<w:body>
+  <w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr><w:ind w:hanging="786"/></w:pPr><w:r><w:t>Last item</w:t></w:r></w:p>
+  <w:p><w:r><w:t>Trailing continuation</w:t></w:r></w:p>
+  <w:p><w:r><w:t>Second trailing</w:t></w:r></w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", numbering, "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	iLast := strings.Index(x, "Last item</p>")
+	iTrail := strings.Index(x, "Trailing continuation</p>")
+	iSec := strings.Index(x, "Second trailing</p>")
+	iClose := strings.Index(x, "</li>")
+	iOlist := strings.Index(x, "</ol>")
+	if iLast < 0 || iTrail < 0 || iSec < 0 {
+		t.Fatalf("expected all three paragraphs present, got: %s", x)
+	}
+	if !(iLast < iTrail && iTrail < iSec && iSec < iClose && iClose < iOlist) {
+		t.Errorf("expected trailing continuation paragraphs nested inside the last <li> before </ol>, got: %s", x)
+	}
+}
+
 func TestListItemSpacingAttrs(t *testing.T) {
 	numbering := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
   <w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -2213,6 +2270,197 @@ func TestBuildStyleMapParaProps(t *testing.T) {
 	}
 }
 
+func TestParagraphTabsAttribute(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr>
+      <w:tabs>
+        <w:tab w:val="left" w:pos="454"/>
+        <w:tab w:val="left" w:pos="907"/>
+        <w:tab w:val="left" w:pos="1361"/>
+        <w:tab w:val="left" w:pos="1814"/>
+      </w:tabs>
+      <w:ind w:left="908" w:hanging="454"/>
+    </w:pPr>
+    <w:r><w:tab/></w:r>
+    <w:r><w:tab/></w:r>
+    <w:r><w:t xml:space="preserve">(i) menghadiri</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `<p indentLeft="0.63" indentHanging="0.32" tabs="0.32 0.63 0.95 1.26">`) {
+		t.Errorf("expected per-paragraph tabs attribute carrying only this paragraph's stops, got: %s", x)
+	}
+	if !strings.Contains(x, "<tab/><tab/>") {
+		t.Errorf("expected the <tab/> runs preserved, got: %s", x)
+	}
+	if !strings.Contains(x, `<s:tab el="p" pos="0.32" align="left" leader="none"/>`) {
+		t.Errorf("expected global <s:tab> list retained for backward compat, got: %s", x)
+	}
+}
+
+func TestListItemEmitsTabsAttribute(t *testing.T) {
+	numbering := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  <w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+    <w:abstractNum w:abstractNumId="0">
+      <w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/></w:lvl>
+    </w:abstractNum>
+    <w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>
+  </w:numbering>`
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr>
+      <w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr>
+      <w:tabs>
+        <w:tab w:val="left" w:pos="454"/>
+        <w:tab w:val="left" w:pos="907"/>
+        <w:tab w:val="left" w:pos="1361"/>
+        <w:tab w:val="left" w:pos="1814"/>
+      </w:tabs>
+    </w:pPr>
+    <w:r><w:tab/></w:r>
+    <w:r><w:t>Item with tabs</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", numbering, "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `<p tabs="0.32 0.63 0.95 1.26"><tab/>`) {
+		t.Errorf("expected the list item first <p> to carry its own tabs attribute, got: %s", x)
+	}
+}
+
+func TestParagraphTabsAttributeAlignAndClear(t *testing.T) {
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr>
+      <w:tabs>
+        <w:tab w:val="clear" w:pos="7938"/>
+        <w:tab w:val="left" w:pos="1814"/>
+        <w:tab w:val="right" w:pos="9000" w:leader="dot"/>
+      </w:tabs>
+    </w:pPr>
+    <w:r><w:t xml:space="preserve">Body Text Indent</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, "", "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `tabs="1.26 6.25@right:dot"`) {
+		t.Errorf("expected tabs attribute to carry align/leader with clear resolved away (no inherited stop), got: %s", x)
+	}
+	if strings.Contains(x, "5.51") {
+		t.Errorf("expected the cleared stop 5.51 to be dropped entirely, got: %s", x)
+	}
+}
+
+func TestParagraphTabsStyleInheritanceAndClear(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:default="1" w:styleId="Normal">
+    <w:name w:val="Normal"/>
+    <w:pPr>
+      <w:tabs>
+        <w:tab w:val="left" w:pos="454"/>
+        <w:tab w:val="left" w:pos="907"/>
+        <w:tab w:val="left" w:pos="1361"/>
+        <w:tab w:val="right" w:pos="7938" w:leader="dot"/>
+      </w:tabs>
+    </w:pPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="BodyTextIndent">
+    <w:name w:val="Body Text Indent"/>
+    <w:basedOn w:val="Normal"/>
+    <w:pPr>
+      <w:tabs>
+        <w:tab w:val="left" w:pos="454"/>
+        <w:tab w:val="left" w:pos="907"/>
+        <w:tab w:val="left" w:pos="1361"/>
+        <w:tab w:val="right" w:pos="7938" w:leader="dot"/>
+      </w:tabs>
+    </w:pPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="InheritOnly">
+    <w:name w:val="Inherit Only"/>
+    <w:basedOn w:val="Normal"/>
+  </w:style>
+</w:styles>`
+
+	t.Run("direct stops merge over style stops and clear removes inherited", func(t *testing.T) {
+		body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr>
+      <w:pStyle w:val="BodyTextIndent"/>
+      <w:tabs>
+        <w:tab w:val="clear" w:pos="7938"/>
+        <w:tab w:val="left" w:pos="1814"/>
+      </w:tabs>
+    </w:pPr>
+    <w:r><w:t xml:space="preserve">Body Text Indent</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+		data := makeDocxWithParts(body, styles, "", "")
+		doc, err := ProcessDOCXBytes(data)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		x := doc.WordsXML
+		if !strings.Contains(x, `tabs="0.32 0.63 0.95 1.26"`) {
+			t.Errorf("expected style stops kept + direct 1.26 and style 5.51 cleared, got: %s", x)
+		}
+		if strings.Contains(x, `tabs="0.32 0.63 0.95 5.51`) {
+			t.Errorf("expected the style-inherited 5.51 stop to be removed by clear from the paragraph tabs, got: %s", x)
+		}
+	})
+
+	t.Run("no direct tabs inherits the style's stops", func(t *testing.T) {
+		body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:pStyle w:val="BodyTextIndent"/></w:pPr>
+    <w:r><w:t xml:space="preserve">Inherited</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+		data := makeDocxWithParts(body, styles, "", "")
+		doc, err := ProcessDOCXBytes(data)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		x := doc.WordsXML
+		if !strings.Contains(x, `tabs="0.32 0.63 0.95 5.51@right:dot"`) {
+			t.Errorf("expected stops to inherit from the nearest style defining w:tabs, got: %s", x)
+		}
+	})
+
+	t.Run("nearest style in the chain defines stops", func(t *testing.T) {
+		body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:pStyle w:val="InheritOnly"/></w:pPr>
+    <w:r><w:t xml:space="preserve">Chain</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+		data := makeDocxWithParts(body, styles, "", "")
+		doc, err := ProcessDOCXBytes(data)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		x := doc.WordsXML
+		if !strings.Contains(x, `tabs="0.32 0.63 0.95 5.51@right:dot"`) {
+			t.Errorf("expected stops to inherit from Normal via basedOn chain, got: %s", x)
+		}
+	})
+}
+
 func TestBuildStyleMapLineRuleExact(t *testing.T) {
 	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -3203,7 +3451,7 @@ func TestStyleFontInheritedByRunWithPartialRPr(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	x := doc.WordsXML
-	if !strings.Contains(x, `<span font="Courier New" fontCS="Courier New">didirikan</span>`) {
+	if !strings.Contains(x, `<p c="Body Text"><span font="Courier New" fontCS="Courier New">didirikan</span>`) {
 		t.Errorf("expected style font inherited with run cs, got: %s", x)
 	}
 }
@@ -3240,8 +3488,46 @@ func TestStyleFontInheritedByListItemRunWithPartialRPr(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	x := doc.WordsXML
-	if !strings.Contains(x, `<span font="Courier New" fontCS="Courier New">didirikan</span>`) {
-		t.Errorf("expected style font inherited by list item run, got: %s", x)
+	if !strings.Contains(x, `<p c="Body Text"><span font="Courier New" fontCS="Courier New">didirikan</span>`) {
+		t.Errorf("expected list item <p> to carry c=\"Body Text\" and inherited style font, got: %s", x)
+	}
+}
+
+func TestListItemCustomStyleEmitC(t *testing.T) {
+	// A list item with a custom pStyle must emit c="..." on its <p>,
+	// same as a non-list paragraph (the style reference is needed by
+	// consumers to resolve the style's paragraph properties).
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="BodyTextIndent">
+    <w:name w:val="Body Text Indent"/>
+    <w:rPr><w:rFonts w:ascii="Courier New" w:hAnsi="Courier New"/></w:rPr>
+  </w:style>
+</w:styles>`
+	numbering := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:abstractNum w:abstractNumId="0">
+    <w:lvl w:ilvl="0"><w:numFmt w:val="bullet"/></w:lvl>
+  </w:abstractNum>
+  <w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>
+</w:numbering>`
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr>
+      <w:pStyle w:val="BodyTextIndent"/>
+      <w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr>
+    </w:pPr>
+    <w:r><w:t>custom styled item</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+	data := makeDocxWithParts(body, styles, numbering, "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+	if !strings.Contains(x, `<p c="Body Text Indent">`) || !strings.Contains(x, "custom styled item") {
+		t.Errorf("expected list item <p> to carry c=\"Body Text Indent\", got: %s", x)
 	}
 }
 

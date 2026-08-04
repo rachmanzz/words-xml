@@ -187,21 +187,22 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 	var numLvlTextMap map[string]string
 	var numberingStartMap map[int]map[int]int
 	var numToAbstract map[int]int
+	var numLvlIndMap map[string]NumLvlInd
 	if numberingXML != nil {
-		numFmtMap, numLvlTextMap, numberingStartMap, numToAbstract = buildNumberingMap(numberingXML)
+		numFmtMap, numLvlTextMap, numberingStartMap, numToAbstract, numLvlIndMap = buildNumberingMap(numberingXML)
 	}
 
 	relMap := make(map[string]string)
 	if relsXML != nil {
 		var rels RelsDoc
 		if err := xml.Unmarshal(relsXML, &rels); err == nil {
-		for _, item := range rels.Items {
-			if strings.HasPrefix(item.Target, "http://") || strings.HasPrefix(item.Target, "https://") || strings.HasPrefix(item.Target, "mailto:") {
-				relMap[item.ID] = item.Target
-			} else {
-				relMap[item.ID] = "word/" + item.Target
+			for _, item := range rels.Items {
+				if strings.HasPrefix(item.Target, "http://") || strings.HasPrefix(item.Target, "https://") || strings.HasPrefix(item.Target, "mailto:") {
+					relMap[item.ID] = item.Target
+				} else {
+					relMap[item.ID] = "word/" + item.Target
+				}
 			}
-		}
 		}
 	}
 
@@ -282,6 +283,7 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 	doc.NumToAbstract = numToAbstract
 	doc.NumFmtMap = numFmtMap
 	doc.NumLvlTextMap = numLvlTextMap
+	doc.NumLvlIndMap = numLvlIndMap
 
 	if footnotesXML != nil {
 		var fndoc DocFootnotes
@@ -401,15 +403,15 @@ func sortedKeys(m map[string][]ContentItem) []string {
 }
 
 var (
-	wmlNS      = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
-	bookTag    = wmlNS + " bookmarkStart"
-	pTag       = wmlNS + " p"
-	rTag       = wmlNS + " r"
-	fnRefTag   = wmlNS + " footnoteReference"
-	enRefTag   = wmlNS + " endnoteReference"
-	cmRefTag   = wmlNS + " commentReference"
-	insTag     = wmlNS + " ins"
-	delTag     = wmlNS + " del"
+	wmlNS    = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+	bookTag  = wmlNS + " bookmarkStart"
+	pTag     = wmlNS + " p"
+	rTag     = wmlNS + " r"
+	fnRefTag = wmlNS + " footnoteReference"
+	enRefTag = wmlNS + " endnoteReference"
+	cmRefTag = wmlNS + " commentReference"
+	insTag   = wmlNS + " ins"
+	delTag   = wmlNS + " del"
 )
 
 // postProcessRunOrder scans the raw document XML with a token decoder to detect
@@ -441,8 +443,8 @@ func postProcessRunOrder(docXML []byte, body *DocBody) {
 	inBody := false
 	// skipDepth > 0 means we are inside a body-level w:tbl or w:sdt — skip all w:r.
 	skipDepth := 0
-	inPara := false    // inside a direct-body w:p
-	inRun := false     // inside a w:r within a direct-body paragraph
+	inPara := false // inside a direct-body w:p
+	inRun := false  // inside a w:r within a direct-body paragraph
 	runIdx := 0
 	seenText := false
 	seenTab := false
@@ -921,17 +923,19 @@ func resolveHeadingLevel(styleID, styleName string, styleMap map[string]StyleDef
 
 // --- Numbering Resolver ---
 
-func buildNumberingMap(numberingXML []byte) (map[string]string, map[string]string, map[int]map[int]int, map[int]int) {
+func buildNumberingMap(numberingXML []byte) (map[string]string, map[string]string, map[int]map[int]int, map[int]int, map[string]NumLvlInd) {
 	var numbering DocNumbering
 	if err := xml.Unmarshal(numberingXML, &numbering); err != nil {
-		return nil, nil, nil, nil
+		return nil, nil, nil, nil, nil
 	}
 
 	abstractFmt := make(map[int]map[int]string)
 	abstractLvlText := make(map[int]map[int]string)
+	abstractLvlInd := make(map[int]map[int]NumLvlInd)
 	for _, an := range numbering.AbstractNums {
 		levels := make(map[int]string)
 		lvlTexts := make(map[int]string)
+		lvlInds := make(map[int]NumLvlInd)
 		for _, lvl := range an.Levels {
 			if lvl.NumFmt != nil {
 				levels[lvl.Ilvl] = lvl.NumFmt.Val
@@ -939,13 +943,22 @@ func buildNumberingMap(numberingXML []byte) (map[string]string, map[string]strin
 			if lvl.LvlText != nil {
 				lvlTexts[lvl.Ilvl] = lvl.LvlText.Val
 			}
+			if lvl.PPr != nil && lvl.PPr.Ind != nil {
+				lvlInds[lvl.Ilvl] = NumLvlInd{
+					Left:      float64(lvl.PPr.Ind.Left) / twipsPerInch,
+					Hanging:   float64(lvl.PPr.Ind.Hanging) / twipsPerInch,
+					FirstLine: float64(lvl.PPr.Ind.FirstLine) / twipsPerInch,
+				}
+			}
 		}
 		abstractFmt[an.ID] = levels
 		abstractLvlText[an.ID] = lvlTexts
+		abstractLvlInd[an.ID] = lvlInds
 	}
 
 	numFmtMap := make(map[string]string)
 	numLvlTextMap := make(map[string]string)
+	numLvlIndMap := make(map[string]NumLvlInd)
 	numStartMap := make(map[int]map[int]int)
 	numToAbstract := make(map[int]int)
 	for _, num := range numbering.Nums {
@@ -966,6 +979,12 @@ func buildNumberingMap(numberingXML []byte) (map[string]string, map[string]strin
 				numLvlTextMap[key] = txt
 			}
 		}
+		if li, ok := abstractLvlInd[aid]; ok {
+			for ilvl, ind := range li {
+				key := fmt.Sprintf("%d_%d", num.NumID, ilvl)
+				numLvlIndMap[key] = ind
+			}
+		}
 		for _, ov := range num.LvlOverrides {
 			if ov.StartOverride != nil {
 				if _, ok := numStartMap[num.NumID]; !ok {
@@ -976,7 +995,7 @@ func buildNumberingMap(numberingXML []byte) (map[string]string, map[string]strin
 		}
 	}
 
-	return numFmtMap, numLvlTextMap, numStartMap, numToAbstract
+	return numFmtMap, numLvlTextMap, numStartMap, numToAbstract, numLvlIndMap
 }
 
 // --- Parser ---
@@ -1002,29 +1021,17 @@ func parseContentItemsOrdered(content OrderedContentAccessor, children []BodyChi
 						NumID:      numID,
 						ListFormat: "ul",
 					}
+					if p.PPr.PStyle != nil {
+						lp.StyleID = p.PPr.PStyle.Val
+						if name, ok := styleNameMap[lp.StyleID]; ok {
+							lp.StyleName = name
+						}
+					}
 					nKey := fmt.Sprintf("%d_%d", numID, ilvl)
 					if nf, ok := numFmtMap[nKey]; ok && nf != "bullet" {
 						lp.ListFormat = "ol"
 					}
-					if p.PPr.Ind != nil {
-						lp.IndentLeft = float64(p.PPr.Ind.Left) / twipsPerInch
-						lp.IndentRight = float64(p.PPr.Ind.Right) / twipsPerInch
-						lp.IndentFirst = float64(p.PPr.Ind.FirstLine) / twipsPerInch
-						lp.IndentHanging = float64(p.PPr.Ind.Hanging) / twipsPerInch
-					}
-					if p.PPr.Spacing != nil {
-						lp.SpacingBefore = float64(p.PPr.Spacing.Before) / twipsPerInch
-						lp.SpacingAfter = float64(p.PPr.Spacing.After) / twipsPerInch
-						if p.PPr.Spacing.Line > 0 {
-							switch p.PPr.Spacing.LineRule {
-							case "auto":
-								lp.LineSpacing = float64(p.PPr.Spacing.Line) / 240.0
-							default:
-								lp.LineSpacing = float64(p.PPr.Spacing.Line) / twipsPerInch
-							}
-							lp.LineRule = p.PPr.Spacing.LineRule
-						}
-					}
+					fillParaLayout(lp, p.PPr, styleMap)
 					var tbItems []ContentItem
 					lp.Runs, tbItems = extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, false, themeFontMap, styleFontDefaults(p, styleMap, themeFontMap), nil)
 					items = append(items, tbItems...)
@@ -1086,31 +1093,20 @@ func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap m
 				ListFormat: "ul",
 			}
 
+			if p.PPr.PStyle != nil {
+				lp.StyleID = p.PPr.PStyle.Val
+				if name, ok := styleNameMap[lp.StyleID]; ok {
+					lp.StyleName = name
+				}
+			}
+
 			nKey := fmt.Sprintf("%d_%d", numID, ilvl)
 			if nf, ok := numFmtMap[nKey]; ok {
 				if nf != "bullet" {
 					lp.ListFormat = "ol"
 				}
 			}
-			if p.PPr.Ind != nil {
-				lp.IndentLeft = float64(p.PPr.Ind.Left) / twipsPerInch
-				lp.IndentRight = float64(p.PPr.Ind.Right) / twipsPerInch
-				lp.IndentFirst = float64(p.PPr.Ind.FirstLine) / twipsPerInch
-				lp.IndentHanging = float64(p.PPr.Ind.Hanging) / twipsPerInch
-			}
-			if p.PPr.Spacing != nil {
-				lp.SpacingBefore = float64(p.PPr.Spacing.Before) / twipsPerInch
-				lp.SpacingAfter = float64(p.PPr.Spacing.After) / twipsPerInch
-				if p.PPr.Spacing.Line > 0 {
-					switch p.PPr.Spacing.LineRule {
-					case "auto":
-						lp.LineSpacing = float64(p.PPr.Spacing.Line) / 240.0
-					default:
-						lp.LineSpacing = float64(p.PPr.Spacing.Line) / twipsPerInch
-					}
-					lp.LineRule = p.PPr.Spacing.LineRule
-				}
-			}
+			fillParaLayout(lp, p.PPr, styleMap)
 
 			var tbItems []ContentItem
 			lp.Runs, tbItems = extractRuns(p, styleMap, styleNameMap, relMap, numFmtMap, numStartMap, mode, false, themeFontMap, styleFontDefaults(p, styleMap, themeFontMap), nil)
@@ -1120,7 +1116,7 @@ func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap m
 			continue
 		}
 
-		parsePara:
+	parsePara:
 		item, paraTbItems := parseParagraph(p, relMap, styleMap, styleNameMap, numFmtMap, numStartMap, mode, themeFontMap)
 		items = append(items, item)
 		items = append(items, paraTbItems...)
@@ -1145,6 +1141,128 @@ func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap m
 	}
 
 	return items
+}
+
+// fillParaLayout copies the paragraph-level layout properties (indent, spacing,
+// tabs) from pPr onto lp. It is shared by the plain-paragraph path and both
+// list-item paths so they can never diverge on which w:pPr properties survive.
+//
+// Tabs are resolved to the paragraph's effective stop set: custom stops inherit
+// from the paragraph style chain and merge with paragraph-direct stops, where a
+// direct stop overrides an inherited one at the same position and a direct
+// w:val="clear" removes the inherited stop at that position. This mirrors how
+// Word keeps style stops until a paragraph explicitly clears them.
+func fillParaLayout(lp *ParsedParagraph, pPr *ParaProps, styleMap map[string]StyleDef) {
+	if pPr == nil {
+		return
+	}
+	if pPr.Spacing != nil {
+		lp.SpacingBefore = float64(pPr.Spacing.Before) / twipsPerInch
+		lp.SpacingAfter = float64(pPr.Spacing.After) / twipsPerInch
+		if pPr.Spacing.Line > 0 {
+			switch pPr.Spacing.LineRule {
+			case "auto":
+				lp.LineSpacing = float64(pPr.Spacing.Line) / 240.0
+			default:
+				// exact/atLeast: twips → inches
+				lp.LineSpacing = float64(pPr.Spacing.Line) / twipsPerInch
+			}
+			lp.LineRule = pPr.Spacing.LineRule
+		}
+	}
+	if pPr.Ind != nil {
+		lp.IndentLeft = float64(pPr.Ind.Left) / twipsPerInch
+		lp.IndentRight = float64(pPr.Ind.Right) / twipsPerInch
+		lp.IndentFirst = float64(pPr.Ind.FirstLine) / twipsPerInch
+		lp.IndentHanging = float64(pPr.Ind.Hanging) / twipsPerInch
+	}
+	inherited := inheritedStyleTabs(lp.StyleID, styleMap)
+	if pPr.Tabs != nil {
+		lp.Tabs = resolveEffectiveTabs(parseTabs(pPr.Tabs), inherited)
+	} else {
+		lp.Tabs = inherited
+	}
+}
+
+// parseTabs converts the raw OOXML w:tabs entries into ParsedTab values.
+func parseTabs(tabs *TabsVal) []ParsedTab {
+	var out []ParsedTab
+	if tabs == nil {
+		return nil
+	}
+	for _, t := range tabs.Tabs {
+		pt := ParsedTab{Pos: float64(t.Pos) / twipsPerInch}
+		if t.Val != "" {
+			pt.Align = t.Val
+		} else {
+			pt.Align = "left"
+		}
+		pt.Leader = t.Leader
+		if pt.Leader == "" {
+			pt.Leader = "none"
+		}
+		out = append(out, pt)
+	}
+	return out
+}
+
+// inheritedStyleTabs walks the paragraph style's basedOn chain and returns the
+// tabs of the nearest style that defines its own w:tabs (the nearest wins).
+func inheritedStyleTabs(styleID string, styleMap map[string]StyleDef) []ParsedTab {
+	visited := make(map[string]bool)
+	current := styleID
+	for current != "" && !visited[current] {
+		visited[current] = true
+		sd, ok := styleMap[current]
+		if !ok {
+			break
+		}
+		if len(sd.Tabs) > 0 {
+			return sd.Tabs
+		}
+		current = sd.BasedOn
+	}
+	return nil
+}
+
+// resolveEffectiveTabs merges paragraph-direct stops over style-inherited ones.
+// A direct stop at the same position replaces the inherited stop; a direct
+// w:val="clear" removes the stop at that position entirely. The result is sorted
+// by position (the order the tab-stop dialog and the attribute contract use).
+func resolveEffectiveTabs(direct, inherited []ParsedTab) []ParsedTab {
+	byPos := make(map[float64]ParsedTab)
+	var order []float64
+	drop := func(pos float64) {
+		if _, ok := byPos[pos]; ok {
+			delete(byPos, pos)
+			for i, p := range order {
+				if p == pos {
+					order = append(order[:i], order[i+1:]...)
+					break
+				}
+			}
+		}
+	}
+	for _, t := range inherited {
+		byPos[t.Pos] = t
+		order = append(order, t.Pos)
+	}
+	for _, t := range direct {
+		if t.Align == "clear" {
+			drop(t.Pos)
+			continue
+		}
+		if _, ok := byPos[t.Pos]; !ok {
+			order = append(order, t.Pos)
+		}
+		byPos[t.Pos] = t
+	}
+	sort.Float64s(order)
+	out := make([]ParsedTab, 0, len(order))
+	for _, pos := range order {
+		out = append(out, byPos[pos])
+	}
+	return out
 }
 
 func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]StyleDef, styleNameMap map[string]string, numFmtMap map[string]string, numStartMap map[int]map[int]int, mode string, themeFontMap map[string]string) (ContentItem, []ContentItem) {
@@ -1177,41 +1295,7 @@ func parseParagraph(p DocPara, relMap map[string]string, styleMap map[string]Sty
 		if p.PPr.JC != nil && p.PPr.JC.Val != "" {
 			lp.Align = p.PPr.JC.Val
 		}
-		if p.PPr.Spacing != nil {
-			lp.SpacingBefore = float64(p.PPr.Spacing.Before) / twipsPerInch
-			lp.SpacingAfter = float64(p.PPr.Spacing.After) / twipsPerInch
-			if p.PPr.Spacing.Line > 0 {
-				switch p.PPr.Spacing.LineRule {
-				case "auto":
-					lp.LineSpacing = float64(p.PPr.Spacing.Line) / 240.0
-				default:
-					// exact/atLeast: twips → inches
-					lp.LineSpacing = float64(p.PPr.Spacing.Line) / twipsPerInch
-				}
-				lp.LineRule = p.PPr.Spacing.LineRule
-			}
-		}
-		if p.PPr.Ind != nil {
-			lp.IndentLeft = float64(p.PPr.Ind.Left) / twipsPerInch
-			lp.IndentRight = float64(p.PPr.Ind.Right) / twipsPerInch
-			lp.IndentFirst = float64(p.PPr.Ind.FirstLine) / twipsPerInch
-			lp.IndentHanging = float64(p.PPr.Ind.Hanging) / twipsPerInch
-		}
-		if p.PPr.Tabs != nil {
-			for _, t := range p.PPr.Tabs.Tabs {
-				pt := ParsedTab{Pos: float64(t.Pos) / twipsPerInch}
-				if t.Val != "" {
-					pt.Align = t.Val
-				} else {
-					pt.Align = "left"
-				}
-				pt.Leader = t.Leader
-				if pt.Leader == "" {
-					pt.Leader = "none"
-				}
-				lp.Tabs = append(lp.Tabs, pt)
-			}
-		}
+		fillParaLayout(lp, p.PPr, styleMap)
 		if p.PPr.PBdr != nil {
 			if p.PPr.PBdr.Top != nil {
 				lp.BorderTop = &BorderInfo{Val: p.PPr.PBdr.Top.Val, Sz: p.PPr.PBdr.Top.Sz, Space: p.PPr.PBdr.Top.Space, Color: p.PPr.PBdr.Top.Color}
@@ -2007,9 +2091,9 @@ func parseTable(tbl DocTbl, relMap map[string]string, styleMap map[string]StyleD
 					pc.TextDir = cell.TcPr.TextDir.Val
 				}
 				pc.NoWrap = cell.TcPr.NoWrap.IsOn()
-			if cell.TcPr.TcW != nil && cell.TcPr.TcW.W > 0 {
-				pc.Width = float64(cell.TcPr.TcW.W) / twipsPerInch
-			}
+				if cell.TcPr.TcW != nil && cell.TcPr.TcW.W > 0 {
+					pc.Width = float64(cell.TcPr.TcW.W) / twipsPerInch
+				}
 				if cell.TcPr.Borders != nil {
 					if cell.TcPr.Borders.Top != nil {
 						pc.BorderTop = &BorderInfo{Val: cell.TcPr.Borders.Top.Val, Sz: cell.TcPr.Borders.Top.Sz, Space: cell.TcPr.Borders.Top.Space, Color: cell.TcPr.Borders.Top.Color}
@@ -2191,9 +2275,9 @@ func drawingImage(d *DocDrawing, relMap map[string]string) *TextRun {
 		src = embed
 	}
 	tr := &TextRun{
-		IsImage:   true,
-		ImageSrc:  src,
-		ImageAlt:  inline.DocPr.Desc,
+		IsImage:  true,
+		ImageSrc: src,
+		ImageAlt: inline.DocPr.Desc,
 	}
 	if inline.Extent != nil {
 		tr.ImageWidth = float64(inline.Extent.Cx) / 914400.0
@@ -3040,9 +3124,11 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 			content := buildInlineText(item.Paragraph.Runs, doc.DefaultFont, doc.Mode)
 			idx++
 			conts := collectListContinuations(doc, idx, numID, startAbstractID)
-			bodyIndent := itemBodyIndent(item.Paragraph)
+			bodyIndent := itemBodyIndent(item.Paragraph, doc)
 			fmt.Fprintf(b, "%s<li>\n", indent)
-			writeListParagraph(b, item.Paragraph, content, indent+"  ", bodyIndent)
+			// The first <p> is the geometry owner: resolve marker geometry from
+			// the numbering level when the item paragraph has no w:ind of its own.
+			writeListFirstParagraph(b, item.Paragraph, content, indent+"  ", bodyIndent, doc)
 			for _, ci := range conts {
 				cc := buildInlineText(doc.Content[ci].Paragraph.Runs, doc.DefaultFont, doc.Mode)
 				writeListParagraph(b, doc.Content[ci].Paragraph, cc, indent+"  ", bodyIndent)
@@ -3058,8 +3144,10 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 }
 
 // collectListContinuations returns the content indices of consecutive paragraphs
-// that continue the current list item (no numPr of their own, but followed by a
-// sibling list item). Such paragraphs are emitted as <p> children of the <li>.
+// that continue the current list item (no numPr of their own). Per GAP-02, any
+// non-list paragraph that is not a section break is treated as continuation
+// content when it appears immediately after a list item — including after the
+// last item of a list. Such paragraphs are emitted as <p> children of the <li>.
 func collectListContinuations(doc *ParsedDocument, from int, numID int, abstractID int) []int {
 	var conts []int
 	for i := from; i < len(doc.Content); i++ {
@@ -3068,9 +3156,6 @@ func collectListContinuations(doc *ParsedDocument, from int, numID int, abstract
 			break
 		}
 		if isSectionBreak(it.Paragraph) {
-			break
-		}
-		if !hasSameNumIDAhead(doc.Content, i, numID, abstractID) {
 			break
 		}
 		conts = append(conts, i)
@@ -3109,6 +3194,20 @@ func emitListNested(b *strings.Builder, idx, numID, level int, abstractID int, i
 	return idx
 }
 
+// writeListFirstParagraph writes the geometry-owner <p> of a list item, resolving
+// the marker geometry (indentLeft/indentHanging) from the numbering level when
+// the item paragraph itself carries no w:ind.
+func writeListFirstParagraph(b *strings.Builder, p *ParsedParagraph, content string, indent string, bodyIndent float64, doc *ParsedDocument) {
+	firstP := *p
+	if firstP.IndentLeft <= 0 && firstP.IndentHanging <= 0 {
+		if lvlLeft, lvlHanging := resolveLevelInd(p, doc); lvlLeft > 0 || lvlHanging > 0 {
+			firstP.IndentLeft = lvlLeft
+			firstP.IndentHanging = lvlHanging
+		}
+	}
+	writeListParagraph(b, &firstP, content, indent, bodyIndent)
+}
+
 // writeListParagraph writes a <p> child inside a <li>.
 func writeListParagraph(b *strings.Builder, p *ParsedParagraph, content string, indent string, bodyIndent float64) {
 	fmt.Fprintf(b, "%s<p", indent)
@@ -3128,17 +3227,38 @@ func writeListPAttrs(b *strings.Builder, p *ParsedParagraph, bodyIndent float64)
 	writeParagraphAttrs(b, p)
 }
 
+// resolveLevelInd returns the numbering level's indentation (in inches) for a
+// list item, from the level's pPr/w:ind. Returns (0, 0) when absent.
+func resolveLevelInd(p *ParsedParagraph, doc *ParsedDocument) (float64, float64) {
+	if p == nil || doc == nil || doc.NumLvlIndMap == nil {
+		return 0, 0
+	}
+	key := fmt.Sprintf("%d_%d", p.NumID, p.ListLevel)
+	if ind, ok := doc.NumLvlIndMap[key]; ok {
+		return ind.Left, ind.Hanging
+	}
+	return 0, 0
+}
+
 // itemBodyIndent returns the body text indent of a list item. Word uses the
 // left indent as the body indent; when only a hanging indent is present, the
-// hanging value is used as the body indent.
-func itemBodyIndent(p *ParsedParagraph) float64 {
+// hanging value is used as the body indent. The paragraph's explicit w:ind
+// wins over the numbering level's indentation.
+func itemBodyIndent(p *ParsedParagraph, doc *ParsedDocument) float64 {
 	if p == nil {
 		return 0
 	}
 	if p.IndentLeft > 0 {
 		return p.IndentLeft
 	}
-	return p.IndentHanging
+	if p.IndentHanging > 0 {
+		return p.IndentHanging
+	}
+	left, hanging := resolveLevelInd(p, doc)
+	if left > 0 {
+		return left
+	}
+	return hanging
 }
 
 func hasSameNumIDAhead(items []ContentItem, from int, numID int, abstractID int) bool {
@@ -3227,7 +3347,7 @@ func emitContentItem(b *strings.Builder, item ContentItem, doc *ParsedDocument, 
 		content := buildInlineText(item.Paragraph.Runs, doc.DefaultFont, doc.Mode)
 		fmt.Fprintf(b, "%s<%s type=\"%s\">\n", indent, tag, typeAttr)
 		fmt.Fprintf(b, "%s  <li>\n", indent)
-		writeListParagraph(b, item.Paragraph, content, indent+"    ", itemBodyIndent(item.Paragraph))
+		writeListFirstParagraph(b, item.Paragraph, content, indent+"    ", itemBodyIndent(item.Paragraph, doc), doc)
 		fmt.Fprintf(b, "%s  </li>\n", indent)
 		fmt.Fprintf(b, "%s</%s>\n", indent, tag)
 	case "table":
@@ -3291,7 +3411,7 @@ func customStyleName(p *ParsedParagraph) string {
 		}
 		return p.StyleName
 	}
-	if sn == "normal" || sn == "default paragraph font" || sn == "body text" || sn == "list paragraph" {
+	if sn == "normal" || sn == "default paragraph font" || sn == "list paragraph" {
 		return ""
 	}
 	return p.StyleName
@@ -3315,6 +3435,25 @@ func writeParagraphAttrs(b *strings.Builder, p *ParsedParagraph) {
 	}
 	if p.IndentFirst > 0 {
 		fmt.Fprintf(b, " indentFirst=\"%.2f\"", p.IndentFirst)
+	}
+	if len(p.Tabs) > 0 {
+		b.WriteString(" tabs=\"")
+		for i, t := range p.Tabs {
+			if i > 0 {
+				b.WriteByte(' ')
+			}
+			fmt.Fprintf(b, "%.2f", t.Pos)
+			// A stop is compact when it uses the defaults (left/none). Anything
+			// else — including "clear", which is NOT a landing position — must be
+			// carried explicitly so consumers never mistake it for a plain stop.
+			if t.Align != "left" || t.Leader != "none" {
+				fmt.Fprintf(b, "@%s", t.Align)
+				if t.Leader != "none" {
+					fmt.Fprintf(b, ":%s", t.Leader)
+				}
+			}
+		}
+		b.WriteByte('"')
 	}
 	if p.SpacingBefore > 0 {
 		fmt.Fprintf(b, " spacingBefore=\"%.2f\"", p.SpacingBefore)
@@ -3681,8 +3820,15 @@ func writeTableIndent(b *strings.Builder, t *ParsedTable, doc *ParsedDocument, i
 				case "list":
 					tag, typeAttr := listTagAndType(ci.Paragraph, doc)
 					content := buildInlineText(ci.Paragraph.Runs, doc.DefaultFont, doc.Mode)
+					firstP := *ci.Paragraph
+					if firstP.IndentLeft <= 0 && firstP.IndentHanging <= 0 {
+						if lvlLeft, lvlHanging := resolveLevelInd(ci.Paragraph, doc); lvlLeft > 0 || lvlHanging > 0 {
+							firstP.IndentLeft = lvlLeft
+							firstP.IndentHanging = lvlHanging
+						}
+					}
 					fmt.Fprintf(b, "<%s type=\"%s\"><li><p", tag, typeAttr)
-					writeListPAttrs(b, ci.Paragraph, itemBodyIndent(ci.Paragraph))
+					writeListPAttrs(b, &firstP, itemBodyIndent(ci.Paragraph, doc))
 					fmt.Fprintf(b, ">%s</p></li></%s>", content, tag)
 				case "table":
 					writeTableIndent(b, ci.Table, doc, indent+"    ")
