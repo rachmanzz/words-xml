@@ -876,6 +876,17 @@ Every OOXML construct the preprocessor encounters is classified into one of four
   base value. When a start override resets numbering to 1 (or another value), the
   preprocessor MUST split the list into a new `<ol>` element at the restart point. The new
   `<ol>` carries `start="n"` where `n` is the resolved start value (default `1`).
+- **Sequential items with same numId**: paragraphs with the same `w:numId` and `w:ilvl`
+  are grouped into a single `<ol>`/`<ul>` with multiple `<li>` children. The preprocessor
+  distinguishes between:
+  - **Base start values** from `w:abstractNum/w:lvl/w:start` — these define the initial
+    numbering value but do NOT indicate a list restart. Sequential items with the same
+    `w:numId` stay in the same list container.
+  - **Explicit start overrides** from `w:num/w:lvlOverride/w:startOverride` — these
+    indicate a deliberate restart point and trigger a split into a new `<ol>` element.
+  This ensures that lists like "1., 2., 3., 4., 5." (all sharing the same `w:numId`) are
+  emitted as a single `<ol>` with five `<li>` children, not as five separate `<ol>` elements
+  each containing one `<li>`.
 - **List type**: resolve `w:numId` → `w:abstractNumId` → `w:numFmt` in `numbering.xml`:
   - `bullet` → `<ul type="bullet">`
   - `decimal` → `<ol type="decimal">`
