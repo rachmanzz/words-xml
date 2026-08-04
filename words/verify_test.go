@@ -17,6 +17,31 @@ func TestVerifyValidMinimal(t *testing.T) {
 	}
 }
 
+func TestVerifyTabsAttributeFormat(t *testing.T) {
+	valid := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+		`<style unit="in"></style>` +
+		`<write>` +
+		`<p tabs="0.32 0.63 0.95 1.26">a</p>` +
+		`<p tabs="5.51@clear 1.26">b</p>` +
+		`<p tabs="6.25@right:dot">c</p>` +
+		`</write>` +
+		`</words>`
+	if r := Verify(valid); !r.Valid {
+		t.Errorf("expected valid tabs formats, got errors: %v", r.Errors)
+	}
+	invalid := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+		`<style unit="in"></style>` +
+		`<write><p tabs="abc 1.26">a</p></write>` +
+		`</words>`
+	r := Verify(invalid)
+	if r.Valid {
+		t.Error("expected invalid tabs format to be rejected")
+	}
+	if len(r.Errors) == 0 || !strings.Contains(r.Errors[0], "tabs") {
+		t.Errorf("expected a tabs error, got: %v", r.Errors)
+	}
+}
+
 func TestVerifyEmptyInput(t *testing.T) {
 	r := Verify("")
 	if r.Valid {

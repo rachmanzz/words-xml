@@ -492,6 +492,12 @@ func verifyLiAttrs(start xml.StartElement, r *VerifyResult) {
 			// ok, freeform
 		case "type":
 			// MOD-2: any numFmt value is valid (raw preservation)
+		case "indentLeft", "indentRight", "indentFirst", "indentHanging",
+			"spacingBefore", "spacingAfter", "lineSpacing", "lineRule",
+			"align", "keepNext", "keepLines", "widowControl", "shd", "at", "tabs":
+			// Model 2: <li> is a clean container; block geometry belongs on the
+			// item's first <p> child.
+			r.addWarn("<li> must not carry block attribute %s: put it on the first <p> child", a.Name.Local)
 		}
 	}
 }
@@ -638,6 +644,18 @@ func verifyInlineAttrs(start xml.StartElement, elemType string, r *VerifyResult)
 			}
 		case "cnfStyle":
 			// ok, conditional format style
+		case "tabs":
+			// space-separated stops; each stop is "<pos>" or "<pos>@<align>[:<leader>]"
+			for _, part := range strings.Fields(a.Value) {
+				pos := part
+				if at := strings.IndexByte(part, '@'); at >= 0 {
+					pos = part[:at]
+				}
+				if _, err := strconv.ParseFloat(pos, 64); err != nil {
+					r.addError("<%s> tabs must be space-separated stops (pos or pos@align[:leader]), got %q", elemType, a.Value)
+					break
+				}
+			}
 		case "frame":
 			// ok, frame properties (drop cap, text frame)
 		}
