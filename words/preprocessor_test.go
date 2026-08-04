@@ -2461,6 +2461,90 @@ func TestParagraphTabsStyleInheritanceAndClear(t *testing.T) {
 	})
 }
 
+func TestParagraphIndentSpacingStyleInheritance(t *testing.T) {
+	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:style w:type="paragraph" w:styleId="Normal">
+    <w:name w:val="Normal"/>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="BodyTextIndent">
+    <w:name w:val="Body Text Indent"/>
+    <w:basedOn w:val="Normal"/>
+    <w:pPr>
+      <w:spacing w:line="480" w:lineRule="exact"/>
+      <w:ind w:left="460" w:hanging="460"/>
+    </w:pPr>
+  </w:style>
+</w:styles>`
+	numbering := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  <w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+    <w:abstractNum w:abstractNumId="0">
+      <w:lvl w:ilvl="0">
+        <w:numFmt w:val="decimal"/>
+        <w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr>
+      </w:lvl>
+    </w:abstractNum>
+    <w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>
+  </w:numbering>`
+
+	t.Run("no direct layout inherits indent and spacing from style", func(t *testing.T) {
+		body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:pStyle w:val="BodyTextIndent"/></w:pPr>
+    <w:r><w:t xml:space="preserve">First item</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+		data := makeDocxWithParts(body, styles, "", "")
+		doc, err := ProcessDOCXBytes(data)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		x := doc.WordsXML
+		if !strings.Contains(x, `<p c="Body Text Indent" indentLeft="0.32" indentHanging="0.32" lineSpacing="0.33" lineRule="exact">`) {
+			t.Errorf("expected paragraph to carry effective indent/spacing from its style, got: %s", x)
+		}
+	})
+
+	t.Run("direct w:ind block replaces the style ind block", func(t *testing.T) {
+		body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:pStyle w:val="BodyTextIndent"/><w:ind w:left="1000"/></w:pPr>
+    <w:r><w:t xml:space="preserve">Direct ind</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+		data := makeDocxWithParts(body, styles, "", "")
+		doc, err := ProcessDOCXBytes(data)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		x := doc.WordsXML
+		if !strings.Contains(x, `<p c="Body Text Indent" indentLeft="0.69" lineSpacing="0.33" lineRule="exact">`) {
+			t.Errorf("expected direct w:ind to replace the style indent block while spacing still inherits, got: %s", x)
+		}
+		if strings.Contains(x, `indentHanging="0.32">Direct ind</p>`) {
+			t.Errorf("expected no indentHanging on the <p> once a direct w:ind block is present, got: %s", x)
+		}
+	})
+
+	t.Run("list item keeps numbering-level indent, not the style indent", func(t *testing.T) {
+		body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:pStyle w:val="BodyTextIndent"/><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr>
+    <w:r><w:t xml:space="preserve">Item</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+		data := makeDocxWithParts(body, styles, numbering, "")
+		doc, err := ProcessDOCXBytes(data)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		x := doc.WordsXML
+		if !strings.Contains(x, `<p c="Body Text Indent" indentLeft="0.50" indentHanging="0.25">Item</p>`) {
+			t.Errorf("expected list item to resolve indent from the numbering level, not the style, got: %s", x)
+		}
+	})
+}
+
 func TestBuildStyleMapLineRuleExact(t *testing.T) {
 	styles := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">

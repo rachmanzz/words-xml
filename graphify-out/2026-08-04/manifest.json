@@ -45,13 +45,13 @@
     "semantic_hash": ""
   },
   "words/preprocessor.go": {
-    "mtime": 1785822521.371001,
-    "ast_hash": "23068afc42dd31ca9e05506e4a0337ea",
+    "mtime": 1785824067.3307269,
+    "ast_hash": "241f1733615b8252f5113f9e2dba984d",
     "semantic_hash": ""
   },
   "words/preprocessor_test.go": {
-    "mtime": 1785822540.3908017,
-    "ast_hash": "21b081b9e6b4c4c2dc325920772b538c",
+    "mtime": 1785824115.7877576,
+    "ast_hash": "699b47ab497653426088fe6808de4f1d",
     "semantic_hash": ""
   },
   "words/remain_bugs_test.go": {
@@ -115,13 +115,13 @@
     "semantic_hash": ""
   },
   "docx-preprosessor-limitation.md": {
-    "mtime": 1785821196.5420763,
-    "ast_hash": "1d2e8419eebb7771a17b40164745dfbe",
+    "mtime": 1785824194.5364478,
+    "ast_hash": "4b30e014529a61b37662def26e162067",
     "semantic_hash": ""
   },
   "docx-preprosessor.md": {
-    "mtime": 1785822577.2983189,
-    "ast_hash": "9290a774ae29254942d3e3a0110d5789",
+    "mtime": 1785824181.64817,
+    "ast_hash": "f69348c69a1e5366656e09de858fdd21",
     "semantic_hash": ""
   },
   "docx-words-gap.md": {

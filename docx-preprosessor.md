@@ -465,14 +465,14 @@ All block elements (`<p>`, `<h1>`-`<h9>`, `<blockquote>`, `<pre>`) can carry the
 | `valign` | string | `w:pPr/w:textAlignment` | Vertical text alignment (`top`, `center`, `baseline`) |
 | `shd` | string | `w:pPr/w:shd` | Paragraph shading (hex color or pattern) |
 | `at` | string | `w:pPr/w:pBdr` | Compact border representation (see §`at` Attribute) |
-| `spacingBefore` | float | `w:pPr/w:spacing/@w:before` | Space before paragraph (in declared unit) |
-| `spacingAfter` | float | `w:pPr/w:spacing/@w:after` | Space after paragraph (in declared unit) |
-| `lineSpacing` | float | `w:pPr/w:spacing/@w:line` | Line spacing (in declared unit or multiplier) |
-| `lineRule` | string | `w:pPr/w:spacing/@w:lineRule` | Line spacing rule (`auto`, `exact`, `atLeast`) |
-| `indentLeft` | float | `w:pPr/w:ind/@w:left` | Left indent (in declared unit) |
-| `indentRight` | float | `w:pPr/w:ind/@w:right` | Right indent (in declared unit) |
-| `indentFirst` | float | `w:pPr/w:ind/@w:firstLine` | First-line indent (in declared unit) |
-| `indentHanging` | float | `w:pPr/w:ind/@w:hanging` | Hanging indent (in declared unit) |
+| `spacingBefore` | float | `w:pPr/w:spacing/@w:before` (+ style chain) | Space before paragraph — **effective** value: the paragraph's own `w:spacing` block, else the nearest style in the `basedOn` chain that defines one (in declared unit) |
+| `spacingAfter` | float | `w:pPr/w:spacing/@w:after` (+ style chain) | Space after paragraph — **effective** value (same block semantics as `spacingBefore`) |
+| `lineSpacing` | float | `w:pPr/w:spacing/@w:line` (+ style chain) | Line spacing — **effective** value (in declared unit or multiplier) |
+| `lineRule` | string | `w:pPr/w:spacing/@w:lineRule` (+ style chain) | Line spacing rule (`auto`, `exact`, `atLeast`) |
+| `indentLeft` | float | `w:pPr/w:ind/@w:left` (+ style chain) | Left indent — **effective** value: the paragraph's own `w:ind` block, else the nearest style in the `basedOn` chain that defines one (in declared unit) |
+| `indentRight` | float | `w:pPr/w:ind/@w:right` (+ style chain) | Right indent — **effective** value |
+| `indentFirst` | float | `w:pPr/w:ind/@w:firstLine` (+ style chain) | First-line indent — **effective** value |
+| `indentHanging` | float | `w:pPr/w:ind/@w:hanging` (+ style chain) | Hanging indent — **effective** value |
 | `tabs` | string | `w:pPr/w:tabs` + style chain | This paragraph's **effective** tab stops, space-separated; each stop is `pos` in inches with optional `@<align>[:<leader>]` when not the default `left`/`none` (e.g. `tabs="0.32 0.63 0.95 1.26"`, `tabs="6.25@right:dot"`). Direct stops merge over style-inherited stops (nearest style in the `basedOn` chain that defines `w:tabs` wins); a direct stop replaces an inherited stop at the same position, and `w:val="clear"` removes it. Present when the effective set is non-empty. Resolves `<tab/>` within this paragraph — see §`<s:tab>` |
 | `keepNext` | bool | `w:pPr/w:keepNext` | Keep paragraph with next paragraph |
 | `keepLines` | bool | `w:pPr/w:keepLines` | Keep all lines of paragraph together |
@@ -612,8 +612,8 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 | `w:p` | struct | `<h1>`-`<h9>`/`<p>`/`<li>`/`<blockquote>` | semantic block |
 | `w:pPr/w:pStyle` | style | `c="..."` attr (only when style name ≠ element name) + `<s:custom>` in `<style>` | keep style name + custom style definition |
 | `w:pPr/w:numPr` | list | drives `<ul>`/`<ol>` | list structure |
-| `w:pPr/w:spacing` | layout | `<s:gap before/after>` + `<s:line>` | vertical rhythm + line spacing |
-| `w:pPr/w:ind` | layout | `indentLeft/Right/First/Hanging` on `<p>` (per-paragraph); list item geometry on the item's first `<p>` child; style-level indent → `<s:indent>` in `<style>` | indentation preserved (MOD-5) |
+| `w:pPr/w:spacing` | layout | `<s:gap before/after>` + `<s:line>`; paragraph-direct values ALSO on the `<p>` as **effective** `spacingBefore/After`, `lineSpacing`, `lineRule` (inherited from the style chain when the paragraph has no direct `w:spacing` block) | vertical rhythm + line spacing |
+| `w:pPr/w:ind` | layout | `indentLeft/Right/First/Hanging` on `<p>` (**effective** per-paragraph: direct `w:ind`, else nearest style in the `basedOn` chain that defines one; list-item first `<p>` geometry comes from the numbering level instead of the style); style-level indent → `<s:indent>` in `<style>` | indentation preserved (MOD-5) |
 | `w:pPr/w:jc` | layout | `<s:align>` in `<style>` | justification preserved as LOSSLESS_METADATA |
 | `w:pPr/w:textAlignment` | keep | `valign="top|center|baseline"` on `<p>` | vertical text alignment |
 | `w:bidi` (p), `w:rPr/w:rtl` (r), `w:dir`/`w:bdo` | direction | `dir="rtl"` attribute on element | RTL/bidi support (MOD-7) |

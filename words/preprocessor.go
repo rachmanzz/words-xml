@@ -1147,6 +1147,13 @@ func parseContentItems(paras []DocPara, tables []DocTbl, sdts []DocSdt, relMap m
 // tabs) from pPr onto lp. It is shared by the plain-paragraph path and both
 // list-item paths so they can never diverge on which w:pPr properties survive.
 //
+// Indent and spacing follow Word's block semantics: a paragraph-direct w:ind or
+// w:spacing block replaces the style's block entirely, and when the paragraph
+// has none, the nearest style in the basedOn chain that defines one is inherited
+// (the nearest definition wins). List items are excluded from indent/spacing
+// inheritance — their marker geometry comes from the numbering level and their
+// spacing from the direct paragraph properties.
+//
 // Tabs are resolved to the paragraph's effective stop set: custom stops inherit
 // from the paragraph style chain and merge with paragraph-direct stops, where a
 // direct stop overrides an inherited one at the same position and a direct
@@ -1169,12 +1176,26 @@ func fillParaLayout(lp *ParsedParagraph, pPr *ParaProps, styleMap map[string]Sty
 			}
 			lp.LineRule = pPr.Spacing.LineRule
 		}
+	} else if !lp.IsList {
+		if st, ok := inheritedStyleParaProps(lp.StyleID, styleMap, styleDefinesSpacing); ok {
+			lp.SpacingBefore = st.SpacingBefore
+			lp.SpacingAfter = st.SpacingAfter
+			lp.LineSpacing = st.LineSpacing
+			lp.LineRule = st.LineRule
+		}
 	}
 	if pPr.Ind != nil {
 		lp.IndentLeft = float64(pPr.Ind.Left) / twipsPerInch
 		lp.IndentRight = float64(pPr.Ind.Right) / twipsPerInch
 		lp.IndentFirst = float64(pPr.Ind.FirstLine) / twipsPerInch
 		lp.IndentHanging = float64(pPr.Ind.Hanging) / twipsPerInch
+	} else if !lp.IsList {
+		if st, ok := inheritedStyleParaProps(lp.StyleID, styleMap, styleDefinesInd); ok {
+			lp.IndentLeft = st.IndentLeft
+			lp.IndentRight = st.IndentRight
+			lp.IndentFirst = st.IndentFirst
+			lp.IndentHanging = st.IndentHanging
+		}
 	}
 	inherited := inheritedStyleTabs(lp.StyleID, styleMap)
 	if pPr.Tabs != nil {
@@ -1182,6 +1203,35 @@ func fillParaLayout(lp *ParsedParagraph, pPr *ParaProps, styleMap map[string]Sty
 	} else {
 		lp.Tabs = inherited
 	}
+}
+
+// styleDefinesInd reports whether the style carries its own w:ind block.
+func styleDefinesInd(sd StyleDef) bool {
+	return sd.IndentLeft > 0 || sd.IndentRight > 0 || sd.IndentFirst > 0 || sd.IndentHanging > 0
+}
+
+// styleDefinesSpacing reports whether the style carries its own w:spacing block.
+func styleDefinesSpacing(sd StyleDef) bool {
+	return sd.SpacingBefore > 0 || sd.SpacingAfter > 0 || sd.LineSpacing > 0
+}
+
+// inheritedStyleParaProps walks the paragraph style's basedOn chain and returns
+// the nearest style for which want() is true (the nearest definition wins).
+func inheritedStyleParaProps(styleID string, styleMap map[string]StyleDef, want func(StyleDef) bool) (StyleDef, bool) {
+	visited := make(map[string]bool)
+	current := styleID
+	for current != "" && !visited[current] {
+		visited[current] = true
+		sd, ok := styleMap[current]
+		if !ok {
+			break
+		}
+		if want(sd) {
+			return sd, true
+		}
+		current = sd.BasedOn
+	}
+	return StyleDef{}, false
 }
 
 // parseTabs converts the raw OOXML w:tabs entries into ParsedTab values.
