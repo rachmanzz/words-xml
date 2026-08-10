@@ -13,10 +13,5 @@
       "git push *": "ask",
       "git tag *": "ask"
     }
-  },
-  "reference": {
-    "readonly": [
-      "/home/natadana/Projects/dcdtunning"
-    ]
   }
 }

@@ -79,6 +79,8 @@ func verifyRoot(tokens []xml.Token, r *VerifyResult) {
 
 	version := ""
 	mode := ""
+	fidelity := ""
+	policy := ""
 	for _, a := range start.Attr {
 		if a.Name.Local == "version" {
 			version = a.Value
@@ -86,18 +88,38 @@ func verifyRoot(tokens []xml.Token, r *VerifyResult) {
 		if a.Name.Local == "mode" {
 			mode = a.Value
 		}
+		if a.Name.Local == "fidelity" {
+			fidelity = a.Value
+		}
+		if a.Name.Local == "policy" {
+			policy = a.Value
+		}
 	}
 
 	if version == "" {
 		r.addError("missing version attribute on <words>")
-	} else if version != "1.1.0" {
-		r.addError("version must be \"1.1.0\", got %q", version)
+	} else if version != "1.2.0" {
+		r.addError("version must be \"1.2.0\", got %q", version)
 	}
 
 	if mode == "" {
 		r.addWarn("missing mode attribute on <words>")
 	} else if mode != "semantic" && mode != "lossless" {
 		r.addError("mode must be \"semantic\" or \"lossless\", got %q", mode)
+	}
+
+	// Fidelity manifest: an explicit contract declaring how faithfully the
+	// source document is preserved and how unrepresentable constructs are handled.
+	if fidelity == "" {
+		r.addError("missing fidelity attribute on <words>")
+	} else if fidelity != "verbatim" {
+		r.addError("fidelity must be \"verbatim\", got %q", fidelity)
+	}
+
+	if policy == "" {
+		r.addError("missing policy attribute on <words>")
+	} else if policy != "preserve-and-flag" {
+		r.addError("policy must be \"preserve-and-flag\", got %q", policy)
 	}
 }
 

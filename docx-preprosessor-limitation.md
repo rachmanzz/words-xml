@@ -1,18 +1,22 @@
 # DOCX Preprocessor — Limitations
 
 This document consolidates the **limitations and exclusions** of the DOCX Preprocessor
-(`docx-preprosessor.md`, `words` v1.1.0). It is the authoritative reference for what the
+(`docx-preprosessor.md`, `words` v1.2.0). It is the authoritative reference for what the
 preprocessor intentionally does **not** handle.
 
 The preprocessor is a **deterministic, LLM-free, noise-removing transformer**. Its job is to
 emit a semantic, token-efficient `words` document — not to faithfully reproduce every
 binary or presentation detail of the source `.docx`.
 
+The root `<words>` element declares the **fidelity manifest** (`fidelity="verbatim"`
+`policy="preserve-and-flag"`): source content is preserved verbatim, and constructs that
+cannot be represented are **preserved as flags/placeholders** rather than silently dropped.
+
 ---
 
 ## 1. Excluded by Policy (binary / too complex)
 
-These are **out of scope** for v1.1.0. They are emitted as placeholders or dropped entirely.
+These are **out of scope** for v1.2.0. They are emitted as placeholders or dropped entirely.
 
 | Excluded construct | OOXML source | Behavior in `words` | Impact |
 |--------------------|--------------|--------------------|--------|
@@ -107,7 +111,7 @@ The following items were previously listed as dropped but are now **preserved** 
 | **Table styling** (`w:tblPr`/`w:tcPr`) | borders preserved via `at` attribute; shading dropped; `w:tblGrid`/`w:gridCol` → `<s:col ref="n">` linked to `<table id="n">`; `colspan`/`rowspan` preserved; `w:tblW` → `<table width>` (P5); `w:jc` → `<table align>` (P6); `w:tblInd` → `<table indent>` (P10); `w:tblCellSpacing` → `<table cellSpacing>` (P11); `w:tblCaption` → `<table caption>` (P3); `w:tblDescription` → `<table summary>` (P4); `w:tcPr/w:vAlign` → `<td valign>` / `<th valign>` (P7); `w:tcPr/w:textDirection` → `<td textDir>` / `<th textDir>` (P12); `w:tcPr/w:noWrap` → `<td noWrap>` / `<th noWrap>` (P13) | shading/color lost |
 | **Section layout** (`w:sectPr`) | page size + margins → `<s:page>`; **multiple sections** (`<s:page>` per section); headers/footers → `<header>`/`<footer>`; `w:cols` → `<s:cols n=".." space=".."/>` (P19) | — |
 | **Vertical alignment** (`w:vertAlign`) | mapped to `<sup>`/`<sub>` | only sup/sub; other vertAlign values dropped |
-| **Multilingual** (`w:lang`) | propagated to `lang` attribute per element (BCP 47) — block-level and `<span lang="...">` (P2) | resolved in spec v1.1.0 |
+| **Multilingual** (`w:lang`) | propagated to `lang` attribute per element (BCP 47) — block-level and `<span lang="...">` (P2) | resolved in spec v1.2.0 |
 | **Code detection** (style/font heuristics) | pattern-matched to `<pre>`; monospace font OR style name | false positives/negatives possible (custom styles named "Code" for non-code content) |
 
 ---
@@ -198,6 +202,12 @@ The following gaps were identified and addressed during specification review:
 | **Paragraph-level run defaults ignored** | Now propagated to runs via `applyParaRunDefaults` |
 | **List continuation across non-list paragraphs** | Non-list paragraphs between same-numId items included in preceding `<li>` with `<br>` separator (GAP-02) |
 | **Heading/blockquote indent missing** | Now emitted on all block elements (GAP-05) |
+
+### Resolved in v1.2.0
+
+| Issue | Resolution |
+|-------|-----------|
+| **Fidelity contract implicit** | Root `<words>` now carries an explicit **fidelity manifest**: `fidelity="verbatim"` `policy="preserve-and-flag"` — source content preserved verbatim, unrepresentable constructs preserved as flags/placeholders instead of silently dropped |
 
 ---
 

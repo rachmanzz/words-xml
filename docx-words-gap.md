@@ -304,7 +304,8 @@ At $0.15/1M input tokens (GPT-4 class):
 ✅ **Deterministic output** — same DOCX → same words
 ✅ **Compact borders** — `at` attribute saves ~90% vs XML borders
 ✅ **Flat structure** — minimal nesting depth
-✅ **Versioned format** — `version="1.1.0"` for evolution
+✅ **Versioned format** — `version="1.2.0"` for evolution
+✅ **Fidelity manifest** — root `<words>` declares `fidelity="verbatim"` `policy="preserve-and-flag"`
 ✅ **P1-P13 coverage** — line spacing, run language, table props, hidden text, vertical alignment, indentation, cell spacing, text direction, no-wrap
 ✅ **Typographic niceties** — L1-L11: suppressAutoHyph, snapToGrid, kinsoku, wordWrap, overflowPunct, topLinePunct, autoSpaceDE/DN, textDirection, suppressOverlap, divID, cnfStyle
 ✅ **Paragraph formatting** — shading, keepNext, keepLines, widowControl, section breaks, revision marks

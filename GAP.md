@@ -1,4 +1,4 @@
-# GAP Analysis: words-xml v1.1.0
+# GAP Analysis: words-xml v1.2.0
 
 Audit date: 2026-07-22
 Status: ACTIVE
@@ -7,7 +7,7 @@ Status: ACTIVE
 
 ## Summary
 
-Gaps between the words-xml spec (v1.1.0) and current implementation, grouped by severity.
+Gaps between the words-xml spec (v1.2.0) and current implementation, grouped by severity.
 
 ---
 

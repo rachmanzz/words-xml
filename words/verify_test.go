@@ -7,7 +7,7 @@ import (
 )
 
 func TestVerifyValidMinimal(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><p>Hello</p></write>` +
 		`</words>`
@@ -18,7 +18,7 @@ func TestVerifyValidMinimal(t *testing.T) {
 }
 
 func TestVerifyTabsAttributeFormat(t *testing.T) {
-	valid := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	valid := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write>` +
 		`<p tabs="0.32 0.63 0.95 1.26">a</p>` +
@@ -29,7 +29,7 @@ func TestVerifyTabsAttributeFormat(t *testing.T) {
 	if r := Verify(valid); !r.Valid {
 		t.Errorf("expected valid tabs formats, got errors: %v", r.Errors)
 	}
-	invalid := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	invalid := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><p tabs="abc 1.26">a</p></write>` +
 		`</words>`
@@ -57,7 +57,7 @@ func TestVerifyNoRoot(t *testing.T) {
 }
 
 func TestVerifyWrongRoot(t *testing.T) {
-	input := `<document xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<document xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<write><p>x</p></write></document>`
 	r := Verify(input)
 	if r.Valid {
@@ -69,7 +69,7 @@ func TestVerifyWrongRoot(t *testing.T) {
 }
 
 func TestVerifyMissingNamespace(t *testing.T) {
-	input := `<words version="1.1.0" mode="semantic">` +
+	input := `<words version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<write><p>x</p></write></words>`
 	r := Verify(input)
 	if r.Valid {
@@ -78,7 +78,7 @@ func TestVerifyMissingNamespace(t *testing.T) {
 }
 
 func TestVerifyBadVersion(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="2.0.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="2.0.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<write><p>x</p></write></words>`
 	r := Verify(input)
 	if r.Valid {
@@ -86,8 +86,44 @@ func TestVerifyBadVersion(t *testing.T) {
 	}
 }
 
+func TestVerifyMissingFidelityManifest(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.2.0" mode="semantic">` +
+		`<write><p>x</p></write></words>`
+	r := Verify(input)
+	if r.Valid {
+		t.Error("expected invalid for missing fidelity manifest")
+	}
+	if len(r.Errors) == 0 || !strings.Contains(r.Errors[0], "fidelity") {
+		t.Errorf("expected a fidelity error, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyBadFidelity(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="lossy" policy="preserve-and-flag" mode="semantic">` +
+		`<write><p>x</p></write></words>`
+	r := Verify(input)
+	if r.Valid {
+		t.Error("expected invalid for bad fidelity")
+	}
+	if len(r.Errors) == 0 || !strings.Contains(r.Errors[0], "fidelity") {
+		t.Errorf("expected a fidelity error, got: %v", r.Errors)
+	}
+}
+
+func TestVerifyBadPolicy(t *testing.T) {
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="silently-drop" mode="semantic">` +
+		`<write><p>x</p></write></words>`
+	r := Verify(input)
+	if r.Valid {
+		t.Error("expected invalid for bad policy")
+	}
+	if len(r.Errors) == 0 || !strings.Contains(r.Errors[0], "policy") {
+		t.Errorf("expected a policy error, got: %v", r.Errors)
+	}
+}
+
 func TestVerifyBadMode(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="invalid">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="invalid">` +
 		`<write><p>x</p></write></words>`
 	r := Verify(input)
 	if r.Valid {
@@ -96,7 +132,7 @@ func TestVerifyBadMode(t *testing.T) {
 }
 
 func TestVerifyMissingWrite(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style></words>`
 	r := Verify(input)
 	if r.Valid {
@@ -105,7 +141,7 @@ func TestVerifyMissingWrite(t *testing.T) {
 }
 
 func TestVerifyMissingStyle(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<write><p>x</p></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -117,7 +153,7 @@ func TestVerifyMissingStyle(t *testing.T) {
 }
 
 func TestVerifyDuplicateElement(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<style unit="in"></style>` +
 		`<write><p>x</p></write></words>`
@@ -128,7 +164,7 @@ func TestVerifyDuplicateElement(t *testing.T) {
 }
 
 func TestVerifyBadTableID(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><table id="abc">` +
 		`<tr><td>x</td></tr>` +
@@ -140,7 +176,7 @@ func TestVerifyBadTableID(t *testing.T) {
 }
 
 func TestVerifyBadColSpec(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><table id="1"><colspec/>` +
 		`<tr><td>x</td></tr></table></write></words>`
@@ -151,7 +187,7 @@ func TestVerifyBadColSpec(t *testing.T) {
 }
 
 func TestVerifyBadAlign(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><table id="1" align="wrong">` +
 		`<tr><td>x</td></tr>` +
@@ -163,7 +199,7 @@ func TestVerifyBadAlign(t *testing.T) {
 }
 
 func TestVerifyBadColspan(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><table id="1">` +
 		`<tr><td colspan="abc">x</td></tr></table></write></words>`
@@ -174,7 +210,7 @@ func TestVerifyBadColspan(t *testing.T) {
 }
 
 func TestVerifyBadValign(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><table id="1">` +
 		`<tr><td valign="wrong">x</td></tr></table></write></words>`
@@ -185,7 +221,7 @@ func TestVerifyBadValign(t *testing.T) {
 }
 
 func TestVerifyBadDir(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><p dir="center">x</p></write></words>`
 	r := Verify(input)
@@ -195,7 +231,7 @@ func TestVerifyBadDir(t *testing.T) {
 }
 
 func TestVerifyMissingLi(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><ul></ul></write></words>`
 	r := Verify(input)
@@ -206,7 +242,7 @@ func TestVerifyMissingLi(t *testing.T) {
 
 func TestVerifyBadLiType(t *testing.T) {
 	// MOD-2: any numFmt value is valid (raw preservation)
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><ol><li type="wrong">x</li></ol></write></words>`
 	r := Verify(input)
@@ -216,7 +252,7 @@ func TestVerifyBadLiType(t *testing.T) {
 }
 
 func TestVerifyMissingAnchorHref(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><p><a>link</a></p></write></words>`
 	r := Verify(input)
@@ -226,7 +262,7 @@ func TestVerifyMissingAnchorHref(t *testing.T) {
 }
 
 func TestVerifyEmptyHref(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><p><a href="">link</a></p></write></words>`
 	r := Verify(input)
@@ -236,7 +272,7 @@ func TestVerifyEmptyHref(t *testing.T) {
 }
 
 func TestVerifyImgWithSrc(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><p><img src="foo.png" alt="pic"/></p></write></words>`
 	r := Verify(input)
@@ -246,7 +282,7 @@ func TestVerifyImgWithSrc(t *testing.T) {
 }
 
 func TestVerifyMissingImgAlt(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><p><img/></p></write></words>`
 	r := Verify(input)
@@ -256,7 +292,7 @@ func TestVerifyMissingImgAlt(t *testing.T) {
 }
 
 func TestVerifyBadBreakType(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><p><br type="wrong"/></p></write></words>`
 	r := Verify(input)
@@ -266,7 +302,7 @@ func TestVerifyBadBreakType(t *testing.T) {
 }
 
 func TestVerifyMissingBreakType(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><p><br/></p></write></words>`
 	r := Verify(input)
@@ -276,7 +312,7 @@ func TestVerifyMissingBreakType(t *testing.T) {
 }
 
 func TestVerifyMissingNoteId(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><p>x</p></write>` +
 		`<notes><fn>text</fn></notes></words>`
@@ -287,7 +323,7 @@ func TestVerifyMissingNoteId(t *testing.T) {
 }
 
 func TestVerifyMissingHeaderId(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style>` +
 		`<write><p>x</p></write>` +
 		`<header><p>hdr</p></header></words>`
@@ -298,7 +334,7 @@ func TestVerifyMissingHeaderId(t *testing.T) {
 }
 
 func TestVerifyValidFullDoc(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<meta><title>T</title><author>A</author></meta>` +
 		`<style unit="in">` +
 		`<s:page size="Letter" mt="1.00" mb="1.00" ml="1.00" mr="1.00" mh="0.50" mf="0.50"/>` +
@@ -337,7 +373,7 @@ func TestVerifyValidFullDoc(t *testing.T) {
 }
 
 func TestVerifyWarnings(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<write><p><custom>unknown</custom></p></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -349,7 +385,7 @@ func TestVerifyWarnings(t *testing.T) {
 }
 
 func TestVerifyBreakClearValid(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<write><p><br type="clear"/></p></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -358,7 +394,7 @@ func TestVerifyBreakClearValid(t *testing.T) {
 }
 
 func TestVerifyEnInvalid(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<notes><en id="1"><p>x</p></en></notes></words>`
 	r := Verify(input)
 	if r.Valid {
@@ -367,7 +403,7 @@ func TestVerifyEnInvalid(t *testing.T) {
 }
 
 func TestVerifyEnRefInvalid(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<write><p><en-ref id="1"/></p></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -385,7 +421,7 @@ func TestVerifyEnRefInvalid(t *testing.T) {
 }
 
 func TestVerifyTableWidth(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<table id="1" width="abc"><tr><td>x</td></tr></table>` +
 		`</write></words>`
@@ -402,7 +438,7 @@ func TestVerifyTableWidth(t *testing.T) {
 }
 
 func TestVerifyTableCellSpacing(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<table id="1" cellSpacing="abc"><tr><td>x</td></tr></table>` +
 		`</write></words>`
@@ -419,7 +455,7 @@ func TestVerifyTableCellSpacing(t *testing.T) {
 }
 
 func TestVerifyTableInvalidAlign(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<table id="1" align="invalid"><tr><td>x</td></tr></table>` +
 		`</write></words>`
@@ -436,7 +472,7 @@ func TestVerifyTableInvalidAlign(t *testing.T) {
 }
 
 func TestVerifyTableColSpec(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<table id="1"><colspec/><tr><td>x</td></tr></table>` +
 		`</write></words>`
@@ -453,7 +489,7 @@ func TestVerifyTableColSpec(t *testing.T) {
 }
 
 func TestVerifyTableUnexpectedChild(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<table id="1"><foo/><tr><td>x</td></tr></table>` +
 		`</write></words>`
@@ -470,7 +506,7 @@ func TestVerifyTableUnexpectedChild(t *testing.T) {
 }
 
 func TestVerifyTableRowNoCell(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<table id="1"><tr><p>x</p></tr></table>` +
 		`</write></words>`
@@ -487,7 +523,7 @@ func TestVerifyTableRowNoCell(t *testing.T) {
 }
 
 func TestVerifyTrSpan(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<table id="1"><tr span="abc"><td>x</td></tr></table>` +
 		`</write></words>`
@@ -504,7 +540,7 @@ func TestVerifyTrSpan(t *testing.T) {
 }
 
 func TestVerifyCellBadColspan(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<table id="1"><tr><td colspan="abc">x</td></tr></table>` +
 		`</write></words>`
@@ -521,7 +557,7 @@ func TestVerifyCellBadColspan(t *testing.T) {
 }
 
 func TestVerifyCellBadValign(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<table id="1"><tr><td valign="bad">x</td></tr></table>` +
 		`</write></words>`
@@ -538,7 +574,7 @@ func TestVerifyCellBadValign(t *testing.T) {
 }
 
 func TestVerifyCellBadNoWrap(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<table id="1"><tr><td noWrap="yes">x</td></tr></table>` +
 		`</write></words>`
@@ -555,7 +591,7 @@ func TestVerifyCellBadNoWrap(t *testing.T) {
 }
 
 func TestVerifyUnknownInlineElement(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<p><foo>x</foo></p>` +
 		`</write></words>`
@@ -572,7 +608,7 @@ func TestVerifyUnknownInlineElement(t *testing.T) {
 }
 
 func TestVerifyMetaUnknownChild(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<meta><foo>bar</foo></meta>` +
 		`<style unit="in"></style><write><p>x</p></write></words>`
 	r := Verify(input)
@@ -588,7 +624,7 @@ func TestVerifyMetaUnknownChild(t *testing.T) {
 }
 
 func TestVerifyStyleBadUnit(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="bad"></style><write><p>x</p></write></words>`
 	r := Verify(input)
 	found := false
@@ -603,7 +639,7 @@ func TestVerifyStyleBadUnit(t *testing.T) {
 }
 
 func TestVerifyStyleNoUnit(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style></style><write><p>x</p></write></words>`
 	r := Verify(input)
 	found := false
@@ -618,7 +654,7 @@ func TestVerifyStyleNoUnit(t *testing.T) {
 }
 
 func TestVerifyNotesUnknownElement(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>x</p></write>` +
 		`<notes><foo id="1">x</foo></notes></words>`
 	r := Verify(input)
@@ -634,7 +670,7 @@ func TestVerifyNotesUnknownElement(t *testing.T) {
 }
 
 func TestVerifyNoteItemMissingID(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>x</p></write>` +
 		`<notes><fn><p>x</p></fn></notes></words>`
 	r := Verify(input)
@@ -650,7 +686,7 @@ func TestVerifyNoteItemMissingID(t *testing.T) {
 }
 
 func TestVerifyHeaderFooterBadID(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>x</p></write>` +
 		`<header id="abc"><p>hdr</p></header></words>`
 	r := Verify(input)
@@ -666,7 +702,7 @@ func TestVerifyHeaderFooterBadID(t *testing.T) {
 }
 
 func TestVerifyFooterBadID(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>x</p></write>` +
 		`<footer id="abc"><p>ftr</p></footer></words>`
 	r := Verify(input)
@@ -684,7 +720,7 @@ func TestVerifyFooterBadID(t *testing.T) {
 func TestVerifyHeadingLevels(t *testing.T) {
 	for level := 4; level <= 9; level++ {
 		tag := fmt.Sprintf("h%d", level)
-		input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+		input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 			`<style unit="in"></style><write>` +
 			`<` + tag + `>Title</` + tag + `>` +
 			`</write></words>`
@@ -696,7 +732,7 @@ func TestVerifyHeadingLevels(t *testing.T) {
 }
 
 func TestVerifyWriteTable(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<table id="1"><tr><th>x</th></tr><tr><td>y</td></tr></table>` +
 		`</write></words>`
@@ -707,7 +743,7 @@ func TestVerifyWriteTable(t *testing.T) {
 }
 
 func TestVerifyWritePre(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<pre>code block</pre>` +
 		`</write></words>`
@@ -718,7 +754,7 @@ func TestVerifyWritePre(t *testing.T) {
 }
 
 func TestVerifyWritePreWithElement(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<pre><b>bad</b></pre>` +
 		`</write></words>`
@@ -735,7 +771,7 @@ func TestVerifyWritePreWithElement(t *testing.T) {
 }
 
 func TestVerifyWriteBlockquote(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<blockquote><p>quoted text</p></blockquote>` +
 		`</write></words>`
@@ -747,7 +783,7 @@ func TestVerifyWriteBlockquote(t *testing.T) {
 
 func TestVerifyLiInvalidType(t *testing.T) {
 	// MOD-2: any numFmt value is valid (raw preservation)
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<ol><li type="bad">x</li></ol>` +
 		`</write></words>`
@@ -758,7 +794,7 @@ func TestVerifyLiInvalidType(t *testing.T) {
 }
 
 func TestVerifyComment(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>x</p></write>` +
 		`<notes><comment id="1" author="A" date="2024-01-01"><p>text</p></comment></notes></words>`
 	r := Verify(input)
@@ -768,7 +804,7 @@ func TestVerifyComment(t *testing.T) {
 }
 
 func TestVerifyCellBadRowspan(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<table id="1"><tr><td rowspan="abc">x</td></tr></table>` +
 		`</write></words>`
@@ -785,7 +821,7 @@ func TestVerifyCellBadRowspan(t *testing.T) {
 }
 
 func TestVerifyMissingWriteElement(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style></words>`
 	r := Verify(input)
 	if r.Valid {
@@ -794,7 +830,7 @@ func TestVerifyMissingWriteElement(t *testing.T) {
 }
 
 func TestVerifyMissingStyleElement(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<write><p>x</p></write></words>`
 	r := Verify(input)
 	found := false
@@ -809,7 +845,7 @@ func TestVerifyMissingStyleElement(t *testing.T) {
 }
 
 func TestVerifyBlockContentFigure(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<figure><figcaption>Caption</figcaption></figure>` +
 		`</write></words>`
@@ -820,7 +856,7 @@ func TestVerifyBlockContentFigure(t *testing.T) {
 }
 
 func TestVerifyBlockContentHr(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write>` +
 		`<p>x</p><hr/><p>y</p>` +
 		`</write></words>`
@@ -831,7 +867,7 @@ func TestVerifyBlockContentHr(t *testing.T) {
 }
 
 func TestVerifyBlockContentTableInNotes(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>x</p></write>` +
 		`<notes><fn id="1"><table id="1"><tr><td>a</td></tr></table></fn></notes></words>`
 	r := Verify(input)
@@ -841,7 +877,7 @@ func TestVerifyBlockContentTableInNotes(t *testing.T) {
 }
 
 func TestVerifyBlockContentListInNotes(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>x</p></write>` +
 		`<notes><fn id="1"><ul type="bullet"><li>a</li></ul></fn></notes></words>`
 	r := Verify(input)
@@ -851,7 +887,7 @@ func TestVerifyBlockContentListInNotes(t *testing.T) {
 }
 
 func TestVerifyBlockContentPreInNotes(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>x</p></write>` +
 		`<notes><fn id="1"><pre>code</pre></fn></notes></words>`
 	r := Verify(input)
@@ -861,7 +897,7 @@ func TestVerifyBlockContentPreInNotes(t *testing.T) {
 }
 
 func TestVerifyBlockContentBlockquoteInNotes(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>x</p></write>` +
 		`<notes><fn id="1"><blockquote><p>q</p></blockquote></fn></notes></words>`
 	r := Verify(input)
@@ -871,7 +907,7 @@ func TestVerifyBlockContentBlockquoteInNotes(t *testing.T) {
 }
 
 func TestVerifyWriteWithH4(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><h4>Title</h4></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -880,7 +916,7 @@ func TestVerifyWriteWithH4(t *testing.T) {
 }
 
 func TestVerifyParagraphValign(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p valign="center">x</p></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -889,7 +925,7 @@ func TestVerifyParagraphValign(t *testing.T) {
 }
 
 func TestVerifyParagraphAlign(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p align="both">x</p></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -898,7 +934,7 @@ func TestVerifyParagraphAlign(t *testing.T) {
 }
 
 func TestVerifyChildrenUnknownBlock(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><unknown>x</unknown></write></words>`
 	r := Verify(input)
 	found := false
@@ -913,7 +949,7 @@ func TestVerifyChildrenUnknownBlock(t *testing.T) {
 }
 
 func TestVerifyWriteHeading(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><h1>Title</h1><h2>Sub</h2><h3>Sub2</h3></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -922,7 +958,7 @@ func TestVerifyWriteHeading(t *testing.T) {
 }
 
 func TestVerifyWriteList(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><ul type="bullet"><li>x</li><li>y</li></ul></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -931,7 +967,7 @@ func TestVerifyWriteList(t *testing.T) {
 }
 
 func TestVerifyWriteImg(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><img alt="test"/></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -940,7 +976,7 @@ func TestVerifyWriteImg(t *testing.T) {
 }
 
 func TestVerifyWriteFnRef(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>text<fn-ref id="1" type="footnote"/></p></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -949,7 +985,7 @@ func TestVerifyWriteFnRef(t *testing.T) {
 }
 
 func TestVerifyWriteSpan(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p><span font="Arial" size="12pt">text</span></p></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -959,7 +995,7 @@ func TestVerifyWriteSpan(t *testing.T) {
 
 func TestVerifySpanSizeRequiresPt(t *testing.T) {
 	for _, v := range []string{`size="12"`, `size="11.5"`, `size="xpt"`, `size="pt"`} {
-		input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+		input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 			`<style unit="in"></style><write><p><span ` + v + `>text</span></p></write></words>`
 		r := Verify(input)
 		if r.Valid {
@@ -967,7 +1003,7 @@ func TestVerifySpanSizeRequiresPt(t *testing.T) {
 		}
 	}
 	// sizeCS shares the same rule
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p><span sizeCS="10">text</span></p></write></words>`
 	if r := Verify(input); r.Valid {
 		t.Error("expected error for span sizeCS without pt suffix, got valid")
@@ -975,12 +1011,12 @@ func TestVerifySpanSizeRequiresPt(t *testing.T) {
 }
 
 func TestVerifyCustomSizeRequiresPt(t *testing.T) {
-	valid := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	valid := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"><s:custom name="My" size="11.5pt" sizeCS="10pt"/></style><write><p>text</p></write></words>`
 	if r := Verify(valid); !r.Valid {
 		t.Errorf("expected valid s:custom sizes, got errors: %v", r.Errors)
 	}
-	invalid := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	invalid := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"><s:custom name="My" size="11"/></style><write><p>text</p></write></words>`
 	if r := Verify(invalid); r.Valid {
 		t.Error("expected error for s:custom size without pt suffix, got valid")
@@ -988,7 +1024,7 @@ func TestVerifyCustomSizeRequiresPt(t *testing.T) {
 }
 
 func TestVerifyWriteAnchor(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p><a href="https://example.com">link</a></p></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -997,7 +1033,7 @@ func TestVerifyWriteAnchor(t *testing.T) {
 }
 
 func TestVerifyWriteTab(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>x<tab/>y</p></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -1006,7 +1042,7 @@ func TestVerifyWriteTab(t *testing.T) {
 }
 
 func TestVerifyWriteSym(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>x<sym char="F0B7"/>y</p></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -1015,7 +1051,7 @@ func TestVerifyWriteSym(t *testing.T) {
 }
 
 func TestVerifyWriteBm(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>x<bm id="b1"/></p></write></words>`
 	r := Verify(input)
 	if !r.Valid {
@@ -1024,7 +1060,7 @@ func TestVerifyWriteBm(t *testing.T) {
 }
 
 func TestVerifyCommentAttrs(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>x</p></write>` +
 		`<notes><comment id="1" author="John" date="2024-01-01T00:00:00Z"><p>comment</p></comment></notes></words>`
 	r := Verify(input)
@@ -1034,7 +1070,7 @@ func TestVerifyCommentAttrs(t *testing.T) {
 }
 
 func TestVerifyNotesFootnote(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>x</p></write>` +
 		`<notes><fn id="1" type="footnote"><p>fn text</p></fn></notes></words>`
 	r := Verify(input)
@@ -1044,7 +1080,7 @@ func TestVerifyNotesFootnote(t *testing.T) {
 }
 
 func TestVerifyNotesBookmark(t *testing.T) {
-	input := `<words xmlns="urn:words:v1" version="1.1.0" mode="semantic">` +
+	input := `<words xmlns="urn:words:v1" version="1.2.0" fidelity="verbatim" policy="preserve-and-flag" mode="semantic">` +
 		`<style unit="in"></style><write><p>x</p></write>` +
 		`<notes><bm id="b1"/></notes></words>`
 	r := Verify(input)

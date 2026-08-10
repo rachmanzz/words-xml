@@ -50,7 +50,7 @@ Emit a flat, semantic, versioned XML (`words`) that is:
 A flat, semantic, versioned XML:
 
 ```xml
-<words xmlns="urn:words:v1" xmlns:s="urn:words:v1:style" version="1.1.0" mode="semantic">
+<words xmlns="urn:words:v1" xmlns:s="urn:words:v1:style" version="1.2.0" mode="semantic" fidelity="verbatim" policy="preserve-and-flag">
   <style unit="in">
     <s:page size="A4" mt="0.75" mb="0.75" ml="0.75" mr="0.75" mh="0.5" mf="0.5"/>
   </style>
@@ -60,7 +60,22 @@ A flat, semantic, versioned XML:
 </words>
 ```
 
-### 2.1 Grammar (v1.1.0)
+### 2.0.1 Fidelity Manifest (v1.2.0)
+
+The root `<words>` element carries an **explicit fidelity manifest** — a contract
+declaring how faithfully the source `.docx` is preserved and how constructs that
+cannot be represented are handled. Downstream parsers/consumers MAY branch on it;
+the preprocessor always emits it.
+
+| Attribute | Allowed values | Meaning |
+|-----------|----------------|---------|
+| `fidelity` | `verbatim` | Source text content, characters, structure, and layout values are preserved verbatim from the source (no paraphrasing, summarization, or reformatting). |
+| `policy` | `preserve-and-flag` | Constructs that cannot be represented fully are **preserved** (as placeholders or attributes) **and explicitly flagged** — never silently dropped. Examples: `<img alt="..."/>` marks an excluded image; `at="..."` carries compact borders. |
+
+The manifest is emitted in **both** processing modes (`semantic` and `lossless`).
+`mode` controls whitespace normalization only; it does not weaken the fidelity contract.
+
+### 2.1 Grammar (v1.2.0)
 
 **Namespace declarations**: The root `<words>` element MUST declare two namespaces:
 - `xmlns="urn:words:v1"` — default namespace for all elements (`<meta>`, `<style>`, `<write>`, `<notes>`, `<header>`, `<footer>`, `<p>`, `<h1>`-`<h9>`, `<ul>`, `<ol>`, `<table>`, `<pre>`, `<blockquote>`, `<tr>`, `<th>`, `<td>`, `<li>`, `<b>`, `<i>`, `<u>`, `<s>`, `<span>`, `<a>`, `<br>`, etc.)
@@ -68,7 +83,7 @@ A flat, semantic, versioned XML:
 - Inline elements (`<b>`, `<i>`, `<u>`, `<s>`, `<span>`, `<a>`, `<br>`, etc.) use **no prefix**
 
 ```text
-<words xmlns="urn:words:v1" xmlns:s="urn:words:v1:style" version="1.1.0" mode="semantic">
+<words xmlns="urn:words:v1" xmlns:s="urn:words:v1:style" version="1.2.0" mode="semantic" fidelity="verbatim" policy="preserve-and-flag">
   <meta>                         # optional document metadata (after root)
     <title>...</title>           # dc:title from docProps/core.xml
     <author>...</author>         # dc:creator
@@ -876,6 +891,15 @@ Every OOXML construct the preprocessor encounters is classified into one of four
   base value. When a start override resets numbering to 1 (or another value), the
   preprocessor MUST split the list into a new `<ol>` element at the restart point. The new
   `<ol>` carries `start="n"` where `n` is the resolved start value (default `1`).
+- **Sequence resumption (GAP-03)**: Word numbers items by `w:numId`, not by document
+  position — a sequence keeps counting even when interrupted by an interleaved sub-list
+  with a different `w:numId`. Because the preprocessor groups items per `w:numId` +
+  `w:abstractNumId`, such an interruption produces a second `<ol>` element for the original
+  `w:numId`. That resumed group MUST carry `start="N"` (the next value of the running
+  sequence, tracked per `w:numId`/`w:ilvl`), so consumers that honor `start` render
+  `1., 2., a., b., 3.` instead of restarting at `1.` The base `w:start` and any
+  `w:startOverride` still seed/reset the running sequence as described above.
+
 - **Sequential items with same numId**: paragraphs with the same `w:numId` and `w:ilvl`
   are grouped into a single `<ol>`/`<ul>` with multiple `<li>` children. The preprocessor
   distinguishes between:
@@ -941,7 +965,11 @@ Every OOXML construct the preprocessor encounters is classified into one of four
   `<li>` using the first `<p>`. When the item paragraph has no `w:ind` of its own, the
   marker geometry is resolved from the numbering level's `w:pPr/w:ind` (`w:left` →
   `indentLeft`, `w:hanging` → `indentHanging`, in inches); this is what keeps the marker
-  and body positions correct even when items omit explicit indents. Continuation `<p>`s
+  and body positions correct even when items omit explicit indents. The paragraph and level
+  indents merge **per property**: a paragraph `w:ind` missing `w:hanging` falls back to the
+  level's `w:hanging` (and vice versa for `w:left`), so a left-only item still carries the
+  level's hanging — the marker then sits at `left−hanging` with the body text at `left`,
+  matching Word. Continuation `<p>`s
   emit only their own geometry: a continuation with no `w:ind` of its own carries no
   `indentLeft` — Word shows it at the margin, aligning visually via its own typed leading
   spaces — while a continuation with its own `w:ind` keeps exactly that indent. When the
@@ -953,6 +981,14 @@ Every OOXML construct the preprocessor encounters is classified into one of four
   - The paragraph is empty (no runs or only whitespace).
   - The paragraph text starts with `"--------"` or `"------ "` (horizontal rule).
   - The paragraph has a heading level (`HeadingLevel > 0`).
+  A section break terminates continuation **only** when no list item with the same `w:numId`
+  exists ahead. Between two items of the same list it is real content and must be preserved:
+  the paragraph is absorbed as a continuation `<p>` of the preceding `<li>` (keeping both
+  items in a single `<ul>`/`<ol>` so the consumer's automatic numbering is not reset).
+  After the **last** item of a list, a section break still ends the list and the paragraph
+  is emitted as a standalone `<p>` after `</ul>`/`</ol>`. Headings are always structural
+  breaks — they are never absorbed into a `<li>`; they split the list and are emitted as
+  `<h1>`-`<h9>` elements between the resulting list groups.
 
 ### 3.4 Tables
 
@@ -1073,10 +1109,10 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 <w:bookmarkEnd w:id="0"/>
 ```
 
-**Output (`words` v1.1.0):**
+**Output (`words` v1.2.0):**
 
 ```xml
-<words xmlns="urn:words:v1" xmlns:s="urn:words:v1:style" version="1.1.0" mode="semantic">
+<words xmlns="urn:words:v1" xmlns:s="urn:words:v1:style" version="1.2.0" mode="semantic" fidelity="verbatim" policy="preserve-and-flag">
   <style unit="in">
     <s:page size="A4" mt="0.75" mb="0.75" ml="0.75" mr="0.75" mh="0.5" mf="0.5"/>
     <s:gap el="h" c="Heading1" before="0.22" after="0.11"/>
@@ -1106,13 +1142,13 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 ## 5. Pipeline Position
 
 ```text
-.docx  ──▶  [DOCX Preprocessor]  ──▶  words (v1.1.0)
+.docx  ──▶  [DOCX Preprocessor]  ──▶  words (v1.2.0)
  (OOXML)        (this module)         (semantic markup)
 ```
 
 - The preprocessor is **pure transformation**: no LLM calls, deterministic, reproducible.
 - Output `words` is the contract between DOCX ingestion and downstream processing.
-- Version the format (`version="1.1.0"`) so downstream prompts/parsers can branch on schema.
+- Version the format (`version="1.2.0"`) so downstream prompts/parsers can branch on schema.
 
 ---
 
@@ -1127,11 +1163,11 @@ Every OOXML construct the preprocessor encounters is classified into one of four
 
 ## 7. Open Questions
 
-None. All design decisions for v1.1.0 are finalized.
+None. All design decisions for v1.2.0 are finalized.
 
 ## 8. Explicitly Excluded (Policy)
 
-The following are **out of scope** for v1.1.0 and are emitted as placeholders or dropped.
+The following are **out of scope** for v1.2.0 and are emitted as placeholders or dropped.
 
 - **Images (non-textbox)** (`w:drawing` image blip, `w:pict` VML) → `<img alt="..."/>`
   placeholder, no pixels extracted. Images *inside* a textbox are also excluded.

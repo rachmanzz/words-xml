@@ -160,7 +160,6 @@ func TestSdtContentDocumentOrder(t *testing.T) {
 	}
 }
 
-
 // TestHeadingBreaksList verifies that a heading between list items
 // causes the heading to be emitted as <hN> rather than absorbed into a <li>.
 func TestHeadingBreaksList(t *testing.T) {
@@ -221,5 +220,175 @@ func TestHeadingBreaksList(t *testing.T) {
 	liClosePos := strings.LastIndex(x[:headingPos], `</li>`)
 	if brPos > liClosePos {
 		t.Errorf("heading appears to be inside a <li> (preceded by <br type=textWrapping>): %s", x)
+	}
+}
+
+// TestSectionBreakBetweenListItems verifies that a horizontal-rule paragraph
+// (and following non-list text) sandwiched between two list items sharing the
+// same numId is preserved as continuation <p> children of the preceding <li>
+// instead of being silently dropped. Both items must stay in the same <ol> so
+// the consumer's automatic numbering (1., 2.) is not reset.
+func TestSectionBreakBetweenListItems(t *testing.T) {
+	numbering := `<?xml version="1.0" encoding="UTF-8"?>
+<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:abstractNum w:abstractNumId="1">
+    <w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/></w:lvl>
+  </w:abstractNum>
+  <w:num w:numId="1"><w:abstractNumId w:val="1"/></w:num>
+</w:numbering>`
+
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr>
+    <w:r><w:t>item one</w:t></w:r>
+  </w:p>
+  <w:p>
+    <w:r><w:t>-------------- "............"</w:t></w:r>
+  </w:p>
+  <w:p>
+    <w:r><w:t>(selanjutnya cukup disingkat)</w:t></w:r>
+  </w:p>
+  <w:p>
+    <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr>
+    <w:r><w:t>item two</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+
+	data := makeDocxWithExtras(body, "", numbering, "", "", "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+
+	// Both separator paragraphs must be preserved somewhere in the output.
+	sepPos := strings.Index(x, `-------------- &quot;............&quot;`)
+	contPos := strings.Index(x, "selanjutnya cukup disingkat")
+	if sepPos < 0 || contPos < 0 {
+		t.Fatalf("separator/continuation content missing: sep=%d cont=%d\n%s", sepPos, contPos, x)
+	}
+	onePos := strings.Index(x, "item one")
+	twoPos := strings.Index(x, "item two")
+	if onePos < 0 || twoPos < 0 {
+		t.Fatalf("list item content missing: one=%d two=%d", onePos, twoPos)
+	}
+	// Both items stay in one <ol>; separator sits between them inside the <li>.
+	if strings.Count(x, "<ol ") != 1 {
+		t.Errorf("expected a single <ol>, got %d\n%s", strings.Count(x, "<ol "), x)
+	}
+	if strings.Count(x, "<li>") != 2 {
+		t.Errorf("expected two <li> items, got %d\n%s", strings.Count(x, "<li>"), x)
+	}
+	// Separator and continuation text must be inside the first <li> (before </li>).
+	firstLiClose := strings.Index(x, "</li>")
+	if firstLiClose < 0 || !(onePos < sepPos && sepPos < firstLiClose) {
+		t.Errorf("separator not inside the first <li>: one=%d sep=%d liClose=%d\n%s", onePos, sepPos, firstLiClose, x)
+	}
+	if !(firstLiClose < twoPos) {
+		t.Errorf("item two must follow the first </li>: liClose=%d two=%d", firstLiClose, twoPos)
+	}
+}
+
+// TestSectionBreakAfterLastListItem verifies that a horizontal-rule paragraph
+// after the LAST item of a list is NOT absorbed into the <li> — it terminates
+// the list and stays a standalone <p> after </ol>.
+func TestSectionBreakAfterLastListItem(t *testing.T) {
+	numbering := `<?xml version="1.0" encoding="UTF-8"?>
+<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:abstractNum w:abstractNumId="1">
+    <w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/></w:lvl>
+  </w:abstractNum>
+  <w:num w:numId="1"><w:abstractNumId w:val="1"/></w:num>
+</w:numbering>`
+
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr>
+    <w:r><w:t>only item</w:t></w:r>
+  </w:p>
+  <w:p>
+    <w:r><w:t>------------------- DEMIKIAN AKTA INI -----------------</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+
+	data := makeDocxWithExtras(body, "", numbering, "", "", "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+
+	itemPos := strings.Index(x, "only item")
+	hrPos := strings.Index(x, "DEMIKIAN AKTA INI")
+	if itemPos < 0 || hrPos < 0 {
+		t.Fatalf("content missing: item=%d hr=%d\n%s", itemPos, hrPos, x)
+	}
+	olEnd := strings.Index(x, "</ol>")
+	liEnd := strings.Index(x, "</li>")
+	// The hr must be outside the list, after both </li> and </ol>.
+	if !(hrPos > olEnd && olEnd > liEnd) {
+		t.Errorf("hr must be standalone after </ol>: liEnd=%d olEnd=%d hr=%d\n%s", liEnd, olEnd, hrPos, x)
+	}
+}
+
+// TestListResumeNumberingAfterInterleavedSubList verifies that a list group
+// which resumes a previously emitted numbering sequence (same numId, split by
+// an interleaved different-numId sub-list) carries the continuation number in
+// a start attribute — Word numbers the decimal items 1,2 then a,b then 3.
+func TestListResumeNumberingAfterInterleavedSubList(t *testing.T) {
+	numbering := `<?xml version="1.0" encoding="UTF-8"?>
+<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:abstractNum w:abstractNumId="10">
+    <w:lvl w:ilvl="0"><w:numFmt w:val="lowerLetter"/><w:lvlText w:val="%1."/></w:lvl>
+  </w:abstractNum>
+  <w:abstractNum w:abstractNumId="32">
+    <w:lvl w:ilvl="0"><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/></w:lvl>
+  </w:abstractNum>
+  <w:num w:numId="22"><w:abstractNumId w:val="32"/></w:num>
+  <w:num w:numId="23"><w:abstractNumId w:val="10"/></w:num>
+</w:numbering>`
+
+	body := xmlHeader + `<w:body>
+  <w:p>
+    <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="22"/></w:numPr></w:pPr>
+    <w:r><w:t>item one</w:t></w:r>
+  </w:p>
+  <w:p>
+    <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="22"/></w:numPr></w:pPr>
+    <w:r><w:t>item two</w:t></w:r>
+  </w:p>
+  <w:p>
+    <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="23"/></w:numPr></w:pPr>
+    <w:r><w:t>sub item a</w:t></w:r>
+  </w:p>
+  <w:p>
+    <w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="22"/></w:numPr></w:pPr>
+    <w:r><w:t>item three</w:t></w:r>
+  </w:p>
+</w:body></w:document>`
+
+	data := makeDocxWithExtras(body, "", numbering, "", "", "", "")
+	doc, err := ProcessDOCXBytes(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	x := doc.WordsXML
+
+	if !strings.Contains(x, `<ol type="decimal" start="3">`) {
+		t.Errorf("resumed decimal list missing start=\"3\":\n%s", x)
+	}
+	// The interleaved sub-list keeps its own base numbering (no start).
+	if !strings.Contains(x, `<ol type="lowerLetter">`) {
+		t.Errorf("interleaved sub-list missing:\n%s", x)
+	}
+	// Items stay ordered: 1,2 in the first group, a. then 3. in the resumed group.
+	onePos := strings.Index(x, "item one")
+	threePos := strings.Index(x, "item three")
+	startPos := strings.Index(x, `start="3"`)
+	if !(onePos < startPos && startPos < threePos) {
+		t.Errorf("resumed group must follow the first group and precede item three: one=%d start=%d three=%d\n%s", onePos, startPos, threePos, x)
+	}
+	if strings.Count(x, `<ol type="decimal">`) != 1 {
+		t.Errorf("expected exactly one base decimal group, got %d\n%s", strings.Count(x, `<ol type="decimal">`), x)
 	}
 }
