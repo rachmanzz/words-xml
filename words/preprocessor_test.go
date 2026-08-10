@@ -775,6 +775,54 @@ func TestListItemIndentFromNumberingLevel(t *testing.T) {
 	}
 }
 
+// TestListItemLeftOnlyMergesLevelHanging verifies that a list item's marker
+// geometry (indentHanging) is derived from the numbering level, ensuring the
+// marker is always positioned at the level's intended location (levelLeft - levelHanging).
+// The paragraph's w:ind affects only the text position (indentLeft), not the marker gap.
+func TestListItemLeftOnlyMergesLevelHanging(t *testing.T) {
+numbering := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:abstractNum w:abstractNumId="0">
+<w:lvl w:ilvl="0">
+<w:numFmt w:val="decimal"/>
+<w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr>
+</w:lvl>
+</w:abstractNum>
+<w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>
+</w:numbering>`
+body := xmlHeader + `<w:body>
+<w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr><w:ind w:left="426"/></w:pPr><w:r><w:t>Item</w:t></w:r></w:p>
+</w:body></w:document>`
+data := makeDocxWithParts(body, "", numbering, "")
+doc, err := ProcessDOCXBytes(data)
+if err != nil {
+t.Fatalf("unexpected error: %v", err)
+}
+x := doc.WordsXML
+// Level marker pos: 720/1440 - 360/1440 = 0.50 - 0.25 = 0.25
+// indentLeft = 426/1440 = 0.30
+// indentHanging = 0.30 - 0.25 = 0.05 (marker stays at level's 0.25)
+if !strings.Contains(x, `<p indentLeft="0.30" indentHanging="0.05">Item</p>`) {
+t.Errorf("expected marker gap computed from level geometry (indentLeft=0.30 indentHanging=0.05), got: %s", x)
+}
+// A paragraph with both left and hanging: marker gap still derived from level.
+body2 := xmlHeader + `<w:body>
+<w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr><w:ind w:left="907" w:hanging="453"/></w:pPr><w:r><w:t>Item</w:t></w:r></w:p>
+</w:body></w:document>`
+data2 := makeDocxWithParts(body2, "", numbering, "")
+doc2, err := ProcessDOCXBytes(data2)
+if err != nil {
+t.Fatalf("unexpected error: %v", err)
+}
+x2 := doc2.WordsXML
+// Level marker pos: 0.25 (same as above)
+// indentLeft = 907/1440 = 0.63
+// indentHanging = 0.63 - 0.25 = 0.38 (paragraph hanging ignored for marker gap)
+if !strings.Contains(x2, `<p indentLeft="0.63" indentHanging="0.38">Item</p>`) {
+t.Errorf("expected marker gap from level (indentLeft=0.63 indentHanging=0.38), got: %s", x2)
+}
+}
+
 func TestListItemContinuationAfterLastItem(t *testing.T) {
 	numbering := `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
   <w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -1312,8 +1360,14 @@ func TestRootElement(t *testing.T) {
 	if !strings.Contains(x, `xmlns:s="urn:words:v1:style"`) {
 		t.Error("expected xmlns:s=\"urn:words:v1:style\"")
 	}
-	if !strings.Contains(x, `version="1.1.0"`) {
-		t.Error("expected version=\"1.1.0\"")
+	if !strings.Contains(x, `version="1.2.0"`) {
+		t.Error("expected version=\"1.2.0\"")
+	}
+	if !strings.Contains(x, `fidelity="verbatim"`) {
+		t.Error("expected fidelity=\"verbatim\"")
+	}
+	if !strings.Contains(x, `policy="preserve-and-flag"`) {
+		t.Error("expected policy=\"preserve-and-flag\"")
 	}
 }
 
