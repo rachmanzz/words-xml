@@ -286,6 +286,7 @@ func ProcessDOCXBytesMode(data []byte, mode string) (*ProcessedDocument, error) 
 	doc.NumFmtMap = numFmtMap
 	doc.NumLvlTextMap = numLvlTextMap
 	doc.NumLvlIndMap = numLvlIndMap
+	doc.ListSeqNext = make(map[string]int)
 
 	if footnotesXML != nil {
 		var fndoc DocFootnotes
@@ -2696,7 +2697,7 @@ func formatForLLM(doc *ParsedDocument) string {
 	if mode == "" {
 		mode = "semantic"
 	}
-	b.WriteString(fmt.Sprintf("<words xmlns=\"urn:words:v1\" xmlns:s=\"urn:words:v1:style\" version=\"1.1.0\" mode=\"%s\">\n", mode))
+	b.WriteString(fmt.Sprintf("<words xmlns=\"urn:words:v1\" xmlns:s=\"urn:words:v1:style\" version=\"1.2.0\" mode=\"%s\" fidelity=\"verbatim\" policy=\"preserve-and-flag\">\n", mode))
 
 	if doc.Meta.Title != "" || doc.Meta.Author != "" || doc.Meta.Created != "" || doc.Meta.Modified != "" || doc.Meta.Keywords != "" {
 		b.WriteString("  <meta>\n")
@@ -3148,7 +3149,7 @@ func emitListGroup(b *strings.Builder, start int, doc *ParsedDocument) int {
 	indent := "    "
 	fmt.Fprintf(b, "%s<%s type=\"%s\"", indent, tag, typeAttr)
 	if tag == "ol" {
-		if st := listStart(first, doc); st > 1 {
+		if st := resolveListStart(first, doc); st > 1 {
 			fmt.Fprintf(b, " start=\"%d\"", st)
 		}
 	}
@@ -3197,6 +3198,11 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 			}
 			content := buildInlineText(item.Paragraph.Runs, doc.DefaultFont, doc.Mode)
 			idx++
+			// Advance the running numbering position for this numId/level so a
+			// later <ol> group that resumes the sequence carries the next number.
+			if doc.ListSeqNext != nil {
+				doc.ListSeqNext[listSeqKey(numID, level)]++
+			}
 			conts := collectListContinuations(doc, idx, numID, startAbstractID)
 			fmt.Fprintf(b, "%s<li>\n", indent)
 			// The first <p> is the geometry owner: resolve marker geometry from
@@ -3218,9 +3224,15 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 
 // collectListContinuations returns the content indices of consecutive paragraphs
 // that continue the current list item (no numPr of their own). Per GAP-02, any
-// non-list paragraph that is not a section break is treated as continuation
-// content when it appears immediately after a list item — including after the
-// last item of a list. Such paragraphs are emitted as <p> children of the <li>.
+// non-list paragraph is treated as continuation content when it appears
+// immediately after a list item — including after the last item of a list. Such
+// paragraphs are emitted as <p> children of the <li>.
+//
+// A section-break paragraph (empty, or an "------" horizontal rule) terminates
+// continuation only when no list item with the same numId exists ahead: between
+// two items of the same list it is real content and MUST be preserved, so it is
+// absorbed as continuation content of the preceding <li> rather than silently
+// dropped. Headings are always structural breaks and are never absorbed.
 func collectListContinuations(doc *ParsedDocument, from int, numID int, abstractID int) []int {
 	var conts []int
 	for i := from; i < len(doc.Content); i++ {
@@ -3228,7 +3240,10 @@ func collectListContinuations(doc *ParsedDocument, from int, numID int, abstract
 		if it.Type != "paragraph" || it.Paragraph == nil {
 			break
 		}
-		if isSectionBreak(it.Paragraph) {
+		if it.Paragraph.HeadingLevel > 0 {
+			break
+		}
+		if isSectionBreak(it.Paragraph) && !hasSameNumIDAhead(doc.Content, i, numID, abstractID) {
 			break
 		}
 		conts = append(conts, i)
@@ -3269,18 +3284,39 @@ func emitListNested(b *strings.Builder, idx, numID, level int, abstractID int, i
 
 // writeListFirstParagraph writes the geometry-owner <p> of a list item, resolving
 // the marker geometry (indentLeft/indentHanging) from the numbering level when
-// the item paragraph itself carries no w:ind. Word renders a numbered item with
-// a hanging-only w:ind as if left==hanging, so the left indent mirrors the
+// the item paragraph itself carries no w:ind. The paragraph w:ind and the level
+// w:ind merge per property: Word applies the level's left when the paragraph has
+// none, and the level's hanging when the paragraph has a left indent but no
+// hanging — the marker then sits at left−hanging with the text at left. A
+// hanging-only w:ind renders as if left==hanging, so the left indent mirrors the
 // hanging value. Continuation paragraphs are NOT passed through here: they emit
 // only their own geometry.
 func writeListFirstParagraph(b *strings.Builder, p *ParsedParagraph, content string, indent string, doc *ParsedDocument) {
 	firstP := *p
-	if firstP.IndentLeft <= 0 && firstP.IndentHanging <= 0 {
-		if lvlLeft, lvlHanging := resolveLevelInd(p, doc); lvlLeft > 0 || lvlHanging > 0 {
-			firstP.IndentLeft = lvlLeft
-			firstP.IndentHanging = lvlHanging
+	lvlLeft, lvlHanging := resolveLevelInd(p, doc)
+
+	// Determine text position (indentLeft): paragraph left overrides level left
+	if firstP.IndentLeft <= 0 {
+		firstP.IndentLeft = lvlLeft
+	}
+
+	// Determine marker gap (indentHanging) from level geometry.
+	// The marker position is determined by the numbering level: lvlLeft - lvlHanging.
+	// The text position is indentLeft. The gap between them is indentHanging.
+	// This ensures the marker is always at the level's intended position,
+	// regardless of the paragraph's own w:ind (which affects text position only).
+	if lvlLeft > 0 || lvlHanging > 0 {
+		markerPos := lvlLeft - lvlHanging
+		if markerPos < 0 {
+			markerPos = 0
+		}
+		firstP.IndentHanging = firstP.IndentLeft - markerPos
+		if firstP.IndentHanging < 0 {
+			firstP.IndentHanging = 0
 		}
 	}
+
+	// Handle hanging-only paragraph (no left, no level ind)
 	if firstP.IndentLeft <= 0 && firstP.IndentHanging > 0 {
 		firstP.IndentLeft = firstP.IndentHanging
 	}
@@ -3384,6 +3420,40 @@ func listStart(p *ParsedParagraph, doc *ParsedDocument) int {
 		}
 	}
 	return 1
+}
+
+// listSeqKey is the map key for a numbering sequence position tracked per
+// (numId, level).
+func listSeqKey(numID, level int) string {
+	return fmt.Sprintf("%d_%d", numID, level)
+}
+
+// resolveListStart returns the number the first item of a new <ol> group should
+// carry. A group that resumes a previously emitted numbering sequence (same
+// numId/level, split by an interleaved different-numId sub-list) continues the
+// sequence — Word numbers such items 1..7, then a..d, then 8, 9 — unless an
+// explicit w:startOverride resets the sequence. The position is tracked on the
+// document as items are emitted, so consecutive groups keep numbering intact.
+func resolveListStart(p *ParsedParagraph, doc *ParsedDocument) int {
+	base := listStart(p, doc)
+	key := listSeqKey(p.NumID, p.ListLevel)
+	if doc.NumStartOverrideMap != nil {
+		if levels, ok := doc.NumStartOverrideMap[p.NumID]; ok && levels[p.ListLevel] {
+			if doc.ListSeqNext != nil {
+				doc.ListSeqNext[key] = base
+			}
+			return base
+		}
+	}
+	if doc.ListSeqNext != nil {
+		if v, ok := doc.ListSeqNext[key]; ok && v > 0 {
+			return v
+		}
+	}
+	if doc.ListSeqNext != nil {
+		doc.ListSeqNext[key] = base
+	}
+	return base
 }
 
 func emitContentItem(b *strings.Builder, item ContentItem, doc *ParsedDocument, indent string) {

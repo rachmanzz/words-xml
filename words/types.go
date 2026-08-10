@@ -28,27 +28,28 @@ type PageLayout struct {
 }
 
 type ParsedDocument struct {
-	Meta          Meta
-	PageLayout    PageLayout
-	PageSections  []PageLayout
-	Content       []ContentItem
-	Headers       []HeaderFooter
-	Footers       []HeaderFooter
-	Notes         []NoteItem
-	StyleMap      map[string]StyleDef
-	StyleNameMap  map[string]string
-	Theme         *ThemeData
-	DefaultFont   StyleDef
-	Mode          string
-	AllTables     []*ParsedTable
-	NumStartMap        map[int]map[int]int
+	Meta                Meta
+	PageLayout          PageLayout
+	PageSections        []PageLayout
+	Content             []ContentItem
+	Headers             []HeaderFooter
+	Footers             []HeaderFooter
+	Notes               []NoteItem
+	StyleMap            map[string]StyleDef
+	StyleNameMap        map[string]string
+	Theme               *ThemeData
+	DefaultFont         StyleDef
+	Mode                string
+	AllTables           []*ParsedTable
+	NumStartMap         map[int]map[int]int
 	NumStartOverrideMap map[int]map[int]bool
-	NumToAbstract      map[int]int
-	NumFmtMap          map[string]string
-	NumLvlTextMap      map[string]string
-	NumLvlIndMap       map[string]NumLvlInd
-	Cols          int
-	ColsSpace     float64
+	NumToAbstract       map[int]int
+	NumFmtMap           map[string]string
+	NumLvlTextMap       map[string]string
+	NumLvlIndMap        map[string]NumLvlInd
+	ListSeqNext         map[string]int
+	Cols                int
+	ColsSpace           float64
 }
 
 // NumLvlInd holds a numbering level's indentation (in inches, twips/1440),
@@ -72,48 +73,48 @@ type ContentItem struct {
 }
 
 type NoteItem struct {
-	Type    string
-	ID      int
-	Name    string
-	Author  string
-	Date    string
-	Body    []ContentItem
+	Type     string
+	ID       int
+	Name     string
+	Author   string
+	Date     string
+	Body     []ContentItem
 	DocOrder int
 }
 
 type StyleDef struct {
-	ID             string
-	Name           string
-	Type           string
-	BasedOn        string
-	Family         string
-	FontEA         string
-	FontCS         string
-	SizePt         float64
-	SizeCS         float64
-	Color          string
-	Bold           bool
-	Italic         bool
-	Underline      string
-	Strikethrough  bool
-	SmallCaps      bool
-	Uppercase      bool
-	HeadingLevel   int
-	Align          string
-	SpacingBefore  float64
-	SpacingAfter   float64
-	LineSpacing    float64
-	LineRule       string
-	IndentLeft     float64
-	IndentRight    float64
-	IndentFirst    float64
-	IndentHanging  float64
-	BorderWidth    float64
-	BorderColor    string
-	BorderStyle    string
-	CellSpacing    float64
-	Width          float64
-	Tabs           []ParsedTab
+	ID            string
+	Name          string
+	Type          string
+	BasedOn       string
+	Family        string
+	FontEA        string
+	FontCS        string
+	SizePt        float64
+	SizeCS        float64
+	Color         string
+	Bold          bool
+	Italic        bool
+	Underline     string
+	Strikethrough bool
+	SmallCaps     bool
+	Uppercase     bool
+	HeadingLevel  int
+	Align         string
+	SpacingBefore float64
+	SpacingAfter  float64
+	LineSpacing   float64
+	LineRule      string
+	IndentLeft    float64
+	IndentRight   float64
+	IndentFirst   float64
+	IndentHanging float64
+	BorderWidth   float64
+	BorderColor   string
+	BorderStyle   string
+	CellSpacing   float64
+	Width         float64
+	Tabs          []ParsedTab
 }
 
 type ThemeData struct {
@@ -126,54 +127,54 @@ type ThemeData struct {
 }
 
 type ParsedParagraph struct {
-	StyleID      string
-	StyleName    string
-	HeadingLevel int
-	IsList       bool
-	ListLevel    int
-	NumID        int
-	ListFormat   string
-	IsQuote      bool
-	IsCode       bool
-	Bidi         bool
-	Lang         string
-	VAlign       string
-	Align        string
-	SpacingBefore float64
-	SpacingAfter  float64
-	LineSpacing   float64
-	LineRule      string
-	IndentLeft    float64
-	IndentRight   float64
-	IndentFirst   float64
-	IndentHanging float64
-	Tabs          []ParsedTab
-	BorderTop     *BorderInfo
-	BorderBottom  *BorderInfo
-	BorderLeft    *BorderInfo
-	BorderRight   *BorderInfo
-	Shading       string
-	KeepNext      bool
-	KeepLines     bool
-	WidowControl  bool
-	ParaDefaults  *TextRun
-	SectionBreak  string
-	RevisionAuthor     string
-	RevisionDate       string
-	SuppressAutoHyph   bool
-	SnapToGrid         bool
-	Kinsoku            bool
-	WordWrap           bool
-	OverflowPunct      bool
-	TopLinePunct       bool
-	AutoSpaceDE        bool
-	AutoSpaceDN        bool
-	TextDirection      string
-	SuppressOverlap    bool
-	DivID              int
-	CnfStyle           string
-	FramePr            *FrameProps
-	Runs               []TextRun
+	StyleID          string
+	StyleName        string
+	HeadingLevel     int
+	IsList           bool
+	ListLevel        int
+	NumID            int
+	ListFormat       string
+	IsQuote          bool
+	IsCode           bool
+	Bidi             bool
+	Lang             string
+	VAlign           string
+	Align            string
+	SpacingBefore    float64
+	SpacingAfter     float64
+	LineSpacing      float64
+	LineRule         string
+	IndentLeft       float64
+	IndentRight      float64
+	IndentFirst      float64
+	IndentHanging    float64
+	Tabs             []ParsedTab
+	BorderTop        *BorderInfo
+	BorderBottom     *BorderInfo
+	BorderLeft       *BorderInfo
+	BorderRight      *BorderInfo
+	Shading          string
+	KeepNext         bool
+	KeepLines        bool
+	WidowControl     bool
+	ParaDefaults     *TextRun
+	SectionBreak     string
+	RevisionAuthor   string
+	RevisionDate     string
+	SuppressAutoHyph bool
+	SnapToGrid       bool
+	Kinsoku          bool
+	WordWrap         bool
+	OverflowPunct    bool
+	TopLinePunct     bool
+	AutoSpaceDE      bool
+	AutoSpaceDN      bool
+	TextDirection    string
+	SuppressOverlap  bool
+	DivID            int
+	CnfStyle         string
+	FramePr          *FrameProps
+	Runs             []TextRun
 }
 
 type FrameProps struct {
@@ -201,48 +202,48 @@ type ParsedTab struct {
 }
 
 type TextRun struct {
-	Text         string
-	Bold         bool
-	Italic       bool
-	Underline    string
-	Strike       bool
-	SmallCaps    bool
-	AllCaps      bool
-	SuperScript  bool
-	SubScript    bool
-	IsBoldCS     bool
-	IsItalicCS   bool
-	FontFamily   string
-	FontEA       string
-	FontCS       string
-	FontSizePt   float64
-	FontSizeCS   float64
-	FontColor    string
-	Highlight    string
-	Hidden       bool
-	Lang         string
-	IsTab        bool
-	IsLineBreak  bool
-	BreakType    string
-	IsHyperlink  bool
-	HyperlinkURL string
-	IsImage      bool
-	ImageSrc     string
-	ImageWidth   float64
-	ImageHeight  float64
-	ImageAlt     string
+	Text          string
+	Bold          bool
+	Italic        bool
+	Underline     string
+	Strike        bool
+	SmallCaps     bool
+	AllCaps       bool
+	SuperScript   bool
+	SubScript     bool
+	IsBoldCS      bool
+	IsItalicCS    bool
+	FontFamily    string
+	FontEA        string
+	FontCS        string
+	FontSizePt    float64
+	FontSizeCS    float64
+	FontColor     string
+	Highlight     string
+	Hidden        bool
+	Lang          string
+	IsTab         bool
+	IsLineBreak   bool
+	BreakType     string
+	IsHyperlink   bool
+	HyperlinkURL  string
+	IsImage       bool
+	ImageSrc      string
+	ImageWidth    float64
+	ImageHeight   float64
+	ImageAlt      string
 	IsFootnoteRef bool
-	NoteID       int
-	NoteType     string
-	IsSym        bool
-	SymChar      string
-	IsInserted   bool
-	InsAuthor    string
-	InsDate      string
-	IsDeleted    bool
-	DelAuthor    string
-	DelDate      string
-	IsRTL        bool
+	NoteID        int
+	NoteType      string
+	IsSym         bool
+	SymChar       string
+	IsInserted    bool
+	InsAuthor     string
+	InsDate       string
+	IsDeleted     bool
+	DelAuthor     string
+	DelDate       string
+	IsRTL         bool
 }
 
 type BorderInfo struct {
@@ -253,16 +254,16 @@ type BorderInfo struct {
 }
 
 type ParsedTable struct {
-	ID          int
-	Width       float64
-	Alignment   string
-	Indent      float64
-	CellSpace   float64
-	Caption     string
-	Summary     string
-	StyleName   string
-	Grid        []float64
-	Rows        []ParsedTableRow
+	ID           int
+	Width        float64
+	Alignment    string
+	Indent       float64
+	CellSpace    float64
+	Caption      string
+	Summary      string
+	StyleName    string
+	Grid         []float64
+	Rows         []ParsedTableRow
 	BorderTop    *BorderInfo
 	BorderBottom *BorderInfo
 	BorderLeft   *BorderInfo
@@ -275,16 +276,16 @@ type ParsedTableRow struct {
 }
 
 type ParsedTableCell struct {
-	GridSpan   int
-	RowSpan    int
-	VMerge     int
-	Omitted    bool
-	VAlign     string
-	TextDir    string
-	NoWrap     bool
-	Lang       string
-	Width      float64 // per-cell width override from w:tcPr/w:tcW (secondary to tblGrid)
-	Content    []ContentItem
+	GridSpan     int
+	RowSpan      int
+	VMerge       int
+	Omitted      bool
+	VAlign       string
+	TextDir      string
+	NoWrap       bool
+	Lang         string
+	Width        float64 // per-cell width override from w:tcPr/w:tcW (secondary to tblGrid)
+	Content      []ContentItem
 	BorderTop    *BorderInfo
 	BorderBottom *BorderInfo
 	BorderLeft   *BorderInfo
