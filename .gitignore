@@ -3,3 +3,4 @@ coverage.out
 coverage*.out
 coverage.html
 local-examples/
+graphify-out/
