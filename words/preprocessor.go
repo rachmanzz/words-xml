@@ -2606,7 +2606,10 @@ func applyParaRunDefaults(rPr *RunProps, tr *TextRun, themeFontMap map[string]st
 }
 
 func formatPt(v float64) string {
-	return strings.TrimSuffix(fmt.Sprintf("%.1f", v), ".0")
+	s := fmt.Sprintf("%.6f", v)
+	s = strings.TrimRight(s, "0")
+	s = strings.TrimSuffix(s, ".")
+	return s
 }
 
 func formatBorderStyle(val string) string {
@@ -2630,19 +2633,19 @@ func buildBorderAttr(top, bot, left, right *BorderInfo) string {
 	var parts []string
 	if top != nil && top.Val != "none" && top.Val != "" {
 		w := float64(top.Sz) / 576.0
-		parts = append(parts, fmt.Sprintf("bt %.3f %s%d #%s", w, formatBorderStyle(top.Val), top.Space, top.Color))
+		parts = append(parts, fmt.Sprintf("bt %.6f %s%d #%s", w, formatBorderStyle(top.Val), top.Space, top.Color))
 	}
 	if bot != nil && bot.Val != "none" && bot.Val != "" {
 		w := float64(bot.Sz) / 576.0
-		parts = append(parts, fmt.Sprintf("bb %.3f %s%d #%s", w, formatBorderStyle(bot.Val), bot.Space, bot.Color))
+		parts = append(parts, fmt.Sprintf("bb %.6f %s%d #%s", w, formatBorderStyle(bot.Val), bot.Space, bot.Color))
 	}
 	if left != nil && left.Val != "none" && left.Val != "" {
 		w := float64(left.Sz) / 576.0
-		parts = append(parts, fmt.Sprintf("bl %.3f %s%d #%s", w, formatBorderStyle(left.Val), left.Space, left.Color))
+		parts = append(parts, fmt.Sprintf("bl %.6f %s%d #%s", w, formatBorderStyle(left.Val), left.Space, left.Color))
 	}
 	if right != nil && right.Val != "none" && right.Val != "" {
 		w := float64(right.Sz) / 576.0
-		parts = append(parts, fmt.Sprintf("br %.3f %s%d #%s", w, formatBorderStyle(right.Val), right.Space, right.Color))
+		parts = append(parts, fmt.Sprintf("br %.6f %s%d #%s", w, formatBorderStyle(right.Val), right.Space, right.Color))
 	}
 	return strings.Join(parts, "; ")
 }
@@ -2804,12 +2807,12 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 		wPt := int(sec.WidthInch * 72)
 		hPt := int(sec.HeightInch * 72)
 		if preset := matchPageSize(wPt, hPt); preset != "" {
-			fmt.Fprintf(b, "    <s:page size=\"%s\" mt=\"%.2f\" mb=\"%.2f\" ml=\"%.2f\" mr=\"%.2f\" mh=\"%.2f\" mf=\"%.2f\"/>\n",
+			fmt.Fprintf(b, "    <s:page size=\"%s\" mt=\"%.6f\" mb=\"%.6f\" ml=\"%.6f\" mr=\"%.6f\" mh=\"%.6f\" mf=\"%.6f\"/>\n",
 				preset,
 				sec.MarginTop, sec.MarginBottom, sec.MarginLeft, sec.MarginRight,
 				sec.HeaderMargin, sec.FooterMargin)
 		} else {
-			fmt.Fprintf(b, "    <s:page w=\"%.2f\" h=\"%.2f\" mt=\"%.2f\" mb=\"%.2f\" ml=\"%.2f\" mr=\"%.2f\" mh=\"%.2f\" mf=\"%.2f\"/>\n",
+			fmt.Fprintf(b, "    <s:page w=\"%.6f\" h=\"%.6f\" mt=\"%.6f\" mb=\"%.6f\" ml=\"%.6f\" mr=\"%.6f\" mh=\"%.6f\" mf=\"%.6f\"/>\n",
 				sec.WidthInch, sec.HeightInch,
 				sec.MarginTop, sec.MarginBottom, sec.MarginLeft, sec.MarginRight,
 				sec.HeaderMargin, sec.FooterMargin)
@@ -2817,7 +2820,7 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 		if sec.Cols > 1 {
 			fmt.Fprintf(b, "    <s:cols n=\"%d\"", sec.Cols)
 			if sec.ColsSpace > 0 {
-				fmt.Fprintf(b, " space=\"%.2f\"", sec.ColsSpace)
+				fmt.Fprintf(b, " space=\"%.6f\"", sec.ColsSpace)
 			}
 			b.WriteString("/>\n")
 		}
@@ -2828,10 +2831,10 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 		if sd, ok := doc.StyleMap[headingName]; ok && (sd.SpacingBefore > 0 || sd.SpacingAfter > 0) {
 			fmt.Fprintf(b, "    <s:gap el=\"h\" c=\"%s\"", headingName)
 			if sd.SpacingBefore > 0 {
-				fmt.Fprintf(b, " before=\"%.2f\"", sd.SpacingBefore)
+				fmt.Fprintf(b, " before=\"%.6f\"", sd.SpacingBefore)
 			}
 			if sd.SpacingAfter > 0 {
-				fmt.Fprintf(b, " after=\"%.2f\"", sd.SpacingAfter)
+				fmt.Fprintf(b, " after=\"%.6f\"", sd.SpacingAfter)
 			}
 			b.WriteString("/>\n")
 		}
@@ -2840,10 +2843,10 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 	if def, ok := doc.StyleMap["Normal"]; ok && (def.SpacingBefore > 0 || def.SpacingAfter > 0) {
 		fmt.Fprintf(b, "    <s:gap el=\"p\"")
 		if def.SpacingBefore > 0 {
-			fmt.Fprintf(b, " before=\"%.2f\"", def.SpacingBefore)
+			fmt.Fprintf(b, " before=\"%.6f\"", def.SpacingBefore)
 		}
 		if def.SpacingAfter > 0 {
-			fmt.Fprintf(b, " after=\"%.2f\"", def.SpacingAfter)
+			fmt.Fprintf(b, " after=\"%.6f\"", def.SpacingAfter)
 		}
 		b.WriteString("/>\n")
 	}
@@ -2852,16 +2855,16 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 		if def.IndentLeft > 0 || def.IndentRight > 0 || def.IndentFirst > 0 || def.IndentHanging > 0 {
 			b.WriteString("    <s:indent el=\"p\"")
 			if def.IndentLeft > 0 {
-				fmt.Fprintf(b, " left=\"%.2f\"", def.IndentLeft)
+				fmt.Fprintf(b, " left=\"%.6f\"", def.IndentLeft)
 			}
 			if def.IndentRight > 0 {
-				fmt.Fprintf(b, " right=\"%.2f\"", def.IndentRight)
+				fmt.Fprintf(b, " right=\"%.6f\"", def.IndentRight)
 			}
 			if def.IndentFirst > 0 {
-				fmt.Fprintf(b, " firstLine=\"%.2f\"", def.IndentFirst)
+				fmt.Fprintf(b, " firstLine=\"%.6f\"", def.IndentFirst)
 			}
 			if def.IndentHanging > 0 {
-				fmt.Fprintf(b, " hanging=\"%.2f\"", def.IndentHanging)
+				fmt.Fprintf(b, " hanging=\"%.6f\"", def.IndentHanging)
 			}
 			b.WriteString("/>\n")
 		}
@@ -2869,7 +2872,7 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 			fmt.Fprintf(b, "    <s:align el=\"p\" value=\"%s\"/>\n", def.Align)
 		}
 		if def.LineSpacing > 0 {
-			fmt.Fprintf(b, "    <s:line el=\"p\" value=\"%.2f\"", def.LineSpacing)
+			fmt.Fprintf(b, "    <s:line el=\"p\" value=\"%.6f\"", def.LineSpacing)
 			if def.LineRule != "" {
 				fmt.Fprintf(b, " rule=\"%s\"", def.LineRule)
 			}
@@ -2884,16 +2887,16 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 				b.WriteString("    <s:indent el=\"p\"")
 				fmt.Fprintf(b, " c=\"%s\"", headingName)
 				if sd.IndentLeft > 0 {
-					fmt.Fprintf(b, " left=\"%.2f\"", sd.IndentLeft)
+					fmt.Fprintf(b, " left=\"%.6f\"", sd.IndentLeft)
 				}
 				if sd.IndentRight > 0 {
-					fmt.Fprintf(b, " right=\"%.2f\"", sd.IndentRight)
+					fmt.Fprintf(b, " right=\"%.6f\"", sd.IndentRight)
 				}
 				if sd.IndentFirst > 0 {
-					fmt.Fprintf(b, " firstLine=\"%.2f\"", sd.IndentFirst)
+					fmt.Fprintf(b, " firstLine=\"%.6f\"", sd.IndentFirst)
 				}
 				if sd.IndentHanging > 0 {
-					fmt.Fprintf(b, " hanging=\"%.2f\"", sd.IndentHanging)
+					fmt.Fprintf(b, " hanging=\"%.6f\"", sd.IndentHanging)
 				}
 				b.WriteString("/>\n")
 			}
@@ -2901,7 +2904,7 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 				fmt.Fprintf(b, "    <s:align el=\"p\" c=\"%s\" value=\"%s\"/>\n", headingName, sd.Align)
 			}
 			if sd.LineSpacing > 0 {
-				fmt.Fprintf(b, "    <s:line el=\"p\" c=\"%s\" value=\"%.2f\"", headingName, sd.LineSpacing)
+				fmt.Fprintf(b, "    <s:line el=\"p\" c=\"%s\" value=\"%.6f\"", headingName, sd.LineSpacing)
 				if sd.LineRule != "" {
 					fmt.Fprintf(b, " rule=\"%s\"", sd.LineRule)
 				}
@@ -2912,7 +2915,7 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 
 	for _, tbl := range doc.AllTables {
 		for _, w := range tbl.Grid {
-			fmt.Fprintf(b, "    <s:col ref=\"%d\" w=\"%.2f\"/>\n", tbl.ID, w)
+			fmt.Fprintf(b, "    <s:col ref=\"%d\" w=\"%.6f\"/>\n", tbl.ID, w)
 		}
 	}
 
@@ -2927,12 +2930,12 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 					el = "p"
 				}
 				for _, t := range item.Paragraph.Tabs {
-					key := fmt.Sprintf("%s_%.2f_%s_%s", el, t.Pos, t.Align, t.Leader)
+					key := fmt.Sprintf("%s_%.6f_%s_%s", el, t.Pos, t.Align, t.Leader)
 					if tabSeen[key] {
 						continue
 					}
 					tabSeen[key] = true
-					fmt.Fprintf(b, "    <s:tab el=\"%s\" pos=\"%.2f\" align=\"%s\" leader=\"%s\"/>\n",
+					fmt.Fprintf(b, "    <s:tab el=\"%s\" pos=\"%.6f\" align=\"%s\" leader=\"%s\"/>\n",
 						el, t.Pos, t.Align, t.Leader)
 				}
 			}
@@ -2969,12 +2972,12 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 			} else {
 				el = "p"
 			}
-			key := fmt.Sprintf("%s_%.2f_%s_%s", el, t.Pos, t.Align, t.Leader)
+			key := fmt.Sprintf("%s_%.6f_%s_%s", el, t.Pos, t.Align, t.Leader)
 			if tabSeen[key] {
 				continue
 			}
 			tabSeen[key] = true
-			fmt.Fprintf(b, "    <s:tab el=\"%s\" pos=\"%.2f\" align=\"%s\" leader=\"%s\"/>\n",
+			fmt.Fprintf(b, "    <s:tab el=\"%s\" pos=\"%.6f\" align=\"%s\" leader=\"%s\"/>\n",
 				el, t.Pos, t.Align, t.Leader)
 		}
 	}
@@ -3038,31 +3041,31 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 			fmt.Fprintf(b, " alignment=\"%s\"", sd.Align)
 		}
 		if sd.SpacingBefore > 0 {
-			fmt.Fprintf(b, " spacingBefore=\"%.2f\"", sd.SpacingBefore)
+			fmt.Fprintf(b, " spacingBefore=\"%.6f\"", sd.SpacingBefore)
 		}
 		if sd.SpacingAfter > 0 {
-			fmt.Fprintf(b, " spacingAfter=\"%.2f\"", sd.SpacingAfter)
+			fmt.Fprintf(b, " spacingAfter=\"%.6f\"", sd.SpacingAfter)
 		}
 		if sd.LineSpacing > 0 {
-			fmt.Fprintf(b, " lineSpacing=\"%.2f\"", sd.LineSpacing)
+			fmt.Fprintf(b, " lineSpacing=\"%.6f\"", sd.LineSpacing)
 		}
 		if sd.LineRule != "" {
 			fmt.Fprintf(b, " lineRule=\"%s\"", sd.LineRule)
 		}
 		if sd.IndentLeft > 0 {
-			fmt.Fprintf(b, " indentLeft=\"%.2f\"", sd.IndentLeft)
+			fmt.Fprintf(b, " indentLeft=\"%.6f\"", sd.IndentLeft)
 		}
 		if sd.IndentRight > 0 {
-			fmt.Fprintf(b, " indentRight=\"%.2f\"", sd.IndentRight)
+			fmt.Fprintf(b, " indentRight=\"%.6f\"", sd.IndentRight)
 		}
 		if sd.IndentFirst > 0 {
-			fmt.Fprintf(b, " indentFirst=\"%.2f\"", sd.IndentFirst)
+			fmt.Fprintf(b, " indentFirst=\"%.6f\"", sd.IndentFirst)
 		}
 		if sd.IndentHanging > 0 {
-			fmt.Fprintf(b, " indentHanging=\"%.2f\"", sd.IndentHanging)
+			fmt.Fprintf(b, " indentHanging=\"%.6f\"", sd.IndentHanging)
 		}
 		if sd.BorderWidth > 0 {
-			fmt.Fprintf(b, " borderWidth=\"%.2f\"", sd.BorderWidth)
+			fmt.Fprintf(b, " borderWidth=\"%.6f\"", sd.BorderWidth)
 		}
 		if sd.BorderColor != "" {
 			fmt.Fprintf(b, " borderColor=\"%s\"", strings.TrimPrefix(sd.BorderColor, "#"))
@@ -3071,10 +3074,10 @@ func emitStyleBlock(b *strings.Builder, doc *ParsedDocument) {
 			fmt.Fprintf(b, " borderStyle=\"%s\"", sd.BorderStyle)
 		}
 		if sd.CellSpacing > 0 {
-			fmt.Fprintf(b, " cellSpacing=\"%.2f\"", sd.CellSpacing)
+			fmt.Fprintf(b, " cellSpacing=\"%.6f\"", sd.CellSpacing)
 		}
 		if sd.Width > 0 {
-			fmt.Fprintf(b, " width=\"%.2f\"", sd.Width)
+			fmt.Fprintf(b, " width=\"%.6f\"", sd.Width)
 		}
 		b.WriteString("/>\n")
 	}
@@ -3153,6 +3156,9 @@ func emitListGroup(b *strings.Builder, start int, doc *ParsedDocument) int {
 			fmt.Fprintf(b, " start=\"%d\"", st)
 		}
 	}
+	if fmtAttr := listFormatAttr(first, doc); fmtAttr != "" {
+		fmt.Fprintf(b, " format=\"%s\"", xmlEscape(fmtAttr))
+	}
 	b.WriteString(">\n")
 	end := emitListItems(b, start, first.NumID, first.ListLevel, indent+"  ", doc)
 	fmt.Fprintf(b, "%s</%s>\n", indent, tag)
@@ -3198,13 +3204,20 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 			}
 			content := buildInlineText(item.Paragraph.Runs, doc.DefaultFont, doc.Mode)
 			idx++
-			// Advance the running numbering position for this numId/level so a
-			// later <ol> group that resumes the sequence carries the next number.
+			// The current item's counter is the running position (resolveListStart
+			// seeds it; each emitted item advances it AFTER its nested content so
+			// nested items referencing this level — e.g. "%1.%2" — still see the
+			// current item's number).
+			marker := ""
 			if doc.ListSeqNext != nil {
-				doc.ListSeqNext[listSeqKey(numID, level)]++
+				marker = buildListMarker(item.Paragraph, doc, doc.ListSeqNext[listSeqKey(numID, level)])
 			}
 			conts := collectListContinuations(doc, idx, numID, startAbstractID)
-			fmt.Fprintf(b, "%s<li>\n", indent)
+			if marker != "" {
+				fmt.Fprintf(b, "%s<li marker=\"%s\">\n", indent, xmlEscape(marker))
+			} else {
+				fmt.Fprintf(b, "%s<li>\n", indent)
+			}
 			// The first <p> is the geometry owner: resolve marker geometry from
 			// the numbering level when the item paragraph has no w:ind of its own.
 			writeListFirstParagraph(b, item.Paragraph, content, indent+"  ", doc)
@@ -3214,6 +3227,11 @@ func emitListItems(b *strings.Builder, idx, numID, level int, indent string, doc
 			}
 			idx += len(conts)
 			idx = emitListNested(b, idx, numID, level, startAbstractID, indent, doc)
+			// Advance the running numbering position for this numId/level so a
+			// later <ol> group that resumes the sequence carries the next number.
+			if doc.ListSeqNext != nil {
+				doc.ListSeqNext[listSeqKey(numID, level)]++
+			}
 			fmt.Fprintf(b, "%s</li>\n", indent)
 			continue
 		}
@@ -3274,6 +3292,12 @@ func emitListNested(b *strings.Builder, idx, numID, level int, abstractID int, i
 			if st := listStart(next.Paragraph, doc); st > 1 {
 				fmt.Fprintf(b, " start=\"%d\"", st)
 			}
+			// Seed the running position for this nested level so item markers
+			// render the correct sequence (emitListItems advances it per item).
+			resolveListStart(next.Paragraph, doc)
+		}
+		if fmtAttr := listFormatAttr(next.Paragraph, doc); fmtAttr != "" {
+			fmt.Fprintf(b, " format=\"%s\"", xmlEscape(fmtAttr))
 		}
 		b.WriteString(">\n")
 		idx = emitListItems(b, idx, numID, nl, indent+"    ", doc)
@@ -3428,6 +3452,179 @@ func listSeqKey(numID, level int) string {
 	return fmt.Sprintf("%d_%d", numID, level)
 }
 
+// parseLvlTextTemplate splits a w:lvlText template like "%1.", "(%1)" or
+// "%1.%2" into mixed literal and level-reference segments. Literal templates
+// (bullets, dashes, "o", …) yield a single literal segment so they pass through
+// untouched.
+func parseLvlTextTemplate(lvlText string) []LvlTextSegment {
+	re := regexp.MustCompile(`%(\d+)`)
+	idxs := re.FindAllStringSubmatchIndex(lvlText, -1)
+	if len(idxs) == 0 {
+		return []LvlTextSegment{{Text: lvlText}}
+	}
+	var segs []LvlTextSegment
+	last := 0
+	for _, idx := range idxs {
+		if idx[0] > last {
+			segs = append(segs, LvlTextSegment{Text: lvlText[last:idx[0]]})
+		}
+		lv, _ := strconv.Atoi(lvlText[idx[2]:idx[3]])
+		segs = append(segs, LvlTextSegment{Level: lv})
+		last = idx[1]
+	}
+	if last < len(lvlText) {
+		segs = append(segs, LvlTextSegment{Text: lvlText[last:]})
+	}
+	return segs
+}
+
+// listNumToLetter renders n as an alphabetical counter (1→a/A, 2→b/B, …).
+func listNumToLetter(n int, upper bool) string {
+	s := ""
+	for n > 0 {
+		n--
+		s = string(rune('a'+n%26)) + s
+		n /= 26
+	}
+	if upper {
+		return strings.ToUpper(s)
+	}
+	return s
+}
+
+// listNumToRoman renders n as a Roman numeral (1→i/I, 4→iv/IV, …).
+func listNumToRoman(n int, upper bool) string {
+	type rv struct {
+		val int
+		sym string
+	}
+	vals := []rv{
+		{1000, "m"}, {900, "cm"}, {500, "d"}, {400, "cd"},
+		{100, "c"}, {90, "xc"}, {50, "l"}, {40, "xl"},
+		{10, "x"}, {9, "ix"}, {5, "v"}, {4, "iv"}, {1, "i"},
+	}
+	s := ""
+	for _, v := range vals {
+		for n >= v.val {
+			s += v.sym
+			n -= v.val
+		}
+	}
+	if upper {
+		return strings.ToUpper(s)
+	}
+	return s
+}
+
+// formatListCounter renders a list counter according to the numbering format
+// (w:numFmt): decimal, lowerLetter, upperLetter, lowerRoman, upperRoman, …
+func formatListCounter(counter int, numFmt string) string {
+	if counter < 1 {
+		counter = 1
+	}
+	switch numFmt {
+	case "lowerLetter":
+		return listNumToLetter(counter, false)
+	case "upperLetter":
+		return listNumToLetter(counter, true)
+	case "lowerRoman":
+		return listNumToRoman(counter, false)
+	case "upperRoman":
+		return listNumToRoman(counter, true)
+	case "decimalZero":
+		return fmt.Sprintf("%02d", counter)
+	case "bullet":
+		return ""
+	default:
+		return fmt.Sprintf("%d", counter)
+	}
+}
+
+// listRefCounter resolves the counter for a referenced numbering level (ilvl)
+// of the given numId. It prefers the running sequence position; falls back to
+// the level's w:start (via NumStartMap); otherwise 1.
+func listRefCounter(numID, ilvl int, doc *ParsedDocument) int {
+	if doc != nil {
+		if doc.ListSeqNext != nil {
+			if v, ok := doc.ListSeqNext[listSeqKey(numID, ilvl)]; ok && v > 0 {
+				return v
+			}
+		}
+		if doc.NumStartMap != nil {
+			if levels, ok := doc.NumStartMap[numID]; ok {
+				if v, ok := levels[ilvl]; ok && v > 0 {
+					return v
+				}
+			}
+		}
+	}
+	return 1
+}
+
+// buildListMarker expands the item's w:lvlText template for a concrete counter.
+// Literal templates (bullets) are returned verbatim. Returns "" when the item
+// has no lvlText template.
+func buildListMarker(p *ParsedParagraph, doc *ParsedDocument, counter int) string {
+	if p == nil || doc == nil || doc.NumLvlTextMap == nil {
+		return ""
+	}
+	key := fmt.Sprintf("%d_%d", p.NumID, p.ListLevel)
+	lt, ok := doc.NumLvlTextMap[key]
+	if !ok || lt == "" {
+		return ""
+	}
+	segs := parseLvlTextTemplate(lt)
+	var b strings.Builder
+	for _, s := range segs {
+		if s.Level == 0 {
+			b.WriteString(s.Text)
+			continue
+		}
+		ilvl := s.Level - 1
+		refCounter := counter
+		if ilvl != p.ListLevel {
+			refCounter = listRefCounter(p.NumID, ilvl, doc)
+		}
+		numFmt := ""
+		if doc.NumFmtMap != nil {
+			numFmt = doc.NumFmtMap[fmt.Sprintf("%d_%d", p.NumID, ilvl)]
+		}
+		b.WriteString(formatListCounter(refCounter, numFmt))
+	}
+	return b.String()
+}
+
+// listFormatAttr returns the raw w:lvlText template for the item's level when
+// it is a format template (contains a %N reference), for the <ol>/<ul> format
+// attribute. Literal bullets are excluded — their literal is already carried by
+// the type attribute.
+func listFormatAttr(p *ParsedParagraph, doc *ParsedDocument) string {
+	if p == nil || doc == nil || doc.NumLvlTextMap == nil {
+		return ""
+	}
+	key := fmt.Sprintf("%d_%d", p.NumID, p.ListLevel)
+	lt, ok := doc.NumLvlTextMap[key]
+	if !ok || lt == "" || !strings.Contains(lt, "%") {
+		return ""
+	}
+	return lt
+}
+
+// resolveListItemCounter returns the counter the current list item should
+// carry, preferring the running sequence position tracked on the document.
+func resolveListItemCounter(p *ParsedParagraph, doc *ParsedDocument) int {
+	if p == nil {
+		return 1
+	}
+	key := listSeqKey(p.NumID, p.ListLevel)
+	if doc != nil && doc.ListSeqNext != nil {
+		if v, ok := doc.ListSeqNext[key]; ok && v > 0 {
+			return v
+		}
+	}
+	return listStart(p, doc)
+}
+
 // resolveListStart returns the number the first item of a new <ol> group should
 // carry. A group that resumes a previously emitted numbering sequence (same
 // numId/level, split by an interleaved different-numId sub-list) continues the
@@ -3463,8 +3660,17 @@ func emitContentItem(b *strings.Builder, item ContentItem, doc *ParsedDocument, 
 	case "list":
 		tag, typeAttr := listTagAndType(item.Paragraph, doc)
 		content := buildInlineText(item.Paragraph.Runs, doc.DefaultFont, doc.Mode)
-		fmt.Fprintf(b, "%s<%s type=\"%s\">\n", indent, tag, typeAttr)
-		fmt.Fprintf(b, "%s  <li>\n", indent)
+		fmt.Fprintf(b, "%s<%s type=\"%s\"", indent, tag, typeAttr)
+		if fmtAttr := listFormatAttr(item.Paragraph, doc); fmtAttr != "" {
+			fmt.Fprintf(b, " format=\"%s\"", xmlEscape(fmtAttr))
+		}
+		b.WriteString(">\n")
+		marker := buildListMarker(item.Paragraph, doc, resolveListItemCounter(item.Paragraph, doc))
+		if marker != "" {
+			fmt.Fprintf(b, "%s  <li marker=\"%s\">\n", indent, xmlEscape(marker))
+		} else {
+			fmt.Fprintf(b, "%s  <li>\n", indent)
+		}
 		writeListFirstParagraph(b, item.Paragraph, content, indent+"    ", doc)
 		fmt.Fprintf(b, "%s  </li>\n", indent)
 		fmt.Fprintf(b, "%s</%s>\n", indent, tag)
@@ -3543,16 +3749,16 @@ func writeParagraphAttrs(b *strings.Builder, p *ParsedParagraph) {
 		fmt.Fprintf(b, " align=\"%s\"", p.Align)
 	}
 	if p.IndentLeft > 0 {
-		fmt.Fprintf(b, " indentLeft=\"%.2f\"", p.IndentLeft)
+		fmt.Fprintf(b, " indentLeft=\"%.6f\"", p.IndentLeft)
 	}
 	if p.IndentHanging > 0 {
-		fmt.Fprintf(b, " indentHanging=\"%.2f\"", p.IndentHanging)
+		fmt.Fprintf(b, " indentHanging=\"%.6f\"", p.IndentHanging)
 	}
 	if p.IndentRight > 0 {
-		fmt.Fprintf(b, " indentRight=\"%.2f\"", p.IndentRight)
+		fmt.Fprintf(b, " indentRight=\"%.6f\"", p.IndentRight)
 	}
 	if p.IndentFirst > 0 {
-		fmt.Fprintf(b, " indentFirst=\"%.2f\"", p.IndentFirst)
+		fmt.Fprintf(b, " indentFirst=\"%.6f\"", p.IndentFirst)
 	}
 	if len(p.Tabs) > 0 {
 		b.WriteString(" tabs=\"")
@@ -3560,7 +3766,7 @@ func writeParagraphAttrs(b *strings.Builder, p *ParsedParagraph) {
 			if i > 0 {
 				b.WriteByte(' ')
 			}
-			fmt.Fprintf(b, "%.2f", t.Pos)
+			fmt.Fprintf(b, "%.6f", t.Pos)
 			// A stop is compact when it uses the defaults (left/none). Anything
 			// else — including "clear", which is NOT a landing position — must be
 			// carried explicitly so consumers never mistake it for a plain stop.
@@ -3574,13 +3780,13 @@ func writeParagraphAttrs(b *strings.Builder, p *ParsedParagraph) {
 		b.WriteByte('"')
 	}
 	if p.SpacingBefore > 0 {
-		fmt.Fprintf(b, " spacingBefore=\"%.2f\"", p.SpacingBefore)
+		fmt.Fprintf(b, " spacingBefore=\"%.6f\"", p.SpacingBefore)
 	}
 	if p.SpacingAfter > 0 {
-		fmt.Fprintf(b, " spacingAfter=\"%.2f\"", p.SpacingAfter)
+		fmt.Fprintf(b, " spacingAfter=\"%.6f\"", p.SpacingAfter)
 	}
 	if p.LineSpacing > 0 {
-		fmt.Fprintf(b, " lineSpacing=\"%.2f\"", p.LineSpacing)
+		fmt.Fprintf(b, " lineSpacing=\"%.6f\"", p.LineSpacing)
 	}
 	if p.LineRule != "" && p.LineRule != "auto" {
 		fmt.Fprintf(b, " lineRule=\"%s\"", p.LineRule)
@@ -3661,16 +3867,16 @@ func writeParagraphAttrs(b *strings.Builder, p *ParsedParagraph) {
 			frameAttrs += fmt.Sprintf(" lines='%d'", fp.Lines)
 		}
 		if fp.Width > 0 {
-			frameAttrs += fmt.Sprintf(" width='%.2f'", float64(fp.Width)/twipsPerInch)
+			frameAttrs += fmt.Sprintf(" width='%.6f'", float64(fp.Width)/twipsPerInch)
 		}
 		if fp.Height > 0 {
-			frameAttrs += fmt.Sprintf(" height='%.2f'", float64(fp.Height)/twipsPerInch)
+			frameAttrs += fmt.Sprintf(" height='%.6f'", float64(fp.Height)/twipsPerInch)
 		}
 		if fp.VSpace > 0 {
-			frameAttrs += fmt.Sprintf(" vSpace='%.2f'", float64(fp.VSpace)/twipsPerInch)
+			frameAttrs += fmt.Sprintf(" vSpace='%.6f'", float64(fp.VSpace)/twipsPerInch)
 		}
 		if fp.HSpace > 0 {
-			frameAttrs += fmt.Sprintf(" hSpace='%.2f'", float64(fp.HSpace)/twipsPerInch)
+			frameAttrs += fmt.Sprintf(" hSpace='%.6f'", float64(fp.HSpace)/twipsPerInch)
 		}
 		if fp.Wrap != "" {
 			frameAttrs += fmt.Sprintf(" wrap='%s'", fp.Wrap)
@@ -3682,13 +3888,13 @@ func writeParagraphAttrs(b *strings.Builder, p *ParsedParagraph) {
 			frameAttrs += fmt.Sprintf(" vAnchor='%s'", fp.VAnchor)
 		}
 		if fp.X > 0 {
-			frameAttrs += fmt.Sprintf(" x='%.2f'", float64(fp.X)/twipsPerInch)
+			frameAttrs += fmt.Sprintf(" x='%.6f'", float64(fp.X)/twipsPerInch)
 		}
 		if fp.XAlign != "" {
 			frameAttrs += fmt.Sprintf(" xAlign='%s'", fp.XAlign)
 		}
 		if fp.Y > 0 {
-			frameAttrs += fmt.Sprintf(" y='%.2f'", float64(fp.Y)/twipsPerInch)
+			frameAttrs += fmt.Sprintf(" y='%.6f'", float64(fp.Y)/twipsPerInch)
 		}
 		if fp.YAlign != "" {
 			frameAttrs += fmt.Sprintf(" yAlign='%s'", fp.YAlign)
@@ -3874,16 +4080,16 @@ func writeTableIndent(b *strings.Builder, t *ParsedTable, doc *ParsedDocument, i
 		fmt.Fprintf(b, " c=\"%s\"", xmlEscape(t.StyleName))
 	}
 	if t.Width > 0 {
-		fmt.Fprintf(b, " width=\"%.2f\"", t.Width)
+		fmt.Fprintf(b, " width=\"%.6f\"", t.Width)
 	}
 	if t.Alignment != "" {
 		fmt.Fprintf(b, " align=\"%s\"", t.Alignment)
 	}
 	if t.Indent > 0 {
-		fmt.Fprintf(b, " indent=\"%.2f\"", t.Indent)
+		fmt.Fprintf(b, " indent=\"%.6f\"", t.Indent)
 	}
 	if t.CellSpace > 0 {
-		fmt.Fprintf(b, " cellSpacing=\"%.2f\"", t.CellSpace)
+		fmt.Fprintf(b, " cellSpacing=\"%.6f\"", t.CellSpace)
 	}
 	if t.Caption != "" {
 		fmt.Fprintf(b, " caption=\"%s\"", xmlEscape(t.Caption))

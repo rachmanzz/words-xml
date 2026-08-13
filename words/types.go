@@ -61,6 +61,15 @@ type NumLvlInd struct {
 	FirstLine float64
 }
 
+// LvlTextSegment is one piece of a numbering level text template (w:lvlText),
+// either a literal text chunk (Level == 0) or a reference to a numbering level
+// (Level >= 1, OOXML 1-based). For example "(%1)" parses to the literal "(",
+// the reference Level 1, and the literal ")".
+type LvlTextSegment struct {
+	Text  string // literal text when Level == 0
+	Level int    // referenced level (1-based), 0 = literal segment
+}
+
 type HeaderFooter struct {
 	ID      int
 	Content []ContentItem

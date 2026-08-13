@@ -514,6 +514,8 @@ func verifyLiAttrs(start xml.StartElement, r *VerifyResult) {
 			// ok, freeform
 		case "type":
 			// MOD-2: any numFmt value is valid (raw preservation)
+		case "marker":
+			// ok, expanded w:lvlText marker for the item
 		case "indentLeft", "indentRight", "indentFirst", "indentHanging",
 			"spacingBefore", "spacingAfter", "lineSpacing", "lineRule",
 			"align", "keepNext", "keepLines", "widowControl", "shd", "at", "tabs":

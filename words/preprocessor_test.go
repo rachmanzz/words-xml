@@ -712,10 +712,10 @@ func TestListItemIndentAttrs(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	x := doc.WordsXML
-	if !strings.Contains(x, `<p indentLeft="0.63" indentHanging="0.31">Item A`) {
+	if !strings.Contains(x, `<p indentLeft="0.629861" indentHanging="0.314583">Item A`) {
 		t.Errorf("expected first <p> with indentLeft/indentHanging from w:ind, got: %s", x)
 	}
-	if !strings.Contains(x, `<p indentLeft="0.55" indentHanging="0.55">Item B`) {
+	if !strings.Contains(x, `<p indentLeft="0.545833" indentHanging="0.545833">Item B`) {
 		t.Errorf("expected item first <p> to mirror hanging-only w:ind as indentLeft=indentHanging, got: %s", x)
 	}
 	if strings.Contains(x, `<li indent`) {
@@ -742,7 +742,7 @@ func TestListItemContinuationNoInteriorWhitespace(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	x := doc.WordsXML
-	if !strings.Contains(x, `<p indentLeft="0.55" indentHanging="0.55">First</p>`) || !strings.Contains(x, `<p> Continuation</p>`) {
+	if !strings.Contains(x, `<p indentLeft="0.545833" indentHanging="0.545833">First</p>`) || !strings.Contains(x, `<p> Continuation</p>`) {
 		t.Errorf("expected continuation paragraph to keep only its own geometry (no fabricated indent), got: %s", x)
 	}
 	if strings.Contains(x, `First<br type="textWrapping"/>`) {
@@ -770,7 +770,7 @@ func TestListItemIndentFromNumberingLevel(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	x := doc.WordsXML
-	if !strings.Contains(x, `<p indentLeft="0.55" indentHanging="0.30">Item</p>`) {
+	if !strings.Contains(x, `<p indentLeft="0.550000" indentHanging="0.300000">Item</p>`) {
 		t.Errorf("expected first <p> to resolve indentLeft/indentHanging from numbering level w:ind, got: %s", x)
 	}
 }
@@ -799,12 +799,12 @@ if err != nil {
 t.Fatalf("unexpected error: %v", err)
 }
 x := doc.WordsXML
-// Level marker pos: 720/1440 - 360/1440 = 0.50 - 0.25 = 0.25
-// indentLeft = 426/1440 = 0.30
-// indentHanging = 0.30 - 0.25 = 0.05 (marker stays at level's 0.25)
-if !strings.Contains(x, `<p indentLeft="0.30" indentHanging="0.05">Item</p>`) {
-t.Errorf("expected marker gap computed from level geometry (indentLeft=0.30 indentHanging=0.05), got: %s", x)
-}
+	// Level marker pos: 720/1440 - 360/1440 = 0.50 - 0.25 = 0.25
+	// indentLeft = 426/1440 = 0.295833
+	// indentHanging = 0.295833 - 0.25 = 0.045833 (marker stays at level's 0.25)
+	if !strings.Contains(x, `<p indentLeft="0.295833" indentHanging="0.045833">Item</p>`) {
+		t.Errorf("expected marker gap computed from level geometry (indentLeft=0.295833 indentHanging=0.045833), got: %s", x)
+	}
 // A paragraph with both left and hanging: marker gap still derived from level.
 body2 := xmlHeader + `<w:body>
 <w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr><w:ind w:left="907" w:hanging="453"/></w:pPr><w:r><w:t>Item</w:t></w:r></w:p>
@@ -815,12 +815,12 @@ if err != nil {
 t.Fatalf("unexpected error: %v", err)
 }
 x2 := doc2.WordsXML
-// Level marker pos: 0.25 (same as above)
-// indentLeft = 907/1440 = 0.63
-// indentHanging = 0.63 - 0.25 = 0.38 (paragraph hanging ignored for marker gap)
-if !strings.Contains(x2, `<p indentLeft="0.63" indentHanging="0.38">Item</p>`) {
-t.Errorf("expected marker gap from level (indentLeft=0.63 indentHanging=0.38), got: %s", x2)
-}
+	// Level marker pos: 0.25 (same as above)
+	// indentLeft = 907/1440 = 0.629861
+	// indentHanging = 0.629861 - 0.25 = 0.379861 (paragraph hanging ignored for marker gap)
+	if !strings.Contains(x2, `<p indentLeft="0.629861" indentHanging="0.379861">Item</p>`) {
+		t.Errorf("expected marker gap from level (indentLeft=0.629861 indentHanging=0.379861), got: %s", x2)
+	}
 }
 
 func TestListItemContinuationAfterLastItem(t *testing.T) {
@@ -874,10 +874,10 @@ func TestListItemContinuationOwnGeometry(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	x := doc.WordsXML
-	if !strings.Contains(x, `<p indentLeft="0.55" indentHanging="0.55">Item</p>`) {
+	if !strings.Contains(x, `<p indentLeft="0.545833" indentHanging="0.545833">Item</p>`) {
 		t.Errorf("expected item first <p> to mirror hanging-only as indentLeft=indentHanging, got: %s", x)
 	}
-	if !strings.Contains(x, `<p indentLeft="0.55">Continuation with own indent</p>`) {
+	if !strings.Contains(x, `<p indentLeft="0.550000">Continuation with own indent</p>`) {
 		t.Errorf("expected continuation to keep its own w:ind, got: %s", x)
 	}
 	if !strings.Contains(x, `<p>Continuation without indent</p>`) {
@@ -908,13 +908,13 @@ func TestListItemSpacingAttrs(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	x := doc.WordsXML
-	if !strings.Contains(x, `spacingBefore="0.08"`) {
+	if !strings.Contains(x, `spacingBefore="0.083333"`) {
 		t.Errorf("expected spacingBefore on <p>, got: %s", x)
 	}
-	if !strings.Contains(x, `spacingAfter="0.17"`) {
+	if !strings.Contains(x, `spacingAfter="0.166667"`) {
 		t.Errorf("expected spacingAfter on <p>, got: %s", x)
 	}
-	if !strings.Contains(x, `lineSpacing="0.33"`) {
+	if !strings.Contains(x, `lineSpacing="0.333333"`) {
 		t.Errorf("expected lineSpacing on <p>, got: %s", x)
 	}
 	if !strings.Contains(x, `lineRule="exact"`) {
@@ -2377,13 +2377,13 @@ func TestParagraphTabsAttribute(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	x := doc.WordsXML
-	if !strings.Contains(x, `<p indentLeft="0.63" indentHanging="0.32" tabs="0.32 0.63 0.95 1.26">`) {
+	if !strings.Contains(x, `<p indentLeft="0.630556" indentHanging="0.315278" tabs="0.315278 0.629861 0.945139 1.259722">`) {
 		t.Errorf("expected per-paragraph tabs attribute carrying only this paragraph's stops, got: %s", x)
 	}
 	if !strings.Contains(x, "<tab/><tab/>") {
 		t.Errorf("expected the <tab/> runs preserved, got: %s", x)
 	}
-	if !strings.Contains(x, `<s:tab el="p" pos="0.32" align="left" leader="none"/>`) {
+	if !strings.Contains(x, `<s:tab el="p" pos="0.315278" align="left" leader="none"/>`) {
 		t.Errorf("expected global <s:tab> list retained for backward compat, got: %s", x)
 	}
 }
@@ -2417,7 +2417,7 @@ func TestListItemEmitsTabsAttribute(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	x := doc.WordsXML
-	if !strings.Contains(x, `<p tabs="0.32 0.63 0.95 1.26"><tab/>`) {
+	if !strings.Contains(x, `<p tabs="0.315278 0.629861 0.945139 1.259722"><tab/>`) {
 		t.Errorf("expected the list item first <p> to carry its own tabs attribute, got: %s", x)
 	}
 }
@@ -2441,7 +2441,7 @@ func TestParagraphTabsAttributeAlignAndClear(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	x := doc.WordsXML
-	if !strings.Contains(x, `tabs="1.26 6.25@right:dot"`) {
+	if !strings.Contains(x, `tabs="1.259722 6.250000@right:dot"`) {
 		t.Errorf("expected tabs attribute to carry align/leader with clear resolved away (no inherited stop), got: %s", x)
 	}
 	if strings.Contains(x, "5.51") {
@@ -2500,7 +2500,7 @@ func TestParagraphTabsStyleInheritanceAndClear(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 		x := doc.WordsXML
-		if !strings.Contains(x, `tabs="0.32 0.63 0.95 1.26"`) {
+		if !strings.Contains(x, `tabs="0.315278 0.629861 0.945139 1.259722"`) {
 			t.Errorf("expected style stops kept + direct 1.26 and style 5.51 cleared, got: %s", x)
 		}
 		if strings.Contains(x, `tabs="0.32 0.63 0.95 5.51`) {
@@ -2521,7 +2521,7 @@ func TestParagraphTabsStyleInheritanceAndClear(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 		x := doc.WordsXML
-		if !strings.Contains(x, `tabs="0.32 0.63 0.95 5.51@right:dot"`) {
+		if !strings.Contains(x, `tabs="0.315278 0.629861 0.945139 5.512500@right:dot"`) {
 			t.Errorf("expected stops to inherit from the nearest style defining w:tabs, got: %s", x)
 		}
 	})
@@ -2539,7 +2539,7 @@ func TestParagraphTabsStyleInheritanceAndClear(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 		x := doc.WordsXML
-		if !strings.Contains(x, `tabs="0.32 0.63 0.95 5.51@right:dot"`) {
+		if !strings.Contains(x, `tabs="0.315278 0.629861 0.945139 5.512500@right:dot"`) {
 			t.Errorf("expected stops to inherit from Normal via basedOn chain, got: %s", x)
 		}
 	})
@@ -2584,7 +2584,7 @@ func TestParagraphIndentSpacingStyleInheritance(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 		x := doc.WordsXML
-		if !strings.Contains(x, `<p c="Body Text Indent" indentLeft="0.32" indentHanging="0.32" lineSpacing="0.33" lineRule="exact">`) {
+		if !strings.Contains(x, `<p c="Body Text Indent" indentLeft="0.319444" indentHanging="0.319444" lineSpacing="0.333333" lineRule="exact">`) {
 			t.Errorf("expected paragraph to carry effective indent/spacing from its style, got: %s", x)
 		}
 	})
@@ -2602,10 +2602,10 @@ func TestParagraphIndentSpacingStyleInheritance(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 		x := doc.WordsXML
-		if !strings.Contains(x, `<p c="Body Text Indent" indentLeft="0.69" lineSpacing="0.33" lineRule="exact">`) {
+		if !strings.Contains(x, `<p c="Body Text Indent" indentLeft="0.694444" lineSpacing="0.333333" lineRule="exact">`) {
 			t.Errorf("expected direct w:ind to replace the style indent block while spacing still inherits, got: %s", x)
 		}
-		if strings.Contains(x, `indentHanging="0.32">Direct ind</p>`) {
+		if strings.Contains(x, `indentHanging="0.319444">Direct ind</p>`) {
 			t.Errorf("expected no indentHanging on the <p> once a direct w:ind block is present, got: %s", x)
 		}
 	})
@@ -2623,7 +2623,7 @@ func TestParagraphIndentSpacingStyleInheritance(t *testing.T) {
 			t.Fatalf("unexpected error: %v", err)
 		}
 		x := doc.WordsXML
-		if !strings.Contains(x, `<p c="Body Text Indent" indentLeft="0.50" indentHanging="0.25">Item</p>`) {
+		if !strings.Contains(x, `<p c="Body Text Indent" indentLeft="0.500000" indentHanging="0.250000">Item</p>`) {
 			t.Errorf("expected list item to resolve indent from the numbering level, not the style, got: %s", x)
 		}
 	})
@@ -3591,7 +3591,7 @@ func TestFrameTwipsConverted(t *testing.T) {
 	x := doc.WordsXML
 	// 1440 twips = 1.00 in; 720 twips = 0.50 in; 240 = 0.17; 120 = 0.08; 360 = 0.25; 180 = 0.125 ≈ 0.12
 	for _, want := range []string{
-		`width='1.00'`, `height='0.50'`, `vSpace='0.17'`, `hSpace='0.08'`, `x='0.25'`, `y='0.12'`,
+		`width='1.000000'`, `height='0.500000'`, `vSpace='0.166667'`, `hSpace='0.083333'`, `x='0.250000'`, `y='0.125000'`,
 	} {
 		if !strings.Contains(x, want) {
 			t.Errorf("expected frame %s, got: %s", want, x)
@@ -3769,10 +3769,10 @@ func TestPerParagraphIndent(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	x := doc.WordsXML
-	if !strings.Contains(x, `indentLeft="0.50"`) {
+	if !strings.Contains(x, `indentLeft="0.500000"`) {
 		t.Errorf("expected indentLeft, got: %s", x)
 	}
-	if !strings.Contains(x, `indentHanging="0.33"`) {
+	if !strings.Contains(x, `indentHanging="0.333333"`) {
 		t.Errorf("expected indentHanging, got: %s", x)
 	}
 }
@@ -3790,10 +3790,10 @@ func TestPerParagraphIndentFirstLine(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	x := doc.WordsXML
-	if !strings.Contains(x, `indentLeft="0.25"`) {
+	if !strings.Contains(x, `indentLeft="0.250000"`) {
 		t.Errorf("expected indentLeft, got: %s", x)
 	}
-	if !strings.Contains(x, `indentFirst="0.25"`) {
+	if !strings.Contains(x, `indentFirst="0.250000"`) {
 		t.Errorf("expected indentFirst, got: %s", x)
 	}
 }
@@ -3811,10 +3811,10 @@ func TestPerParagraphIndentRight(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	x := doc.WordsXML
-	if !strings.Contains(x, `indentLeft="0.25"`) {
+	if !strings.Contains(x, `indentLeft="0.250000"`) {
 		t.Errorf("expected indentLeft, got: %s", x)
 	}
-	if !strings.Contains(x, `indentRight="0.50"`) {
+	if !strings.Contains(x, `indentRight="0.500000"`) {
 		t.Errorf("expected indentRight, got: %s", x)
 	}
 }
