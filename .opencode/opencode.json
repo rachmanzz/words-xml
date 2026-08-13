@@ -14,9 +14,7 @@
       "git tag *": "ask"
     }
   },
-  "reference": {
-    "readonly": [
-      "/home/natadana/Projects/dcdtunning"
-    ]
-  }
+  "plugin": [
+    ".opencode/plugins/graphify.js"
+  ]
 }

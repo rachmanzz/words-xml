@@ -4,3 +4,4 @@ coverage*.out
 coverage.html
 local-examples/
 graphify-out/
+cmd/debug/main
